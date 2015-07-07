@@ -205,6 +205,11 @@ func main() {
 	}
 
 	for _, c := range calendars.Items {
+
+		// this is a map[string]struct{} to check for
+		// calendars to print. Remove this or add your own
+		// secrets.go in the same package with your "approved
+		// calendars" Id's to use this.
 		if _, ok := approved_cals[c.Id]; !ok {
 			continue
 		}
