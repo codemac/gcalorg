@@ -1,0 +1,5 @@
+* gcalorg
+
+This just prints out an org-mode style file from the google calendar
+v3 api. This is because my work uses google apps and google's "private
+link" thing has shitty permissions.
