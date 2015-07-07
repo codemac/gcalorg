@@ -213,23 +213,37 @@ func main() {
 		if _, ok := approved_cals[c.Id]; !ok {
 			continue
 		}
-
-		events, err := srv.Events.List(c.Id).ShowDeleted(false).
-			SingleEvents(true).MaxResults(250).Do()
-		if err != nil {
-			log.Fatalf("Unable to retrieve next ten of the user's events. %v", err)
-		}
-
 		fmt.Printf("* %s\n", c.Summary)
 		fmt.Printf("  :PROPERTIES:\n")
 		fmt.Printf("  :ID:         %s\n", c.Id)
 		fmt.Printf("  :END:\n")
 		fmt.Printf("\n%s\n\n", c.Description)
 
-		for _, i := range events.Items {
-			// If the DateTime is an empty string the Event is an all-day Event.
-			// So only Date is available.
-			printOrg(i)
+		npt := ""
+		notdone := true
+		for notdone {
+			events_notdone := srv.Events.List(c.Id).ShowDeleted(false).
+				SingleEvents(true).MaxResults(250)
+			if npt != "" {
+				events_notdone = events_notdone.PageToken(npt)
+				npt = ""
+			}
+
+			events, err := events_notdone.Do()
+			if err != nil {
+				log.Fatalf("Unable to retrieve next ten of the user's events. %v", err)
+			}
+
+			notdone = events.NextPageToken != ""
+			if notdone {
+				npt = events.NextPageToken
+			}
+
+			for _, i := range events.Items {
+				// If the DateTime is an empty string the Event is an all-day Event.
+				// So only Date is available.
+				printOrg(i)
+			}
 		}
 	}
 }
