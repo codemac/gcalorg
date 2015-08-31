@@ -20,8 +20,8 @@ import (
 
 // getClient uses a Context and Config to retrieve a Token
 // then generate a Client. It returns the generated Client.
-func getClient(ctx context.Context, config *oauth2.Config) *http.Client {
-	cacheFile, err := tokenCacheFile()
+func getClient(filename string, ctx context.Context, config *oauth2.Config) *http.Client {
+	cacheFile, err := tokenCacheFile(filename)
 	if err != nil {
 		log.Fatalf("Unable to get path to cached credential file. %v", err)
 	}
@@ -54,7 +54,8 @@ func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 
 // tokenCacheFile generates credential file path/filename.
 // It returns the generated credential path/filename.
-func tokenCacheFile() (string, error) {
+func tokenCacheFile(filename string) (string, error) {
+	tokname := filepath.Base(filename)
 	usr, err := user.Current()
 	if err != nil {
 		return "", err
@@ -62,7 +63,7 @@ func tokenCacheFile() (string, error) {
 	tokenCacheDir := filepath.Join(usr.HomeDir, ".credentials")
 	os.MkdirAll(tokenCacheDir, 0700)
 	return filepath.Join(tokenCacheDir,
-		url.QueryEscape("calendar-api-quickstart.json")), err
+		url.QueryEscape(fmt.Sprintf("calendar-api-quickstart.%s.json", tokname))), err
 }
 
 // tokenFromFile retrieves a Token from a given file path.
@@ -178,19 +179,8 @@ func printOrg(e *calendar.Event) {
 	fmt.Printf("\n%s\n", e.Description)
 	fmt.Printf("\n")
 }
-func main() {
-	ctx := context.Background()
 
-	b, err := ioutil.ReadFile("/home/codemac/code/gcalorg/client_secret.json")
-	if err != nil {
-		log.Fatalf("Unable to read client secret file: %v", err)
-	}
-
-	config, err := google.ConfigFromJSON(b, calendar.CalendarReadonlyScope)
-	if err != nil {
-		log.Fatalf("Unable to parse client secret file to config: %v", err)
-	}
-	client := getClient(ctx, config)
+func PrintCalendars(client *http.Client, approved_cals map[string]struct{}) {
 
 	srv, err := calendar.New(client)
 	if err != nil {
@@ -204,6 +194,9 @@ func main() {
 		log.Fatalf("Unable to list calendars! %v", err)
 	}
 
+	curtime := time.Now().UTC().Add(24 * time.Hour).Truncate(24 * time.Hour)
+	timeMin := curtime.AddDate(0, -1, 0).Format("2006-01-02T15:04:05Z")
+	timeMax := curtime.AddDate(1, 0, 0).Format("2006-01-02T15:04:05Z")
 	for _, c := range calendars.Items {
 
 		// this is a map[string]struct{} to check for
@@ -221,9 +214,10 @@ func main() {
 
 		npt := ""
 		notdone := true
+
 		for notdone {
 			events_notdone := srv.Events.List(c.Id).ShowDeleted(false).
-				SingleEvents(true).MaxResults(250)
+				SingleEvents(true).TimeMin(timeMin).TimeMax(timeMax).MaxResults(250)
 			if npt != "" {
 				events_notdone = events_notdone.PageToken(npt)
 				npt = ""
@@ -245,5 +239,33 @@ func main() {
 				printOrg(i)
 			}
 		}
+	}
+}
+
+func genClient(file_secrets string) *http.Client {
+	ctx := context.Background()
+
+	b, err := ioutil.ReadFile(file_secrets)
+	if err != nil {
+		log.Fatalf("Unable to read client secret file: %v", err)
+	}
+
+	config, err := google.ConfigFromJSON(b, calendar.CalendarReadonlyScope)
+	if err != nil {
+		log.Fatalf("Unable to parse client secret file to config: %v", err)
+	}
+
+	return getClient(file_secrets, ctx, config)
+}
+
+func main() {
+	secrets := map[string]map[string]struct{}{
+		"/home/codemac/code/gcalorg/codemacgmail_secret.json": gmail_approved_cals,
+		"/home/codemac/code/gcalorg/igneous_secret.json":      igneous_approved_cals,
+	}
+
+	for k, v := range secrets {
+		cl := genClient(k)
+		PrintCalendars(cl, v)
 	}
 }

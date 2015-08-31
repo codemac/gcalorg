@@ -1,4 +1,4 @@
 /bin/
 /pkg/
-client_secret.json
+*_secret.json
 /src/cmd/gcalorg/secrets.go
