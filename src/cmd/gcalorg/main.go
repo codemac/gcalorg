@@ -180,7 +180,7 @@ func printOrg(e *calendar.Event) {
 	fmt.Printf("\n")
 }
 
-func PrintCalendars(client *http.Client, approved_cals map[string]struct{}) {
+func printCalendars(client *http.Client, approved_cals map[string]struct{}) {
 
 	srv, err := calendar.New(client)
 	if err != nil {
@@ -216,14 +216,14 @@ func PrintCalendars(client *http.Client, approved_cals map[string]struct{}) {
 		notdone := true
 
 		for notdone {
-			events_notdone := srv.Events.List(c.Id).ShowDeleted(false).
+			eventsReq := srv.Events.List(c.Id).ShowDeleted(false).
 				SingleEvents(true).TimeMin(timeMin).TimeMax(timeMax).MaxResults(250)
 			if npt != "" {
-				events_notdone = events_notdone.PageToken(npt)
+				eventsReq = eventsReq.PageToken(npt)
 				npt = ""
 			}
 
-			events, err := events_notdone.Do()
+			events, err := eventsReq.Do()
 			if err != nil {
 				log.Fatalf("Unable to retrieve next ten of the user's events. %v", err)
 			}
@@ -242,10 +242,10 @@ func PrintCalendars(client *http.Client, approved_cals map[string]struct{}) {
 	}
 }
 
-func genClient(file_secrets string) *http.Client {
+func genClient(filename string) *http.Client {
 	ctx := context.Background()
 
-	b, err := ioutil.ReadFile(file_secrets)
+	b, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}
@@ -255,17 +255,17 @@ func genClient(file_secrets string) *http.Client {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}
 
-	return getClient(file_secrets, ctx, config)
+	return getClient(filename, ctx, config)
 }
 
 func main() {
 	secrets := map[string]map[string]struct{}{
-		"/home/codemac/code/gcalorg/codemacgmail_secret.json": gmail_approved_cals,
-		"/home/codemac/code/gcalorg/igneous_secret.json":      igneous_approved_cals,
+		"/home/codemac/code/gcalorg/codemacgmail_secret.json": gmailCals,
+		"/home/codemac/code/gcalorg/igneous_secret.json":      igneousCals,
 	}
 
 	for k, v := range secrets {
 		cl := genClient(k)
-		PrintCalendars(cl, v)
+		printCalendars(cl, v)
 	}
 }
