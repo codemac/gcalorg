@@ -180,7 +180,7 @@ func printOrg(e *calendar.Event) {
 	fmt.Printf("\n")
 }
 
-func printCalendars(client *http.Client, approved_cals map[string]struct{}) {
+func printCalendars(client *http.Client, approvedCals map[string]struct{}) {
 
 	srv, err := calendar.New(client)
 	if err != nil {
@@ -203,7 +203,7 @@ func printCalendars(client *http.Client, approved_cals map[string]struct{}) {
 		// calendars to print. Remove this or add your own
 		// secrets.go in the same package with your "approved
 		// calendars" Id's to use this.
-		if _, ok := approved_cals[c.Id]; !ok {
+		if _, ok := approvedCals[c.Id]; !ok {
 			continue
 		}
 		fmt.Printf("* %s\n", c.Summary)
