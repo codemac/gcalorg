@@ -260,8 +260,7 @@ func genClient(filename string) *http.Client {
 
 func main() {
 	secrets := map[string]map[string]struct{}{
-		"/home/codemac/code/gcalorg/codemacgmail_secret.json": gmailCals,
-		"/home/codemac/code/gcalorg/igneous_secret.json":      igneousCals,
+		"/home/jmickey/src/gcalorg/codemacgmail_secret.json": gmailCals,
 	}
 
 	for k, v := range secrets {
