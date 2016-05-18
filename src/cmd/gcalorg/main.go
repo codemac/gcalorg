@@ -127,6 +127,7 @@ func printOrgDate(start, end *calendar.EventDateTime) string {
 	tef := te.Format("15:04")
 	return final + fmt.Sprintf("-%s>", tef)
 }
+
 func printOrg(e *calendar.Event) {
 	fmt.Printf("** ")
 	if e.Status == "tenative" || e.Status == "cancelled" {
