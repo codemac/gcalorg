@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"golang.org/x/net/context"
@@ -111,7 +112,7 @@ func printOrgDate(start, end *calendar.EventDateTime) string {
 	}
 
 	ts, _ := time.Parse(time.RFC3339, start.DateTime)
-	tsf := ts.Format("2006-01-02 Mon 15:04")
+	tsf := ts.In(time.Local).Format("2006-01-02 Mon 15:04")
 	final = final + fmt.Sprintf("<%s", tsf)
 
 	if end == nil {
@@ -120,7 +121,7 @@ func printOrgDate(start, end *calendar.EventDateTime) string {
 
 	te, _ := time.Parse(time.RFC3339, end.DateTime)
 	if te.Day() != ts.Day() { // event spans days
-		tef := te.Format("2006-01-02 Mon 15:04")
+		tef := te.In(time.Local).Format("2006-01-02 Mon 15:04")
 		return final + fmt.Sprintf(">--<%s>", tef)
 	}
 
@@ -198,6 +199,8 @@ func printCalendars(client *http.Client, approvedCals map[string]struct{}) {
 	curtime := time.Now().UTC().Add(24 * time.Hour).Truncate(24 * time.Hour)
 	timeMin := curtime.AddDate(0, -1, 0).Format("2006-01-02T15:04:05Z")
 	timeMax := curtime.AddDate(1, 0, 0).Format("2006-01-02T15:04:05Z")
+
+	fmt.Printf("#+category: cal")
 	for _, c := range calendars.Items {
 
 		// this is a map[string]struct{} to check for
@@ -207,6 +210,7 @@ func printCalendars(client *http.Client, approvedCals map[string]struct{}) {
 		if _, ok := approvedCals[c.Id]; !ok {
 			continue
 		}
+
 		fmt.Printf("* %s\n", c.Summary)
 		fmt.Printf("  :PROPERTIES:\n")
 		fmt.Printf("  :ID:         %s\n", c.Id)
@@ -234,9 +238,22 @@ func printCalendars(client *http.Client, approvedCals map[string]struct{}) {
 				npt = events.NextPageToken
 			}
 
+		itemloop:
 			for _, i := range events.Items {
 				// If the DateTime is an empty string the Event is an all-day Event.
 				// So only Date is available.
+
+				// skip things that are chatty (repeating
+				// calendar events -> org-mode has been
+				// difficult, manually manage those for
+				// now. There is probably a way of getting them,
+				// but converting the ical format to the org
+				// format would be a significant piece of logic)
+				for _, v := range titleFilters[c.Id] {
+					if strings.Contains(i.Summary, v) {
+						continue itemloop
+					}
+				}
 				printOrg(i)
 			}
 		}
