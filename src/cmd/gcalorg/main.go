@@ -112,7 +112,8 @@ func printOrgDate(start, end *calendar.EventDateTime) string {
 	}
 
 	ts, _ := time.Parse(time.RFC3339, start.DateTime)
-	tsf := ts.In(time.Local).Format("2006-01-02 Mon 15:04")
+	ts = ts.In(time.Local)
+	tsf := ts.Format("2006-01-02 Mon 15:04")
 	final = final + fmt.Sprintf("<%s", tsf)
 
 	if end == nil {
@@ -120,8 +121,9 @@ func printOrgDate(start, end *calendar.EventDateTime) string {
 	}
 
 	te, _ := time.Parse(time.RFC3339, end.DateTime)
+	te = te.In(time.Local)
 	if te.Day() != ts.Day() { // event spans days
-		tef := te.In(time.Local).Format("2006-01-02 Mon 15:04")
+		tef := te.Format("2006-01-02 Mon 15:04")
 		return final + fmt.Sprintf(">--<%s>", tef)
 	}
 
@@ -134,7 +136,11 @@ func printOrg(e *calendar.Event) {
 	if e.Status == "tenative" || e.Status == "cancelled" {
 		fmt.Printf("(%s) ", e.Status)
 	}
-	fmt.Printf("%s\n", e.Summary)
+	summary := e.Summary
+	if summary == "" {
+		summary = "busy"
+	}
+	fmt.Printf("%s\n", summary)
 	fmt.Printf("   :PROPERTIES:\n")
 	fmt.Printf("   :ID:       %s\n", e.ICalUID)
 	fmt.Printf("   :GCALLINK: %s\n", e.HtmlLink)
@@ -178,7 +184,8 @@ func printOrg(e *calendar.Event) {
 		}
 
 	}
-	fmt.Printf("\n%s\n", e.Description)
+	esc_desc := strings.Replace(e.Description, "\n*", "\n,*", -1)
+	fmt.Printf("\n%s\n", esc_desc)
 	fmt.Printf("\n")
 }
 
@@ -200,7 +207,7 @@ func printCalendars(client *http.Client, approvedCals map[string]struct{}) {
 	timeMin := curtime.AddDate(0, -1, 0).Format("2006-01-02T15:04:05Z")
 	timeMax := curtime.AddDate(1, 0, 0).Format("2006-01-02T15:04:05Z")
 
-	fmt.Printf("#+category: cal")
+	fmt.Printf("#+category: 📅\n")
 	for _, c := range calendars.Items {
 
 		// this is a map[string]struct{} to check for
