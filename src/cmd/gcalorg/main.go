@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -156,40 +157,45 @@ func printOrg(e *calendar.Event) {
 	if len(e.Attendees) > 0 {
 		fmt.Printf("Attendees:\n")
 	}
-	for _, a := range e.Attendees {
-		if a != nil {
+	if len(e.Attendees) > 20 {
+		fmt.Printf("... Many\n")
+	} else {
+		for _, a := range e.Attendees {
+			if a != nil {
 
-			// ResponseStatus: The attendee's response status. Possible values are:
-			//
-			// - "needsAction" - The attendee has not responded to the invitation.
-			//
-			// - "declined" - The attendee has declined the invitation.
-			// - "tentative" - The attendee has tentatively accepted the invitation.
-			//
-			// - "accepted" - The attendee has accepted the invitation.
-			//  ResponseStatus string `json:"responseStatus,omitempty"`
-			statuschar := " "
-			switch a.ResponseStatus {
-			case "":
-			case "NeedsAction":
-			case "declined":
-				statuschar = "✗"
-			case "tenative":
-				statuschar = "☐"
-			case "accepted":
-				statuschar = "✓"
+				// ResponseStatus: The attendee's response status. Possible values are:
+				//
+				// - "needsAction" - The attendee has not responded to the invitation.
+				//
+				// - "declined" - The attendee has declined the invitation.
+				// - "tentative" - The attendee has tentatively accepted the invitation.
+				//
+				// - "accepted" - The attendee has accepted the invitation.
+				//  ResponseStatus string `json:"responseStatus,omitempty"`
+				statuschar := " "
+				switch a.ResponseStatus {
+				case "":
+				case "NeedsAction":
+				case "declined":
+					statuschar = "✗"
+				case "tenative":
+					statuschar = "☐"
+				case "accepted":
+					statuschar = "✓"
+				}
+
+				fmt.Printf(" %s [[mailto:%s][%s]]\n", statuschar, a.Email, a.DisplayName)
 			}
-
-			fmt.Printf(" %s [[mailto:%s][%s]]\n", statuschar, a.Email, a.DisplayName)
 		}
-
 	}
-	esc_desc := strings.Replace(e.Description, "\n*", "\n,*", -1)
-	fmt.Printf("\n%s\n", esc_desc)
+
+	to_p := fmt.Sprintf("\n%s\n", e.Description)
+	esc_desc := strings.Replace(to_p, "\n*", "\n,*", -1)
+	fmt.Printf(esc_desc)
 	fmt.Printf("\n")
 }
 
-func printCalendars(client *http.Client, approvedCals map[string]struct{}) {
+func printCalendars(client *http.Client, approvedCals []string) {
 
 	srv, err := calendar.New(client)
 	if err != nil {
@@ -207,17 +213,17 @@ func printCalendars(client *http.Client, approvedCals map[string]struct{}) {
 	timeMin := curtime.AddDate(0, -1, 0).Format("2006-01-02T15:04:05Z")
 	timeMax := curtime.AddDate(1, 0, 0).Format("2006-01-02T15:04:05Z")
 
-	fmt.Printf("#+category: 📅\n")
+	receivedCals := make(map[string]*calendar.CalendarListEntry, 0)
 	for _, c := range calendars.Items {
+		receivedCals[c.Id] = c
+	}
+	fmt.Printf("#+category: cal\n")
+	for _, approvedCal := range approvedCals {
 
-		// this is a map[string]struct{} to check for
-		// calendars to print. Remove this or add your own
-		// secrets.go in the same package with your "approved
-		// calendars" Id's to use this.
-		if _, ok := approvedCals[c.Id]; !ok {
+		c, ok := receivedCals[approvedCal]
+		if !ok {
 			continue
 		}
-
 		fmt.Printf("* %s\n", c.Summary)
 		fmt.Printf("  :PROPERTIES:\n")
 		fmt.Printf("  :ID:         %s\n", c.Id)
@@ -227,6 +233,7 @@ func printCalendars(client *http.Client, approvedCals map[string]struct{}) {
 		npt := ""
 		notdone := true
 
+		event_list := make([]*calendar.Event, 0, 250)
 		for notdone {
 			eventsReq := srv.Events.List(c.Id).ShowDeleted(false).
 				SingleEvents(true).TimeMin(timeMin).TimeMax(timeMax).MaxResults(250)
@@ -245,24 +252,28 @@ func printCalendars(client *http.Client, approvedCals map[string]struct{}) {
 				npt = events.NextPageToken
 			}
 
-		itemloop:
-			for _, i := range events.Items {
-				// If the DateTime is an empty string the Event is an all-day Event.
-				// So only Date is available.
+			event_list = append(event_list, events.Items...)
+		}
 
-				// skip things that are chatty (repeating
-				// calendar events -> org-mode has been
-				// difficult, manually manage those for
-				// now. There is probably a way of getting them,
-				// but converting the ical format to the org
-				// format would be a significant piece of logic)
-				for _, v := range titleFilters[c.Id] {
-					if strings.Contains(i.Summary, v) {
-						continue itemloop
-					}
+		// sort events by Id
+		sort.SliceStable(event_list, func(i, j int) bool { return event_list[i].Id < event_list[j].Id })
+
+	itemloop:
+		for _, i := range event_list {
+			// If the DateTime is an empty string the Event is an
+			// all-day Event.  So only Date is available.
+
+			// skip things that are chatty (repeating calendar
+			// events -> org-mode has been difficult, manually
+			// manage those for now. There is probably a way of
+			// getting them, but converting the ical format to the
+			// org format would be a significant piece of logic)
+			for _, v := range titleFilters[c.Id] {
+				if strings.Contains(i.Summary, v) {
+					continue itemloop
 				}
-				printOrg(i)
 			}
+			printOrg(i)
 		}
 	}
 }
@@ -284,12 +295,20 @@ func genClient(filename string) *http.Client {
 }
 
 func main() {
-	secrets := map[string]map[string]struct{}{
-		"/home/jmickey/src/gcalorg/codemacgmail_secret.json": gmailCals,
+	home := os.Getenv("HOME")
+	type caldata struct {
+		name string
+		cals []string
+	}
+	secrets := []caldata{
+		{home + "/src/gcalorg/jmickeygoogle_secret.json", workCals},
+		{home + "/src/gcalorg/codemacgmail_secret.json", gmailCals},
 	}
 
-	for k, v := range secrets {
-		cl := genClient(k)
-		printCalendars(cl, v)
+	// we need to sort before we do much of anything, so things show up in a
+	// decent order.
+	for _, v := range secrets {
+		cl := genClient(v.name)
+		printCalendars(cl, v.cals)
 	}
 }

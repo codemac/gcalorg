@@ -2,3 +2,4 @@
 /pkg/
 *_secret.json
 /src/cmd/gcalorg/secrets.go
+/src/cmd/gcalorg/*secrets.go
