@@ -201,8 +201,8 @@ func printOrg(e *calendar.Event) {
 					statuschar = "✓"
 				}
 
-				var linkname string
-				if a.DisplayName == "" {
+				linkname := a.DisplayName
+				if linkname == "" {
 					linkname = a.Email
 				}
 				fmt.Printf(" %s [[mailto:%s][%s]]\n", statuschar, a.Email, linkname)
