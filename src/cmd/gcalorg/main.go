@@ -17,6 +17,7 @@ import (
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+
 	"google.golang.org/api/calendar/v3"
 )
 
@@ -154,13 +155,29 @@ func printOrg(e *calendar.Event) {
 	fmt.Printf("   :END:\n")
 	fmt.Printf("\n")
 	fmt.Printf("%s\n", printOrgDate(e.Start, e.End))
-	if len(e.Attendees) > 0 {
+	attendees := e.Attendees
+
+	canonical_id := func(ea *calendar.EventAttendee) string {
+		if ea.Id != "" {
+			return ea.Id
+		} else if ea.Email != "" {
+			return ea.Email
+		} else if ea.DisplayName != "" {
+			return ea.DisplayName
+		}
+		return "sadness"
+	}
+
+	sort.SliceStable(attendees, func(i, j int) bool {
+		return canonical_id(attendees[i]) < canonical_id(attendees[j])
+	})
+	if len(attendees) > 0 {
 		fmt.Printf("Attendees:\n")
 	}
-	if len(e.Attendees) > 20 {
+	if len(attendees) > 20 {
 		fmt.Printf("... Many\n")
 	} else {
-		for _, a := range e.Attendees {
+		for _, a := range attendees {
 			if a != nil {
 
 				// ResponseStatus: The attendee's response status. Possible values are:
@@ -184,7 +201,11 @@ func printOrg(e *calendar.Event) {
 					statuschar = "✓"
 				}
 
-				fmt.Printf(" %s [[mailto:%s][%s]]\n", statuschar, a.Email, a.DisplayName)
+				var linkname string
+				if a.DisplayName == "" {
+					linkname = a.Email
+				}
+				fmt.Printf(" %s [[mailto:%s][%s]]\n", statuschar, a.Email, linkname)
 			}
 		}
 	}
