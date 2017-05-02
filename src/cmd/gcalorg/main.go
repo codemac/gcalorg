@@ -217,6 +217,7 @@ func printCalendars(client *http.Client, approvedCals []string) {
 	for _, c := range calendars.Items {
 		receivedCals[c.Id] = c
 	}
+	fmt.Printf("# -*- eval: (auto-revert-mode 1); -*-\n")
 	fmt.Printf("#+category: cal\n")
 	for _, approvedCal := range approvedCals {
 
