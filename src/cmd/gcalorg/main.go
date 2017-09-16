@@ -105,10 +105,17 @@ func printOrgDate(start, end *calendar.EventDateTime) string {
 		tsf := ts.Format("2006-01-02")
 		final = final + fmt.Sprintf("<%s", tsf)
 		if end == nil {
-			return final + fmt.Sprintf(">")
+			return final + ">"
 		}
 
 		te, _ := time.Parse("2006-01-02", end.Date)
+		te = te.AddDate(0, 0, -1)
+		// The end date is "exclusive", so we should subtract a day, and
+		// if the day is equivalent to start, then we should just print
+		// start.
+		if te.Equal(ts) {
+			return final + ">"
+		}
 		tef := te.Format("2006-01-02")
 		return final + fmt.Sprintf(">--<%s>", tef)
 	}
@@ -124,46 +131,50 @@ func printOrgDate(start, end *calendar.EventDateTime) string {
 
 	te, _ := time.Parse(time.RFC3339, end.DateTime)
 	te = te.In(time.Local)
-	if te.Day() != ts.Day() { // event spans days
-		tef := te.Format("2006-01-02 Mon 15:04")
-		return final + fmt.Sprintf(">--<%s>", tef)
-	}
+	tef := te.Format("2006-01-02 Mon 15:04")
+	return final + fmt.Sprintf(">--<%s>", tef)
+}
 
-	tef := te.Format("15:04")
-	return final + fmt.Sprintf("-%s>", tef)
+// cleanString removes special characters for org-mode, as almost no one will be
+// using org-mode formatting.
+func cleanString(s string) string {
+	s = strings.Replace(s, "[", "{", -1)
+	s = strings.Replace(s, "]", "}", -1)
+	s = strings.Replace(s, "\n*", "\n,*", -1)
+	return s
 }
 
 func printOrg(e *calendar.Event) {
-	fmt.Printf("** ")
+	var fullentry string
+	print_entry := true
+	fullentry += fmt.Sprintf("** ")
 	if e.Status == "tenative" || e.Status == "cancelled" {
-		fmt.Printf("(%s) ", e.Status)
+		fullentry += fmt.Sprintf("(%s) ", e.Status)
 	}
 	summary := e.Summary
 	if summary == "" {
 		summary = "busy"
 	}
-	fmt.Printf("%s\n", summary)
-	fmt.Printf("   :PROPERTIES:\n")
-	fmt.Printf("   :ID:       %s\n", e.ICalUID)
-	fmt.Printf("   :GCALLINK: %s\n", e.HtmlLink)
+	fullentry += fmt.Sprintf("%s\n", summary)
+	fullentry += fmt.Sprintf("   :PROPERTIES:\n")
+	fullentry += fmt.Sprintf("   :ID:       %s\n", e.ICalUID)
+	fullentry += fmt.Sprintf("   :GCALLINK: %s\n", e.HtmlLink)
 	if e.Creator != nil {
-		fmt.Printf("   :CREATOR: [[mailto:%s][%s]]\n", e.Creator.Email, e.Creator.DisplayName)
+		fullentry += fmt.Sprintf("   :CREATOR: [[mailto:%s][%s]]\n", e.Creator.Email, cleanString(e.Creator.DisplayName))
 	}
 	if e.Organizer != nil {
-		fmt.Printf("   :ORGANIZER: [[mailto:%s][%s]]\n", e.Organizer.Email, e.Organizer.DisplayName)
+		fullentry += fmt.Sprintf("   :ORGANIZER: [[mailto:%s][%s]]\n", e.Organizer.Email, cleanString(e.Organizer.DisplayName))
 	}
-	fmt.Printf("   :END:\n")
-	fmt.Printf("\n")
-	fmt.Printf("%s\n", printOrgDate(e.Start, e.End))
+	fullentry += fmt.Sprintf("   :END:\n\n")
+	fullentry += fmt.Sprintf("%s\n", printOrgDate(e.Start, e.End))
 	attendees := e.Attendees
-
 	canonical_id := func(ea *calendar.EventAttendee) string {
 		if ea.Id != "" {
 			return ea.Id
 		} else if ea.Email != "" {
 			return ea.Email
 		} else if ea.DisplayName != "" {
-			return ea.DisplayName
+			return cleanString(ea.DisplayName)
 		}
 		return "sadness"
 	}
@@ -172,10 +183,10 @@ func printOrg(e *calendar.Event) {
 		return canonical_id(attendees[i]) < canonical_id(attendees[j])
 	})
 	if len(attendees) > 0 {
-		fmt.Printf("Attendees:\n")
+		fullentry += fmt.Sprintf("Attendees:\n")
 	}
 	if len(attendees) > 20 {
-		fmt.Printf("... Many\n")
+		fullentry += fmt.Sprintf("... Many\n")
 	} else {
 		for _, a := range attendees {
 			if a != nil {
@@ -201,19 +212,40 @@ func printOrg(e *calendar.Event) {
 					statuschar = "✓"
 				}
 
-				linkname := a.DisplayName
+				linkname := cleanString(a.DisplayName)
 				if linkname == "" {
 					linkname = a.Email
 				}
-				fmt.Printf(" %s [[mailto:%s][%s]]\n", statuschar, a.Email, linkname)
+				fullentry += fmt.Sprintf(" %s [[mailto:%s][%s]]\n", statuschar, a.Email, linkname)
+
+				// If the entire thing is actually declined, why
+				// the fuck does google show it to me? this is
+				// the most bullshit aspect of this calendar API
+				// afaict. I really hope I've found the wrong
+				// way of doing this.
+				if a.Self && a.ResponseStatus == "declined" {
+					print_entry = false
+				}
+
 			}
 		}
 	}
 
 	to_p := fmt.Sprintf("\n%s\n", e.Description)
-	esc_desc := strings.Replace(to_p, "\n*", "\n,*", -1)
-	fmt.Printf(esc_desc)
-	fmt.Printf("\n")
+	esc_desc := cleanString(to_p)
+	fullentry += fmt.Sprintf(esc_desc)
+	fullentry += fmt.Sprintf("\n")
+	fullentry += fmt.Sprintf("\nAttachments:\n")
+	for _, a := range e.Attachments {
+		if a == nil {
+			continue
+		}
+
+		fullentry += fmt.Sprintf("- [[%s][%s]]\n", a.FileUrl, cleanString(a.Title))
+	}
+	if print_entry {
+		fmt.Printf(fullentry)
+	}
 }
 
 func printCalendars(client *http.Client, approvedCals []string) {
@@ -231,7 +263,7 @@ func printCalendars(client *http.Client, approvedCals []string) {
 	}
 
 	curtime := time.Now().UTC().Add(24 * time.Hour).Truncate(24 * time.Hour)
-	timeMin := curtime.AddDate(0, -1, 0).Format("2006-01-02T15:04:05Z")
+	timeMin := curtime.AddDate(0, -9, 0).Format("2006-01-02T15:04:05Z")
 	timeMax := curtime.AddDate(1, 0, 0).Format("2006-01-02T15:04:05Z")
 
 	receivedCals := make(map[string]*calendar.CalendarListEntry, 0)
@@ -330,6 +362,7 @@ func main() {
 	// we need to sort before we do much of anything, so things show up in a
 	// decent order.
 	for _, v := range secrets {
+		fmt.Fprintf(os.Stderr, "Getting client for: %s", v.name)
 		cl := genClient(v.name)
 		printCalendars(cl, v.cals)
 	}
