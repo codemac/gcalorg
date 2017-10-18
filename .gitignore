@@ -1,5 +1,5 @@
 /bin/
 /pkg/
 *_secret.json
-/src/cmd/gcalorg/secrets.go
-/src/cmd/gcalorg/*secrets.go
+/secrets.go
+/*secrets.go
