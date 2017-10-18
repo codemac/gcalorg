@@ -131,8 +131,12 @@ func printOrgDate(start, end *calendar.EventDateTime) string {
 
 	te, _ := time.Parse(time.RFC3339, end.DateTime)
 	te = te.In(time.Local)
-	tef := te.Format("2006-01-02 Mon 15:04")
-	return final + fmt.Sprintf(">--<%s>", tef)
+	if te.Day() != ts.Day() {
+		tef := te.Format("2006-01-02 Mon 15:04")
+		return final + fmt.Sprintf(">--<%s>", tef)
+	}
+	tef := te.Format("15:04")
+	return final + fmt.Sprintf("-%s>", tef)
 }
 
 // cleanString removes special characters for org-mode, as almost no one will be
