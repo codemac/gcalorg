@@ -7,15 +7,17 @@
 //   import "google.golang.org/api/discovery/v1"
 //   ...
 //   discoveryService, err := discovery.New(oauthHttpClient)
-package discovery
+package discovery // import "google.golang.org/api/discovery/v1"
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"golang.org/x/net/context"
-	"google.golang.org/api/googleapi"
+	context "golang.org/x/net/context"
+	ctxhttp "golang.org/x/net/context/ctxhttp"
+	gensupport "google.golang.org/api/gensupport"
+	googleapi "google.golang.org/api/googleapi"
 	"io"
 	"net/http"
 	"net/url"
@@ -31,10 +33,12 @@ var _ = fmt.Sprintf
 var _ = json.NewDecoder
 var _ = io.Copy
 var _ = url.Parse
+var _ = gensupport.MarshalJSON
 var _ = googleapi.Version
 var _ = errors.New
 var _ = strings.Replace
-var _ = context.Background
+var _ = context.Canceled
+var _ = ctxhttp.Do
 
 const apiId = "discovery:v1"
 const apiName = "discovery"
@@ -85,6 +89,33 @@ type DirectoryList struct {
 
 	// Kind: The kind for this response.
 	Kind string `json:"kind,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "DiscoveryVersion") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DiscoveryVersion") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DirectoryList) MarshalJSON() ([]byte, error) {
+	type noMethod DirectoryList
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type DirectoryListItems struct {
@@ -125,14 +156,60 @@ type DirectoryListItems struct {
 
 	// Version: The version of the API.
 	Version string `json:"version,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Description") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Description") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *DirectoryListItems) MarshalJSON() ([]byte, error) {
+	type noMethod DirectoryListItems
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// DirectoryListItemsIcons: Links to 16x16 and 32x32 icons representing
+// the API.
 type DirectoryListItemsIcons struct {
 	// X16: The URL of the 16x16 icon.
 	X16 string `json:"x16,omitempty"`
 
 	// X32: The URL of the 32x32 icon.
 	X32 string `json:"x32,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "X16") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "X16") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DirectoryListItemsIcons) MarshalJSON() ([]byte, error) {
+	type noMethod DirectoryListItemsIcons
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type JsonSchema struct {
@@ -211,26 +288,118 @@ type JsonSchema struct {
 	// determine how to interpret the entire entity. Its value must exist in
 	// a map of descriminant values to schema names.
 	Variant *JsonSchemaVariant `json:"variant,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Ref") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Ref") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *JsonSchema) MarshalJSON() ([]byte, error) {
+	type noMethod JsonSchema
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// JsonSchemaAnnotations: Additional information about this property.
 type JsonSchemaAnnotations struct {
 	// Required: A list of methods for which this property is required on
 	// requests.
 	Required []string `json:"required,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Required") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Required") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *JsonSchemaAnnotations) MarshalJSON() ([]byte, error) {
+	type noMethod JsonSchemaAnnotations
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// JsonSchemaVariant: In a variant data type, the value of one property
+// is used to determine how to interpret the entire entity. Its value
+// must exist in a map of descriminant values to schema names.
 type JsonSchemaVariant struct {
 	// Discriminant: The name of the type discriminant property.
 	Discriminant string `json:"discriminant,omitempty"`
 
 	// Map: The map of discriminant value to schema to use for parsing..
 	Map []*JsonSchemaVariantMap `json:"map,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Discriminant") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Discriminant") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *JsonSchemaVariant) MarshalJSON() ([]byte, error) {
+	type noMethod JsonSchemaVariant
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type JsonSchemaVariantMap struct {
 	Ref string `json:"$ref,omitempty"`
 
 	TypeValue string `json:"type_value,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Ref") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Ref") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *JsonSchemaVariantMap) MarshalJSON() ([]byte, error) {
+	type noMethod JsonSchemaVariantMap
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type RestDescription struct {
@@ -263,6 +432,10 @@ type RestDescription struct {
 
 	// Etag: The ETag for this response.
 	Etag string `json:"etag,omitempty"`
+
+	// ExponentialBackoffDefault: Enable exponential backoff for suitable
+	// methods in the generated clients.
+	ExponentialBackoffDefault bool `json:"exponentialBackoffDefault,omitempty"`
 
 	// Features: A list of supported features for this API.
 	Features []string `json:"features,omitempty"`
@@ -323,27 +496,150 @@ type RestDescription struct {
 
 	// Version: The version of this API.
 	Version string `json:"version,omitempty"`
+
+	VersionModule bool `json:"version_module,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Auth") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Auth") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *RestDescription) MarshalJSON() ([]byte, error) {
+	type noMethod RestDescription
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// RestDescriptionAuth: Authentication information.
 type RestDescriptionAuth struct {
 	// Oauth2: OAuth 2.0 authentication information.
 	Oauth2 *RestDescriptionAuthOauth2 `json:"oauth2,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Oauth2") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Oauth2") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *RestDescriptionAuth) MarshalJSON() ([]byte, error) {
+	type noMethod RestDescriptionAuth
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// RestDescriptionAuthOauth2: OAuth 2.0 authentication information.
 type RestDescriptionAuthOauth2 struct {
 	// Scopes: Available OAuth 2.0 scopes.
-	Scopes *RestDescriptionAuthOauth2Scopes `json:"scopes,omitempty"`
+	Scopes map[string]RestDescriptionAuthOauth2Scopes `json:"scopes,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Scopes") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Scopes") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *RestDescriptionAuthOauth2) MarshalJSON() ([]byte, error) {
+	type noMethod RestDescriptionAuthOauth2
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// RestDescriptionAuthOauth2Scopes: The scope value.
 type RestDescriptionAuthOauth2Scopes struct {
+	// Description: Description of scope.
+	Description string `json:"description,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Description") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Description") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *RestDescriptionAuthOauth2Scopes) MarshalJSON() ([]byte, error) {
+	type noMethod RestDescriptionAuthOauth2Scopes
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// RestDescriptionIcons: Links to 16x16 and 32x32 icons representing the
+// API.
 type RestDescriptionIcons struct {
 	// X16: The URL of the 16x16 icon.
 	X16 string `json:"x16,omitempty"`
 
 	// X32: The URL of the 32x32 icon.
 	X32 string `json:"x32,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "X16") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "X16") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *RestDescriptionIcons) MarshalJSON() ([]byte, error) {
+	type noMethod RestDescriptionIcons
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type RestMethod struct {
@@ -398,8 +694,31 @@ type RestMethod struct {
 	// should use the download service URL (i.e. "/download"). Only applies
 	// if the method supports media download.
 	UseMediaDownloadService bool `json:"useMediaDownloadService,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Description") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Description") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *RestMethod) MarshalJSON() ([]byte, error) {
+	type noMethod RestMethod
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// RestMethodMediaUpload: Media upload parameters.
 type RestMethodMediaUpload struct {
 	// Accept: MIME Media Ranges for acceptable media uploads to this
 	// method.
@@ -411,16 +730,63 @@ type RestMethodMediaUpload struct {
 
 	// Protocols: Supported upload protocols.
 	Protocols *RestMethodMediaUploadProtocols `json:"protocols,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Accept") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Accept") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *RestMethodMediaUpload) MarshalJSON() ([]byte, error) {
+	type noMethod RestMethodMediaUpload
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// RestMethodMediaUploadProtocols: Supported upload protocols.
 type RestMethodMediaUploadProtocols struct {
 	// Resumable: Supports the Resumable Media Upload protocol.
 	Resumable *RestMethodMediaUploadProtocolsResumable `json:"resumable,omitempty"`
 
 	// Simple: Supports uploading as a single HTTP request.
 	Simple *RestMethodMediaUploadProtocolsSimple `json:"simple,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Resumable") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Resumable") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *RestMethodMediaUploadProtocols) MarshalJSON() ([]byte, error) {
+	type noMethod RestMethodMediaUploadProtocols
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// RestMethodMediaUploadProtocolsResumable: Supports the Resumable Media
+// Upload protocol.
 type RestMethodMediaUploadProtocolsResumable struct {
 	// Multipart: True if this endpoint supports uploading multipart media.
 	//
@@ -430,8 +796,32 @@ type RestMethodMediaUploadProtocolsResumable struct {
 	// Path: The URI path to be used for upload. Should be used in
 	// conjunction with the basePath property at the api-level.
 	Path string `json:"path,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Multipart") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Multipart") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *RestMethodMediaUploadProtocolsResumable) MarshalJSON() ([]byte, error) {
+	type noMethod RestMethodMediaUploadProtocolsResumable
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// RestMethodMediaUploadProtocolsSimple: Supports uploading as a single
+// HTTP request.
 type RestMethodMediaUploadProtocolsSimple struct {
 	// Multipart: True if this endpoint supports upload multipart media.
 	//
@@ -441,19 +831,87 @@ type RestMethodMediaUploadProtocolsSimple struct {
 	// Path: The URI path to be used for upload. Should be used in
 	// conjunction with the basePath property at the api-level.
 	Path string `json:"path,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Multipart") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Multipart") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *RestMethodMediaUploadProtocolsSimple) MarshalJSON() ([]byte, error) {
+	type noMethod RestMethodMediaUploadProtocolsSimple
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// RestMethodRequest: The schema for the request.
 type RestMethodRequest struct {
 	// Ref: Schema ID for the request schema.
 	Ref string `json:"$ref,omitempty"`
 
 	// ParameterName: parameter name.
 	ParameterName string `json:"parameterName,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Ref") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Ref") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *RestMethodRequest) MarshalJSON() ([]byte, error) {
+	type noMethod RestMethodRequest
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// RestMethodResponse: The schema for the response.
 type RestMethodResponse struct {
 	// Ref: Schema ID for the response schema.
 	Ref string `json:"$ref,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Ref") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Ref") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *RestMethodResponse) MarshalJSON() ([]byte, error) {
+	type noMethod RestMethodResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type RestResource struct {
@@ -462,49 +920,126 @@ type RestResource struct {
 
 	// Resources: Sub-resources on this resource.
 	Resources map[string]RestResource `json:"resources,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Methods") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Methods") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *RestResource) MarshalJSON() ([]byte, error) {
+	type noMethod RestResource
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // method id "discovery.apis.getRest":
 
 type ApisGetRestCall struct {
-	s       *Service
-	api     string
-	version string
-	opt_    map[string]interface{}
+	s            *Service
+	api          string
+	version      string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // GetRest: Retrieve the description of a particular version of an api.
 func (r *ApisService) GetRest(api string, version string) *ApisGetRestCall {
-	c := &ApisGetRestCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &ApisGetRestCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.api = api
 	c.version = version
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *ApisGetRestCall) Fields(s ...googleapi.Field) *ApisGetRestCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *ApisGetRestCall) Do() (*RestDescription, error) {
-	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ApisGetRestCall) IfNoneMatch(entityTag string) *ApisGetRestCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ApisGetRestCall) Context(ctx context.Context) *ApisGetRestCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ApisGetRestCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
 	}
+	return c.header_
+}
+
+func (c *ApisGetRestCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "apis/{api}/{version}/rest")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"api":     c.api,
 		"version": c.version,
 	})
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "discovery.apis.getRest" call.
+// Exactly one of *RestDescription or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *RestDescription.ServerResponse.Header or (if a response was returned
+// at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ApisGetRestCall) Do(opts ...googleapi.CallOption) (*RestDescription, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -512,8 +1047,14 @@ func (c *ApisGetRestCall) Do() (*RestDescription, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *RestDescription
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &RestDescription{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -550,57 +1091,105 @@ func (c *ApisGetRestCall) Do() (*RestDescription, error) {
 // method id "discovery.apis.list":
 
 type ApisListCall struct {
-	s    *Service
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Retrieve the list of APIs supported at this endpoint.
 func (r *ApisService) List() *ApisListCall {
-	c := &ApisListCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &ApisListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	return c
 }
 
 // Name sets the optional parameter "name": Only include APIs with the
 // given name.
 func (c *ApisListCall) Name(name string) *ApisListCall {
-	c.opt_["name"] = name
+	c.urlParams_.Set("name", name)
 	return c
 }
 
 // Preferred sets the optional parameter "preferred": Return only the
 // preferred version of an API.
 func (c *ApisListCall) Preferred(preferred bool) *ApisListCall {
-	c.opt_["preferred"] = preferred
+	c.urlParams_.Set("preferred", fmt.Sprint(preferred))
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *ApisListCall) Fields(s ...googleapi.Field) *ApisListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *ApisListCall) Do() (*DirectoryList, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ApisListCall) IfNoneMatch(entityTag string) *ApisListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ApisListCall) Context(ctx context.Context) *ApisListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ApisListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ApisListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["name"]; ok {
-		params.Set("name", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["preferred"]; ok {
-		params.Set("preferred", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "apis")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "discovery.apis.list" call.
+// Exactly one of *DirectoryList or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *DirectoryList.ServerResponse.Header or (if a response was returned
+// at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ApisListCall) Do(opts ...googleapi.CallOption) (*DirectoryList, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -608,8 +1197,14 @@ func (c *ApisListCall) Do() (*DirectoryList, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *DirectoryList
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &DirectoryList{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil

@@ -1,14 +1,14 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"ye6orv2F-1npMW3u9suM3a7C5Bo/Ru_OFZL_9JBTrnQ2wlhRmAO3y_k\"",
+ "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/AIWw-yWxHTNchYNbx8LfngbqcZ8\"",
  "discoveryVersion": "v1",
  "id": "youtube:v3",
  "name": "youtube",
  "canonicalName": "YouTube",
  "version": "v3",
- "revision": "20150529",
+ "revision": "20170918",
  "title": "YouTube Data API",
- "description": "Programmatic access to YouTube features.",
+ "description": "Supports core YouTube features, such as uploading videos, creating and managing playlists, searching for content, and much more.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "icons": {
@@ -21,7 +21,7 @@
  "basePath": "/youtube/v3/",
  "rootUrl": "https://www.googleapis.com/",
  "servicePath": "youtube/v3/",
- "batchPath": "batch",
+ "batchPath": "batch/youtube/v3",
  "parameters": {
   "alt": {
    "type": "string",
@@ -722,6 +722,18 @@
       ]
      }
     },
+    "frameRate": {
+     "type": "string",
+     "description": "The frame rate of the inbound video data.",
+     "enum": [
+      "30fps",
+      "60fps"
+     ],
+     "enumDescriptions": [
+      "",
+      ""
+     ]
+    },
     "ingestionInfo": {
      "$ref": "IngestionInfo",
      "description": "The ingestionInfo object contains information that YouTube provides that you need to transmit your RTMP or HTTP stream to YouTube."
@@ -743,6 +755,28 @@
        "youtube.liveStreams.update"
       ]
      }
+    },
+    "resolution": {
+     "type": "string",
+     "description": "The resolution of the inbound video data.",
+     "enum": [
+      "1080p",
+      "1440p",
+      "2160p",
+      "240p",
+      "360p",
+      "480p",
+      "720p"
+     ],
+     "enumDescriptions": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+     ]
     }
    }
   },
@@ -888,10 +922,6 @@
    "type": "object",
    "description": "Details about the content of a channel.",
    "properties": {
-    "googlePlusUserId": {
-     "type": "string",
-     "description": "The googlePlusUserId object identifies the Google+ profile ID associated with this channel."
-    },
     "relatedPlaylists": {
      "type": "object",
      "properties": {
@@ -974,15 +1004,6 @@
     }
    }
   },
-  "ChannelId": {
-   "id": "ChannelId",
-   "type": "object",
-   "properties": {
-    "value": {
-     "type": "string"
-    }
-   }
-  },
   "ChannelListResponse": {
    "id": "ChannelListResponse",
    "type": "object",
@@ -1039,6 +1060,28 @@
     "title": {
      "type": "string",
      "description": "The localized strings for channel's title."
+    }
+   }
+  },
+  "ChannelProfileDetails": {
+   "id": "ChannelProfileDetails",
+   "type": "object",
+   "properties": {
+    "channelId": {
+     "type": "string",
+     "description": "The YouTube channel ID."
+    },
+    "channelUrl": {
+     "type": "string",
+     "description": "The channel's URL."
+    },
+    "displayName": {
+     "type": "string",
+     "description": "The channel's display name."
+    },
+    "profileImageUrl": {
+     "type": "string",
+     "description": "The channels's avatar URL."
     }
    }
   },
@@ -1323,11 +1366,15 @@
   "ChannelSnippet": {
    "id": "ChannelSnippet",
    "type": "object",
-   "description": "Basic details about a channel, including title, description and thumbnails.",
+   "description": "Basic details about a channel, including title, description and thumbnails. Next available id: 15.",
    "properties": {
     "country": {
      "type": "string",
      "description": "The country of the channel."
+    },
+    "customUrl": {
+     "type": "string",
+     "description": "The custom url of the channel."
     },
     "defaultLanguage": {
      "type": "string",
@@ -1433,6 +1480,13 @@
    "type": "object",
    "description": "Freebase topic information related to the channel.",
    "properties": {
+    "topicCategories": {
+     "type": "array",
+     "description": "A list of Wikipedia URLs that describe the channel's content.",
+     "items": {
+      "type": "string"
+     }
+    },
     "topicIds": {
      "type": "array",
      "description": "A list of Freebase topic IDs associated with the channel. You can retrieve information about each topic using the Freebase Topic API.",
@@ -1512,7 +1566,7 @@
    "description": "Basic details about a comment, such as its author and text.",
    "properties": {
     "authorChannelId": {
-     "$ref": "ChannelId",
+     "type": "any",
      "description": "The id of the author's YouTube channel, if any."
     },
     "authorChannelUrl": {
@@ -1522,10 +1576,6 @@
     "authorDisplayName": {
      "type": "string",
      "description": "The name of the user who posted the comment."
-    },
-    "authorGoogleplusProfileUrl": {
-     "type": "string",
-     "description": "Link to the author's Google+ profile, if any."
     },
     "authorProfileImageUrl": {
      "type": "string",
@@ -1721,11 +1771,11 @@
   "ContentRating": {
    "id": "ContentRating",
    "type": "object",
-   "description": "Ratings schemes. The country-specific ratings are mostly for movies and shows. NEXT_ID: 65",
+   "description": "Ratings schemes. The country-specific ratings are mostly for movies and shows. NEXT_ID: 71",
    "properties": {
     "acbRating": {
      "type": "string",
-     "description": "Rating system in Australia - Australian Classification Board",
+     "description": "The video's Australian Classification Board (ACB) or Australian Communications and Media Authority (ACMA) rating. ACMA ratings are used to classify children's television programming.",
      "enum": [
       "acbC",
       "acbE",
@@ -1751,7 +1801,7 @@
     },
     "agcomRating": {
      "type": "string",
-     "description": "Rating system for Italy - Autorit� per le Garanzie nelle Comunicazioni",
+     "description": "The video's rating from Italy's Autorità per le Garanzie nelle Comunicazioni (AGCOM).",
      "enum": [
       "agcomT",
       "agcomUnrated",
@@ -1767,7 +1817,7 @@
     },
     "anatelRating": {
      "type": "string",
-     "description": "Rating system for Chile - Asociaci�n Nacional de Televisi�n",
+     "description": "The video's Anatel (Asociación Nacional de Televisión) rating for Chilean television.",
      "enum": [
       "anatelA",
       "anatelF",
@@ -1791,7 +1841,7 @@
     },
     "bbfcRating": {
      "type": "string",
-     "description": "British Board of Film Classification",
+     "description": "The video's British Board of Film Classification (BBFC) rating.",
      "enum": [
       "bbfc12",
       "bbfc12a",
@@ -1815,7 +1865,7 @@
     },
     "bfvcRating": {
      "type": "string",
-     "description": "Rating system for Thailand - Board of Filmand Video Censors",
+     "description": "The video's rating from Thailand's Board of Film and Video Censors.",
      "enum": [
       "bfvc13",
       "bfvc15",
@@ -1839,7 +1889,7 @@
     },
     "bmukkRating": {
      "type": "string",
-     "description": "Rating system for Austria - Bundesministerium f�r Unterricht, Kunst und Kultur",
+     "description": "The video's rating from the Austrian Board of Media Classification (Bundesministerium für Unterricht, Kunst und Kultur).",
      "enum": [
       "bmukk10",
       "bmukk12",
@@ -1863,7 +1913,7 @@
     },
     "catvRating": {
      "type": "string",
-     "description": "Rating system for Canadian TV - Canadian TV Classification System",
+     "description": "Rating system for Canadian TV - Canadian TV Classification System The video's rating from the Canadian Radio-Television and Telecommunications Commission (CRTC) for Canadian English-language broadcasts. For more information, see the Canadian Broadcast Standards Council website.",
      "enum": [
       "catv14plus",
       "catv18plus",
@@ -1885,7 +1935,7 @@
     },
     "catvfrRating": {
      "type": "string",
-     "description": "Rating system for French Canadian TV - Regie du cinema",
+     "description": "The video's rating from the Canadian Radio-Television and Telecommunications Commission (CRTC) for Canadian French-language broadcasts. For more information, see the Canadian Broadcast Standards Council website.",
      "enum": [
       "catvfr13plus",
       "catvfr16plus",
@@ -1905,7 +1955,7 @@
     },
     "cbfcRating": {
      "type": "string",
-     "description": "Rating system in India - Central Board of Film Certification",
+     "description": "The video's Central Board of Film Certification (CBFC - India) rating.",
      "enum": [
       "cbfcA",
       "cbfcS",
@@ -1923,7 +1973,7 @@
     },
     "cccRating": {
      "type": "string",
-     "description": "Rating system for Chile - Consejo de Calificaci�n Cinematogr�fica",
+     "description": "The video's Consejo de Calificación Cinematográfica (Chile) rating.",
      "enum": [
       "ccc14",
       "ccc18",
@@ -1945,9 +1995,10 @@
     },
     "cceRating": {
      "type": "string",
-     "description": "Rating system for Portugal - Comiss�o de Classifica��o de Espect�culos",
+     "description": "The video's rating from Portugal's Comissão de Classificação de Espect´culos.",
      "enum": [
       "cceM12",
+      "cceM14",
       "cceM16",
       "cceM18",
       "cceM4",
@@ -1960,12 +2011,13 @@
       "",
       "",
       "",
+      "",
       ""
      ]
     },
     "chfilmRating": {
      "type": "string",
-     "description": "Rating system for Switzerland - Switzerland Rating System",
+     "description": "The video's rating in Switzerland.",
      "enum": [
       "chfilm0",
       "chfilm12",
@@ -1985,7 +2037,7 @@
     },
     "chvrsRating": {
      "type": "string",
-     "description": "Canadian Home Video Rating System",
+     "description": "The video's Canadian Home Video Rating System (CHVRS) rating.",
      "enum": [
       "chvrs14a",
       "chvrs18a",
@@ -2007,7 +2059,7 @@
     },
     "cicfRating": {
      "type": "string",
-     "description": "Rating system for Belgium - Belgium Rating System",
+     "description": "The video's rating from the Commission de Contrôle des Films (Belgium).",
      "enum": [
       "cicfE",
       "cicfKntEna",
@@ -2023,7 +2075,7 @@
     },
     "cnaRating": {
      "type": "string",
-     "description": "Rating system for Romania - CONSILIUL NATIONAL AL AUDIOVIZUALULUI - CNA",
+     "description": "The video's rating from Romania's CONSILIUL NATIONAL AL AUDIOVIZUALULUI (CNA).",
      "enum": [
       "cna12",
       "cna15",
@@ -2041,18 +2093,42 @@
       ""
      ]
     },
+    "cncRating": {
+     "type": "string",
+     "description": "Rating system in France - Commission de classification cinematographique",
+     "enum": [
+      "cnc10",
+      "cnc12",
+      "cnc16",
+      "cnc18",
+      "cncE",
+      "cncT",
+      "cncUnrated"
+     ],
+     "enumDescriptions": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+     ]
+    },
     "csaRating": {
      "type": "string",
-     "description": "Rating system for France - Conseil sup�rieur de l?audiovisuel",
+     "description": "The video's rating from France's Conseil supérieur de l?audiovisuel, which rates broadcast content.",
      "enum": [
       "csa10",
       "csa12",
       "csa16",
       "csa18",
       "csaInterdiction",
+      "csaT",
       "csaUnrated"
      ],
      "enumDescriptions": [
+      "",
       "",
       "",
       "",
@@ -2063,7 +2139,7 @@
     },
     "cscfRating": {
      "type": "string",
-     "description": "Rating system for Luxembourg - Commission de surveillance de la classification des films",
+     "description": "The video's rating from Luxembourg's Commission de surveillance de la classification des films (CSCF).",
      "enum": [
       "cscf12",
       "cscf16",
@@ -2087,7 +2163,7 @@
     },
     "czfilmRating": {
      "type": "string",
-     "description": "Rating system for Czech republic - Czech republic Rating System",
+     "description": "The video's rating in the Czech Republic.",
      "enum": [
       "czfilm12",
       "czfilm14",
@@ -2105,7 +2181,7 @@
     },
     "djctqRating": {
      "type": "string",
-     "description": "Rating system in Brazil - Department of Justice, Rating, Titles and Qualification",
+     "description": "The video's Departamento de Justiça, Classificação, Qualificação e Títulos (DJCQT - Brazil) rating.",
      "enum": [
       "djctq10",
       "djctq12",
@@ -2127,6 +2203,7 @@
     },
     "djctqRatingReasons": {
      "type": "array",
+     "description": "Reasons that explain why the video received its DJCQT (Brazil) rating.",
      "items": {
       "type": "string",
       "enum": [
@@ -2159,9 +2236,35 @@
       ]
      }
     },
+    "ecbmctRating": {
+     "type": "string",
+     "description": "Rating system in Turkey - Evaluation and Classification Board of the Ministry of Culture and Tourism",
+     "enum": [
+      "ecbmct13a",
+      "ecbmct13plus",
+      "ecbmct15a",
+      "ecbmct15plus",
+      "ecbmct18plus",
+      "ecbmct7a",
+      "ecbmct7plus",
+      "ecbmctG",
+      "ecbmctUnrated"
+     ],
+     "enumDescriptions": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+     ]
+    },
     "eefilmRating": {
      "type": "string",
-     "description": "Rating system for Estonia - Estonia Rating System",
+     "description": "The video's rating in Estonia.",
      "enum": [
       "eefilmK12",
       "eefilmK14",
@@ -2187,7 +2290,7 @@
     },
     "egfilmRating": {
      "type": "string",
-     "description": "Rating system for Egypt - Egypt Rating System",
+     "description": "The video's rating in Egypt.",
      "enum": [
       "egfilm18",
       "egfilmBn",
@@ -2203,7 +2306,7 @@
     },
     "eirinRating": {
      "type": "string",
-     "description": "Rating system in Japan - Eiga Rinri Kanri Iinkai",
+     "description": "The video's Eirin (映倫) rating. Eirin is the Japanese rating system.",
      "enum": [
       "eirinG",
       "eirinPg12",
@@ -2221,7 +2324,7 @@
     },
     "fcbmRating": {
      "type": "string",
-     "description": "Rating system for Malaysia - Film Censorship Board of Malaysia",
+     "description": "The video's rating from Malaysia's Film Censorship Board.",
      "enum": [
       "fcbm18",
       "fcbm18pa",
@@ -2247,9 +2350,10 @@
     },
     "fcoRating": {
      "type": "string",
-     "description": "Rating system for Hong kong - Office for Film, Newspaper and Article Administration",
+     "description": "The video's rating from Hong Kong's Office for Film, Newspaper and Article Administration.",
      "enum": [
       "fcoI",
+      "fcoIi",
       "fcoIia",
       "fcoIib",
       "fcoIii",
@@ -2260,12 +2364,13 @@
       "",
       "",
       "",
+      "",
       ""
      ]
     },
     "fmocRating": {
      "type": "string",
-     "description": "Rating system in France - French Minister of Culture",
+     "description": "This property has been deprecated. Use the contentDetails.contentRating.cncRating instead.",
      "enum": [
       "fmoc10",
       "fmoc12",
@@ -2287,8 +2392,9 @@
     },
     "fpbRating": {
      "type": "string",
-     "description": "Rating system for South africa - Film & Publication Board",
+     "description": "The video's rating from South Africa's Film and Publication Board.",
      "enum": [
+      "fpb10",
       "fpb1012Pg",
       "fpb13",
       "fpb16",
@@ -2310,12 +2416,46 @@
       "",
       "",
       "",
+      "",
       ""
      ]
     },
+    "fpbRatingReasons": {
+     "type": "array",
+     "description": "Reasons that explain why the video received its FPB (South Africa) rating.",
+     "items": {
+      "type": "string",
+      "enum": [
+       "fpbBlasphemy",
+       "fpbCriminalTechniques",
+       "fpbDrugs",
+       "fpbHorror",
+       "fpbImitativeActsTechniques",
+       "fpbLanguage",
+       "fpbNudity",
+       "fpbPrejudice",
+       "fpbSex",
+       "fpbSexualViolence",
+       "fpbViolence"
+      ],
+      "enumDescriptions": [
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       ""
+      ]
+     }
+    },
     "fskRating": {
      "type": "string",
-     "description": "Rating system in Germany - Voluntary Self Regulation of the Movie Industry",
+     "description": "The video's Freiwillige Selbstkontrolle der Filmwirtschaft (FSK - Germany) rating.",
      "enum": [
       "fsk0",
       "fsk12",
@@ -2335,15 +2475,21 @@
     },
     "grfilmRating": {
      "type": "string",
-     "description": "Rating system for Greece - Greece Rating System",
+     "description": "The video's rating in Greece.",
      "enum": [
       "grfilmE",
       "grfilmK",
+      "grfilmK12",
       "grfilmK13",
+      "grfilmK15",
       "grfilmK17",
+      "grfilmK18",
       "grfilmUnrated"
      ],
      "enumDescriptions": [
+      "",
+      "",
+      "",
       "",
       "",
       "",
@@ -2353,7 +2499,7 @@
     },
     "icaaRating": {
      "type": "string",
-     "description": "Rating system in Spain - Instituto de Cinematografia y de las Artes Audiovisuales",
+     "description": "The video's Instituto de la Cinematografía y de las Artes Audiovisuales (ICAA - Spain) rating.",
      "enum": [
       "icaa12",
       "icaa13",
@@ -2377,7 +2523,7 @@
     },
     "ifcoRating": {
      "type": "string",
-     "description": "Rating system in Ireland - Irish Film Classification Office",
+     "description": "The video's Irish Film Classification Office (IFCO - Ireland) rating. See the IFCO website for more information.",
      "enum": [
       "ifco12",
       "ifco12a",
@@ -2403,7 +2549,7 @@
     },
     "ilfilmRating": {
      "type": "string",
-     "description": "Rating system for Israel - Israel Rating System",
+     "description": "The video's rating in Israel.",
      "enum": [
       "ilfilm12",
       "ilfilm16",
@@ -2421,7 +2567,7 @@
     },
     "incaaRating": {
      "type": "string",
-     "description": "Rating system for Argentina - Instituto Nacional de Cine y Artes Audiovisuales",
+     "description": "The video's INCAA (Instituto Nacional de Cine y Artes Audiovisuales - Argentina) rating.",
      "enum": [
       "incaaAtp",
       "incaaC",
@@ -2441,7 +2587,7 @@
     },
     "kfcbRating": {
      "type": "string",
-     "description": "Rating system for Kenya - Kenya Film Classification Board",
+     "description": "The video's rating from the Kenya Film Classification Board.",
      "enum": [
       "kfcb16plus",
       "kfcbG",
@@ -2459,7 +2605,7 @@
     },
     "kijkwijzerRating": {
      "type": "string",
-     "description": "Rating system for Netherlands - Nederlands Instituut voor de Classificatie van Audiovisuele Media",
+     "description": "voor de Classificatie van Audiovisuele Media (Netherlands).",
      "enum": [
       "kijkwijzer12",
       "kijkwijzer16",
@@ -2481,7 +2627,7 @@
     },
     "kmrbRating": {
      "type": "string",
-     "description": "Rating system in South Korea - Korea Media Rating Board",
+     "description": "The video's Korea Media Rating Board (영상물등급위원회) rating. The KMRB rates videos in South Korea.",
      "enum": [
       "kmrb12plus",
       "kmrb15plus",
@@ -2501,8 +2647,11 @@
     },
     "lsfRating": {
      "type": "string",
-     "description": "Rating system for Indonesia - Lembaga Sensor Film",
+     "description": "The video's rating from Indonesia's Lembaga Sensor Film.",
      "enum": [
+      "lsf13",
+      "lsf17",
+      "lsf21",
       "lsfA",
       "lsfBo",
       "lsfD",
@@ -2516,12 +2665,15 @@
       "",
       "",
       "",
+      "",
+      "",
+      "",
       ""
      ]
     },
     "mccaaRating": {
      "type": "string",
-     "description": "Rating system for Malta - Film Age-Classification Board",
+     "description": "The video's rating from Malta's Film Age-Classification Board.",
      "enum": [
       "mccaa12",
       "mccaa12a",
@@ -2547,7 +2699,7 @@
     },
     "mccypRating": {
      "type": "string",
-     "description": "Rating system for Denmark - The Media Council for Children and Young People",
+     "description": "The video's rating from the Danish Film Institute's (Det Danske Filminstitut) Media Council for Children and Young People.",
      "enum": [
       "mccyp11",
       "mccyp15",
@@ -2563,9 +2715,33 @@
       ""
      ]
     },
+    "mcstRating": {
+     "type": "string",
+     "description": "The video's rating system for Vietnam - MCST",
+     "enum": [
+      "mcst0",
+      "mcst16plus",
+      "mcstC13",
+      "mcstC16",
+      "mcstC18",
+      "mcstGPg",
+      "mcstP",
+      "mcstUnrated"
+     ],
+     "enumDescriptions": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+     ]
+    },
     "mdaRating": {
      "type": "string",
-     "description": "Rating system for Singapore - Media Development Authority",
+     "description": "The video's rating from Singapore's Media Development Authority (MDA) and, specifically, it's Board of Film Censors (BFC).",
      "enum": [
       "mdaG",
       "mdaM18",
@@ -2587,16 +2763,22 @@
     },
     "medietilsynetRating": {
      "type": "string",
-     "description": "Rating system for Norway - Medietilsynet",
+     "description": "The video's rating from Medietilsynet, the Norwegian Media Authority.",
      "enum": [
       "medietilsynet11",
+      "medietilsynet12",
       "medietilsynet15",
       "medietilsynet18",
+      "medietilsynet6",
       "medietilsynet7",
+      "medietilsynet9",
       "medietilsynetA",
       "medietilsynetUnrated"
      ],
      "enumDescriptions": [
+      "",
+      "",
+      "",
       "",
       "",
       "",
@@ -2607,7 +2789,7 @@
     },
     "mekuRating": {
      "type": "string",
-     "description": "Rating system for Finland - Finnish Centre for Media Education and Audiovisual Media",
+     "description": "The video's rating from Finland's Kansallinen Audiovisuaalinen Instituutti (National Audiovisual Institute).",
      "enum": [
       "meku12",
       "meku16",
@@ -2625,9 +2807,27 @@
       ""
      ]
     },
+    "menaMpaaRating": {
+     "type": "string",
+     "description": "The rating system for MENA countries, a clone of MPAA. It is needed to",
+     "enum": [
+      "menaMpaaG",
+      "menaMpaaPg",
+      "menaMpaaPg13",
+      "menaMpaaR",
+      "menaMpaaUnrated"
+     ],
+     "enumDescriptions": [
+      "",
+      "",
+      "",
+      "",
+      ""
+     ]
+    },
     "mibacRating": {
      "type": "string",
-     "description": "Rating system in Italy - Ministero dei Beni e delle Attivita Culturali e del Turismo",
+     "description": "The video's rating from the Ministero dei Beni e delle Attività Culturali e del Turismo (Italy).",
      "enum": [
       "mibacT",
       "mibacUnrated",
@@ -2647,7 +2847,7 @@
     },
     "mocRating": {
      "type": "string",
-     "description": "Rating system for Colombia - MoC",
+     "description": "The video's Ministerio de Cultura (Colombia) rating.",
      "enum": [
       "moc12",
       "moc15",
@@ -2673,15 +2873,19 @@
     },
     "moctwRating": {
      "type": "string",
-     "description": "Rating system for Taiwan - Ministry of Culture - Tawan",
+     "description": "The video's rating from Taiwan's Ministry of Culture (文化部).",
      "enum": [
       "moctwG",
       "moctwP",
       "moctwPg",
       "moctwR",
+      "moctwR12",
+      "moctwR15",
       "moctwUnrated"
      ],
      "enumDescriptions": [
+      "",
+      "",
       "",
       "",
       "",
@@ -2691,7 +2895,7 @@
     },
     "mpaaRating": {
      "type": "string",
-     "description": "Motion Picture Association of America rating for the content.",
+     "description": "The video's Motion Picture Association of America (MPAA) rating.",
      "enum": [
       "mpaaG",
       "mpaaNc17",
@@ -2709,9 +2913,21 @@
       ""
      ]
     },
+    "mpaatRating": {
+     "type": "string",
+     "description": "The rating system for trailer, DVD, and Ad in the US. See http://movielabs.com/md/ratings/v2.3/html/US_MPAAT_Ratings.html.",
+     "enum": [
+      "mpaatGb",
+      "mpaatRb"
+     ],
+     "enumDescriptions": [
+      "",
+      ""
+     ]
+    },
     "mtrcbRating": {
      "type": "string",
-     "description": "Rating system for Philippines - MOVIE AND TELEVISION REVIEW AND CLASSIFICATION BOARD",
+     "description": "The video's rating from the Movie and Television Review and Classification Board (Philippines).",
      "enum": [
       "mtrcbG",
       "mtrcbPg",
@@ -2733,7 +2949,7 @@
     },
     "nbcRating": {
      "type": "string",
-     "description": "Rating system for Maldives - National Bureau of Classification",
+     "description": "The video's rating from the Maldives National Bureau of Classification.",
      "enum": [
       "nbc12plus",
       "nbc15plus",
@@ -2757,7 +2973,7 @@
     },
     "nbcplRating": {
      "type": "string",
-     "description": "Rating system for Poland - National Broadcasting Council",
+     "description": "The video's rating in Poland.",
      "enum": [
       "nbcpl18plus",
       "nbcplI",
@@ -2777,7 +2993,7 @@
     },
     "nfrcRating": {
      "type": "string",
-     "description": "Rating system for Bulgaria - National Film Centre",
+     "description": "The video's rating from the Bulgarian National Film Center.",
      "enum": [
       "nfrcA",
       "nfrcB",
@@ -2797,7 +3013,7 @@
     },
     "nfvcbRating": {
      "type": "string",
-     "description": "Rating system for Nigeria - National Film and Video Censors Board",
+     "description": "The video's rating from Nigeria's National Film and Video Censors Board.",
      "enum": [
       "nfvcb12",
       "nfvcb12a",
@@ -2821,7 +3037,7 @@
     },
     "nkclvRating": {
      "type": "string",
-     "description": "Rating system for Latvia - National Film Center of Latvia",
+     "description": "The video's rating from the Nacionãlais Kino centrs (National Film Centre of Latvia).",
      "enum": [
       "nkclv12plus",
       "nkclv18plus",
@@ -2839,7 +3055,7 @@
     },
     "oflcRating": {
      "type": "string",
-     "description": "Rating system in New Zealand - Office of Film and Literature Classification",
+     "description": "The video's Office of Film and Literature Classification (OFLC - New Zealand) rating.",
      "enum": [
       "oflcG",
       "oflcM",
@@ -2867,7 +3083,7 @@
     },
     "pefilmRating": {
      "type": "string",
-     "description": "Rating system for Peru - Peru Rating System",
+     "description": "The video's rating in Peru.",
      "enum": [
       "pefilm14",
       "pefilm18",
@@ -2885,7 +3101,7 @@
     },
     "rcnofRating": {
      "type": "string",
-     "description": "Rating system for Hungary - Rating Committee of the National Office of Film",
+     "description": "The video's rating from the Hungarian Nemzeti Filmiroda, the Rating Committee of the National Office of Film.",
      "enum": [
       "rcnofI",
       "rcnofIi",
@@ -2907,7 +3123,7 @@
     },
     "resorteviolenciaRating": {
      "type": "string",
-     "description": "Rating system for Venezuela - SiBCI",
+     "description": "The video's rating in Venezuela.",
      "enum": [
       "resorteviolenciaA",
       "resorteviolenciaB",
@@ -2927,7 +3143,7 @@
     },
     "rtcRating": {
      "type": "string",
-     "description": "Rating system in Mexico - General Directorate of Radio, Television and Cinematography",
+     "description": "The video's General Directorate of Radio, Television and Cinematography (Mexico) rating.",
      "enum": [
       "rtcA",
       "rtcAa",
@@ -2949,7 +3165,7 @@
     },
     "rteRating": {
      "type": "string",
-     "description": "Rating system for Ireland - Raidi� Teilif�s �ireann",
+     "description": "The video's rating from Ireland's Raidió Teilifís Éireann.",
      "enum": [
       "rteCh",
       "rteGa",
@@ -2967,7 +3183,7 @@
     },
     "russiaRating": {
      "type": "string",
-     "description": "Rating system in Russia",
+     "description": "The video's National Film Registry of the Russian Federation (MKRF - Russia) rating.",
      "enum": [
       "russia0",
       "russia12",
@@ -2987,7 +3203,7 @@
     },
     "skfilmRating": {
      "type": "string",
-     "description": "Rating system for Slovakia - Slovakia Rating System",
+     "description": "The video's rating in Slovakia.",
      "enum": [
       "skfilmG",
       "skfilmP2",
@@ -3005,7 +3221,7 @@
     },
     "smaisRating": {
      "type": "string",
-     "description": "Rating system for Iceland - SMAIS",
+     "description": "The video's rating in Iceland.",
      "enum": [
       "smais12",
       "smais14",
@@ -3027,7 +3243,7 @@
     },
     "smsaRating": {
      "type": "string",
-     "description": "Rating system for Sweden - Statens medier�d (National Media Council)",
+     "description": "The video's rating from Statens medieråd (Sweden's National Media Council).",
      "enum": [
       "smsa11",
       "smsa15",
@@ -3045,7 +3261,7 @@
     },
     "tvpgRating": {
      "type": "string",
-     "description": "TV Parental Guidelines rating of the content.",
+     "description": "The video's TV Parental Guidelines (TVPG) rating.",
      "enum": [
       "pg14",
       "tvpgG",
@@ -3069,13 +3285,113 @@
     },
     "ytRating": {
      "type": "string",
-     "description": "Internal YouTube rating.",
+     "description": "A rating that YouTube uses to identify age-restricted content.",
      "enum": [
       "ytAgeRestricted"
      ],
      "enumDescriptions": [
       ""
      ]
+    }
+   }
+  },
+  "FanFundingEvent": {
+   "id": "FanFundingEvent",
+   "type": "object",
+   "description": "A fanFundingEvent resource represents a fan funding event on a YouTube channel. Fan funding events occur when a user gives one-time monetary support to the channel owner.",
+   "properties": {
+    "etag": {
+     "type": "string",
+     "description": "Etag of this resource."
+    },
+    "id": {
+     "type": "string",
+     "description": "The ID that YouTube assigns to uniquely identify the fan funding event."
+    },
+    "kind": {
+     "type": "string",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"youtube#fanFundingEvent\".",
+     "default": "youtube#fanFundingEvent"
+    },
+    "snippet": {
+     "$ref": "FanFundingEventSnippet",
+     "description": "The snippet object contains basic details about the fan funding event."
+    }
+   }
+  },
+  "FanFundingEventListResponse": {
+   "id": "FanFundingEventListResponse",
+   "type": "object",
+   "properties": {
+    "etag": {
+     "type": "string",
+     "description": "Etag of this resource."
+    },
+    "eventId": {
+     "type": "string",
+     "description": "Serialized EventId of the request which produced this response."
+    },
+    "items": {
+     "type": "array",
+     "description": "A list of fan funding events that match the request criteria.",
+     "items": {
+      "$ref": "FanFundingEvent"
+     }
+    },
+    "kind": {
+     "type": "string",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"youtube#fanFundingEventListResponse\".",
+     "default": "youtube#fanFundingEventListResponse"
+    },
+    "nextPageToken": {
+     "type": "string",
+     "description": "The token that can be used as the value of the pageToken parameter to retrieve the next page in the result set."
+    },
+    "pageInfo": {
+     "$ref": "PageInfo"
+    },
+    "tokenPagination": {
+     "$ref": "TokenPagination"
+    },
+    "visitorId": {
+     "type": "string",
+     "description": "The visitorId identifies the visitor."
+    }
+   }
+  },
+  "FanFundingEventSnippet": {
+   "id": "FanFundingEventSnippet",
+   "type": "object",
+   "properties": {
+    "amountMicros": {
+     "type": "string",
+     "description": "The amount of funding in micros of fund_currency. e.g., 1 is represented",
+     "format": "uint64"
+    },
+    "channelId": {
+     "type": "string",
+     "description": "Channel id where the funding event occurred."
+    },
+    "commentText": {
+     "type": "string",
+     "description": "The text contents of the comment left by the user."
+    },
+    "createdAt": {
+     "type": "string",
+     "description": "The date and time when the funding occurred. The value is specified in ISO 8601 (YYYY-MM-DDThh:mm:ss.sZ) format.",
+     "format": "date-time"
+    },
+    "currency": {
+     "type": "string",
+     "description": "The currency in which the fund was made. ISO 4217."
+    },
+    "displayString": {
+     "type": "string",
+     "description": "A rendered string that displays the fund amount and currency (e.g., \"$1.00\"). The string is rendered for the given language."
+    },
+    "supporterDetails": {
+     "$ref": "ChannelProfileDetails",
+     "description": "Details about the supporter. Only filled if the event was made public by the user."
     }
    }
   },
@@ -3593,9 +3909,6 @@
     "status": {
      "$ref": "LiveBroadcastStatus",
      "description": "The status object contains information about the event's status."
-    },
-    "topicDetails": {
-     "$ref": "LiveBroadcastTopicDetails"
     }
    }
   },
@@ -3608,9 +3921,27 @@
      "type": "string",
      "description": "This value uniquely identifies the live stream bound to the broadcast."
     },
+    "boundStreamLastUpdateTimeMs": {
+     "type": "string",
+     "description": "The date and time that the live stream referenced by boundStreamId was last updated.",
+     "format": "date-time"
+    },
+    "closedCaptionsType": {
+     "type": "string",
+     "enum": [
+      "closedCaptionsDisabled",
+      "closedCaptionsEmbedded",
+      "closedCaptionsHttpPost"
+     ],
+     "enumDescriptions": [
+      "",
+      "",
+      ""
+     ]
+    },
     "enableClosedCaptions": {
      "type": "boolean",
-     "description": "This setting indicates whether closed captioning is enabled for this broadcast. The ingestion URL of the closed captions is returned through the liveStreams API."
+     "description": "This setting indicates whether HTTP POST closed captioning is enabled for this broadcast. The ingestion URL of the closed captions is returned through the liveStreams API. This is mutually exclusive with using the closed_captions_type property, and is equivalent to setting closed_captions_type to CLOSED_CAPTIONS_HTTP_POST."
     },
     "enableContentEncryption": {
      "type": "boolean",
@@ -3640,11 +3971,44 @@
      }
     },
     "enableLowLatency": {
-     "type": "boolean"
+     "type": "boolean",
+     "description": "Indicates whether this broadcast has low latency enabled."
+    },
+    "latencyPreference": {
+     "type": "string",
+     "description": "If both this and enable_low_latency are set, they must match. LATENCY_NORMAL should match enable_low_latency=false LATENCY_LOW should match enable_low_latency=true LATENCY_ULTRA_LOW should have enable_low_latency omitted.",
+     "enum": [
+      "low",
+      "normal",
+      "ultraLow"
+     ],
+     "enumDescriptions": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "mesh": {
+     "type": "string",
+     "format": "byte"
     },
     "monitorStream": {
      "$ref": "MonitorStreamInfo",
      "description": "The monitorStream object contains information about the monitor stream, which the broadcaster can use to review the event content before the broadcast stream is shown publicly."
+    },
+    "projection": {
+     "type": "string",
+     "description": "The projection format of this broadcast. This defaults to rectangular.",
+     "enum": [
+      "360",
+      "mesh",
+      "rectangular"
+     ],
+     "enumDescriptions": [
+      "",
+      "",
+      ""
+     ]
     },
     "recordFromStart": {
      "type": "boolean",
@@ -3735,6 +4099,10 @@
     "isDefaultBroadcast": {
      "type": "boolean"
     },
+    "liveChatId": {
+     "type": "string",
+     "description": "The id of the live chat for this broadcast."
+    },
     "publishedAt": {
      "type": "string",
      "description": "The date and time that the broadcast was added to YouTube's live broadcast schedule. The value is specified in ISO 8601 (YYYY-MM-DDThh:mm:ss.sZ) format.",
@@ -3743,13 +4111,7 @@
     "scheduledEndTime": {
      "type": "string",
      "description": "The date and time that the broadcast is scheduled to end. The value is specified in ISO 8601 (YYYY-MM-DDThh:mm:ss.sZ) format.",
-     "format": "date-time",
-     "annotations": {
-      "required": [
-       "youtube.liveBroadcasts.insert",
-       "youtube.liveBroadcasts.update"
-      ]
-     }
+     "format": "date-time"
     },
     "scheduledStartTime": {
      "type": "string",
@@ -3879,53 +4241,531 @@
     }
    }
   },
-  "LiveBroadcastTopic": {
-   "id": "LiveBroadcastTopic",
+  "LiveChatBan": {
+   "id": "LiveChatBan",
+   "type": "object",
+   "description": "A liveChatBan resource represents a ban for a YouTube live chat.",
+   "properties": {
+    "etag": {
+     "type": "string",
+     "description": "Etag of this resource."
+    },
+    "id": {
+     "type": "string",
+     "description": "The ID that YouTube assigns to uniquely identify the ban."
+    },
+    "kind": {
+     "type": "string",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"youtube#liveChatBan\".",
+     "default": "youtube#liveChatBan"
+    },
+    "snippet": {
+     "$ref": "LiveChatBanSnippet",
+     "description": "The snippet object contains basic details about the ban."
+    }
+   }
+  },
+  "LiveChatBanSnippet": {
+   "id": "LiveChatBanSnippet",
    "type": "object",
    "properties": {
-    "snippet": {
-     "$ref": "LiveBroadcastTopicSnippet",
-     "description": "Information about the topic matched."
+    "banDurationSeconds": {
+     "type": "string",
+     "description": "The duration of a ban, only filled if the ban has type TEMPORARY.",
+     "format": "uint64"
+    },
+    "bannedUserDetails": {
+     "$ref": "ChannelProfileDetails"
+    },
+    "liveChatId": {
+     "type": "string",
+     "description": "The chat this ban is pertinent to."
     },
     "type": {
      "type": "string",
-     "description": "The type of the topic.",
+     "description": "The type of ban.",
      "enum": [
-      "videoGame"
+      "permanent",
+      "temporary"
      ],
      "enumDescriptions": [
+      "",
+      ""
+     ]
+    }
+   }
+  },
+  "LiveChatFanFundingEventDetails": {
+   "id": "LiveChatFanFundingEventDetails",
+   "type": "object",
+   "properties": {
+    "amountDisplayString": {
+     "type": "string",
+     "description": "A rendered string that displays the fund amount and currency to the user."
+    },
+    "amountMicros": {
+     "type": "string",
+     "description": "The amount of the fund.",
+     "format": "uint64"
+    },
+    "currency": {
+     "type": "string",
+     "description": "The currency in which the fund was made."
+    },
+    "userComment": {
+     "type": "string",
+     "description": "The comment added by the user to this fan funding event."
+    }
+   }
+  },
+  "LiveChatMessage": {
+   "id": "LiveChatMessage",
+   "type": "object",
+   "description": "A liveChatMessage resource represents a chat message in a YouTube Live Chat.",
+   "properties": {
+    "authorDetails": {
+     "$ref": "LiveChatMessageAuthorDetails",
+     "description": "The authorDetails object contains basic details about the user that posted this message."
+    },
+    "etag": {
+     "type": "string",
+     "description": "Etag of this resource."
+    },
+    "id": {
+     "type": "string",
+     "description": "The ID that YouTube assigns to uniquely identify the message."
+    },
+    "kind": {
+     "type": "string",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"youtube#liveChatMessage\".",
+     "default": "youtube#liveChatMessage"
+    },
+    "snippet": {
+     "$ref": "LiveChatMessageSnippet",
+     "description": "The snippet object contains basic details about the message."
+    }
+   }
+  },
+  "LiveChatMessageAuthorDetails": {
+   "id": "LiveChatMessageAuthorDetails",
+   "type": "object",
+   "properties": {
+    "channelId": {
+     "type": "string",
+     "description": "The YouTube channel ID."
+    },
+    "channelUrl": {
+     "type": "string",
+     "description": "The channel's URL."
+    },
+    "displayName": {
+     "type": "string",
+     "description": "The channel's display name."
+    },
+    "isChatModerator": {
+     "type": "boolean",
+     "description": "Whether the author is a moderator of the live chat."
+    },
+    "isChatOwner": {
+     "type": "boolean",
+     "description": "Whether the author is the owner of the live chat."
+    },
+    "isChatSponsor": {
+     "type": "boolean",
+     "description": "Whether the author is a sponsor of the live chat."
+    },
+    "isVerified": {
+     "type": "boolean",
+     "description": "Whether the author's identity has been verified by YouTube."
+    },
+    "profileImageUrl": {
+     "type": "string",
+     "description": "The channels's avatar URL."
+    }
+   }
+  },
+  "LiveChatMessageDeletedDetails": {
+   "id": "LiveChatMessageDeletedDetails",
+   "type": "object",
+   "properties": {
+    "deletedMessageId": {
+     "type": "string"
+    }
+   }
+  },
+  "LiveChatMessageListResponse": {
+   "id": "LiveChatMessageListResponse",
+   "type": "object",
+   "properties": {
+    "etag": {
+     "type": "string",
+     "description": "Etag of this resource."
+    },
+    "eventId": {
+     "type": "string",
+     "description": "Serialized EventId of the request which produced this response."
+    },
+    "items": {
+     "type": "array",
+     "description": "A list of live chat messages.",
+     "items": {
+      "$ref": "LiveChatMessage"
+     }
+    },
+    "kind": {
+     "type": "string",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"youtube#liveChatMessageListResponse\".",
+     "default": "youtube#liveChatMessageListResponse"
+    },
+    "nextPageToken": {
+     "type": "string",
+     "description": "The token that can be used as the value of the pageToken parameter to retrieve the next page in the result set."
+    },
+    "offlineAt": {
+     "type": "string",
+     "description": "The date and time when the underlying stream went offline. The value is specified in ISO 8601 (YYYY-MM-DDThh:mm:ss.sZ) format.",
+     "format": "date-time"
+    },
+    "pageInfo": {
+     "$ref": "PageInfo"
+    },
+    "pollingIntervalMillis": {
+     "type": "integer",
+     "description": "The amount of time the client should wait before polling again.",
+     "format": "uint32"
+    },
+    "tokenPagination": {
+     "$ref": "TokenPagination"
+    },
+    "visitorId": {
+     "type": "string",
+     "description": "The visitorId identifies the visitor."
+    }
+   }
+  },
+  "LiveChatMessageRetractedDetails": {
+   "id": "LiveChatMessageRetractedDetails",
+   "type": "object",
+   "properties": {
+    "retractedMessageId": {
+     "type": "string"
+    }
+   }
+  },
+  "LiveChatMessageSnippet": {
+   "id": "LiveChatMessageSnippet",
+   "type": "object",
+   "properties": {
+    "authorChannelId": {
+     "type": "string",
+     "description": "The ID of the user that authored this message, this field is not always filled. textMessageEvent - the user that wrote the message fanFundingEvent - the user that funded the broadcast newSponsorEvent - the user that just became a sponsor messageDeletedEvent - the moderator that took the action messageRetractedEvent - the author that retracted their message userBannedEvent - the moderator that took the action superChatEvent - the user that made the purchase"
+    },
+    "displayMessage": {
+     "type": "string",
+     "description": "Contains a string that can be displayed to the user. If this field is not present the message is silent, at the moment only messages of type TOMBSTONE and CHAT_ENDED_EVENT are silent."
+    },
+    "fanFundingEventDetails": {
+     "$ref": "LiveChatFanFundingEventDetails",
+     "description": "Details about the funding event, this is only set if the type is 'fanFundingEvent'."
+    },
+    "hasDisplayContent": {
+     "type": "boolean",
+     "description": "Whether the message has display content that should be displayed to users."
+    },
+    "liveChatId": {
+     "type": "string"
+    },
+    "messageDeletedDetails": {
+     "$ref": "LiveChatMessageDeletedDetails"
+    },
+    "messageRetractedDetails": {
+     "$ref": "LiveChatMessageRetractedDetails"
+    },
+    "pollClosedDetails": {
+     "$ref": "LiveChatPollClosedDetails"
+    },
+    "pollEditedDetails": {
+     "$ref": "LiveChatPollEditedDetails"
+    },
+    "pollOpenedDetails": {
+     "$ref": "LiveChatPollOpenedDetails"
+    },
+    "pollVotedDetails": {
+     "$ref": "LiveChatPollVotedDetails"
+    },
+    "publishedAt": {
+     "type": "string",
+     "description": "The date and time when the message was orignally published. The value is specified in ISO 8601 (YYYY-MM-DDThh:mm:ss.sZ) format.",
+     "format": "date-time"
+    },
+    "superChatDetails": {
+     "$ref": "LiveChatSuperChatDetails",
+     "description": "Details about the Super Chat event, this is only set if the type is 'superChatEvent'."
+    },
+    "textMessageDetails": {
+     "$ref": "LiveChatTextMessageDetails",
+     "description": "Details about the text message, this is only set if the type is 'textMessageEvent'."
+    },
+    "type": {
+     "type": "string",
+     "description": "The type of message, this will always be present, it determines the contents of the message as well as which fields will be present.",
+     "enum": [
+      "chatEndedEvent",
+      "fanFundingEvent",
+      "messageDeletedEvent",
+      "messageRetractedEvent",
+      "newSponsorEvent",
+      "pollClosedEvent",
+      "pollEditedEvent",
+      "pollOpenedEvent",
+      "pollVotedEvent",
+      "sponsorOnlyModeEndedEvent",
+      "sponsorOnlyModeStartedEvent",
+      "superChatEvent",
+      "textMessageEvent",
+      "tombstone",
+      "userBannedEvent"
+     ],
+     "enumDescriptions": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
       ""
      ]
     },
-    "unmatched": {
-     "type": "boolean",
-     "description": "If this flag is set it means that we have not been able to match the topic title and type provided to a known entity."
+    "userBannedDetails": {
+     "$ref": "LiveChatUserBannedMessageDetails"
     }
    }
   },
-  "LiveBroadcastTopicDetails": {
-   "id": "LiveBroadcastTopicDetails",
+  "LiveChatModerator": {
+   "id": "LiveChatModerator",
+   "type": "object",
+   "description": "A liveChatModerator resource represents a moderator for a YouTube live chat. A chat moderator has the ability to ban/unban users from a chat, remove message, etc.",
+   "properties": {
+    "etag": {
+     "type": "string",
+     "description": "Etag of this resource."
+    },
+    "id": {
+     "type": "string",
+     "description": "The ID that YouTube assigns to uniquely identify the moderator."
+    },
+    "kind": {
+     "type": "string",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"youtube#liveChatModerator\".",
+     "default": "youtube#liveChatModerator"
+    },
+    "snippet": {
+     "$ref": "LiveChatModeratorSnippet",
+     "description": "The snippet object contains basic details about the moderator."
+    }
+   }
+  },
+  "LiveChatModeratorListResponse": {
+   "id": "LiveChatModeratorListResponse",
    "type": "object",
    "properties": {
-    "topics": {
+    "etag": {
+     "type": "string",
+     "description": "Etag of this resource."
+    },
+    "eventId": {
+     "type": "string",
+     "description": "Serialized EventId of the request which produced this response."
+    },
+    "items": {
+     "type": "array",
+     "description": "A list of moderators that match the request criteria.",
+     "items": {
+      "$ref": "LiveChatModerator"
+     }
+    },
+    "kind": {
+     "type": "string",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"youtube#liveChatModeratorListResponse\".",
+     "default": "youtube#liveChatModeratorListResponse"
+    },
+    "nextPageToken": {
+     "type": "string",
+     "description": "The token that can be used as the value of the pageToken parameter to retrieve the next page in the result set."
+    },
+    "pageInfo": {
+     "$ref": "PageInfo"
+    },
+    "prevPageToken": {
+     "type": "string",
+     "description": "The token that can be used as the value of the pageToken parameter to retrieve the previous page in the result set."
+    },
+    "tokenPagination": {
+     "$ref": "TokenPagination"
+    },
+    "visitorId": {
+     "type": "string",
+     "description": "The visitorId identifies the visitor."
+    }
+   }
+  },
+  "LiveChatModeratorSnippet": {
+   "id": "LiveChatModeratorSnippet",
+   "type": "object",
+   "properties": {
+    "liveChatId": {
+     "type": "string",
+     "description": "The ID of the live chat this moderator can act on."
+    },
+    "moderatorDetails": {
+     "$ref": "ChannelProfileDetails",
+     "description": "Details about the moderator."
+    }
+   }
+  },
+  "LiveChatPollClosedDetails": {
+   "id": "LiveChatPollClosedDetails",
+   "type": "object",
+   "properties": {
+    "pollId": {
+     "type": "string",
+     "description": "The id of the poll that was closed."
+    }
+   }
+  },
+  "LiveChatPollEditedDetails": {
+   "id": "LiveChatPollEditedDetails",
+   "type": "object",
+   "properties": {
+    "id": {
+     "type": "string"
+    },
+    "items": {
      "type": "array",
      "items": {
-      "$ref": "LiveBroadcastTopic"
+      "$ref": "LiveChatPollItem"
      }
+    },
+    "prompt": {
+     "type": "string"
     }
    }
   },
-  "LiveBroadcastTopicSnippet": {
-   "id": "LiveBroadcastTopicSnippet",
+  "LiveChatPollItem": {
+   "id": "LiveChatPollItem",
    "type": "object",
    "properties": {
-    "name": {
+    "description": {
      "type": "string",
-     "description": "The name of the topic."
+     "description": "Plain text description of the item."
     },
-    "releaseDate": {
+    "itemId": {
+     "type": "string"
+    }
+   }
+  },
+  "LiveChatPollOpenedDetails": {
+   "id": "LiveChatPollOpenedDetails",
+   "type": "object",
+   "properties": {
+    "id": {
+     "type": "string"
+    },
+    "items": {
+     "type": "array",
+     "items": {
+      "$ref": "LiveChatPollItem"
+     }
+    },
+    "prompt": {
+     "type": "string"
+    }
+   }
+  },
+  "LiveChatPollVotedDetails": {
+   "id": "LiveChatPollVotedDetails",
+   "type": "object",
+   "properties": {
+    "itemId": {
      "type": "string",
-     "description": "The date at which the topic was released. Filled for types: videoGame"
+     "description": "The poll item the user chose."
+    },
+    "pollId": {
+     "type": "string",
+     "description": "The poll the user voted on."
+    }
+   }
+  },
+  "LiveChatSuperChatDetails": {
+   "id": "LiveChatSuperChatDetails",
+   "type": "object",
+   "properties": {
+    "amountDisplayString": {
+     "type": "string",
+     "description": "A rendered string that displays the fund amount and currency to the user."
+    },
+    "amountMicros": {
+     "type": "string",
+     "description": "The amount purchased by the user, in micros (1,750,000 micros = 1.75).",
+     "format": "uint64"
+    },
+    "currency": {
+     "type": "string",
+     "description": "The currency in which the purchase was made."
+    },
+    "tier": {
+     "type": "integer",
+     "description": "The tier in which the amount belongs to. Lower amounts belong to lower tiers. Starts at 1.",
+     "format": "uint32"
+    },
+    "userComment": {
+     "type": "string",
+     "description": "The comment added by the user to this Super Chat event."
+    }
+   }
+  },
+  "LiveChatTextMessageDetails": {
+   "id": "LiveChatTextMessageDetails",
+   "type": "object",
+   "properties": {
+    "messageText": {
+     "type": "string",
+     "description": "The user's message."
+    }
+   }
+  },
+  "LiveChatUserBannedMessageDetails": {
+   "id": "LiveChatUserBannedMessageDetails",
+   "type": "object",
+   "properties": {
+    "banDurationSeconds": {
+     "type": "string",
+     "description": "The duration of the ban. This property is only present if the banType is temporary.",
+     "format": "uint64"
+    },
+    "banType": {
+     "type": "string",
+     "description": "The type of ban.",
+     "enum": [
+      "permanent",
+      "temporary"
+     ],
+     "enumDescriptions": [
+      "",
+      ""
+     ]
+    },
+    "bannedUserDetails": {
+     "$ref": "ChannelProfileDetails",
+     "description": "The details of the user that was banned."
     }
    }
   },
@@ -4000,25 +4840,25 @@
      "type": "string",
      "description": "The kind of error happening.",
      "enum": [
-      "audioBitrate",
       "audioBitrateHigh",
       "audioBitrateLow",
+      "audioBitrateMismatch",
       "audioCodec",
       "audioCodecMismatch",
       "audioSampleRate",
       "audioSampleRateMismatch",
       "audioStereoMismatch",
-      "audioTooManyChannel",
+      "audioTooManyChannels",
       "badContainer",
       "bitrateHigh",
       "bitrateLow",
-      "framerateHigh",
+      "frameRateHigh",
       "framerateMismatch",
       "gopMismatch",
       "gopSizeLong",
       "gopSizeOver",
       "gopSizeShort",
-      "interlaceVideo",
+      "interlacedVideo",
       "multipleAudioStreams",
       "multipleVideoStreams",
       "noAudioStream",
@@ -4098,7 +4938,7 @@
       "$ref": "LiveStreamConfigurationIssue"
      }
     },
-    "lastUpdateTimeS": {
+    "lastUpdateTimeSeconds": {
      "type": "string",
      "description": "The last time this status was updated (in seconds)",
      "format": "uint64"
@@ -4411,6 +5251,11 @@
     "videoId": {
      "type": "string",
      "description": "The ID that YouTube uses to uniquely identify a video. To retrieve the video resource, set the id query parameter to this value in your API request."
+    },
+    "videoPublishedAt": {
+     "type": "string",
+     "description": "The date and time that the video was published to YouTube. The value is specified in ISO 8601 (YYYY-MM-DDThh:mm:ss.sZ) format.",
+     "format": "date-time"
     }
    }
   },
@@ -4807,6 +5652,9 @@
      "type": "string",
      "description": "The token that can be used as the value of the pageToken parameter to retrieve the previous page in the result set."
     },
+    "regionCode": {
+     "type": "string"
+    },
     "tokenPagination": {
      "$ref": "TokenPagination"
     },
@@ -4883,6 +5731,89 @@
     "title": {
      "type": "string",
      "description": "The title of the search result."
+    }
+   }
+  },
+  "Sponsor": {
+   "id": "Sponsor",
+   "type": "object",
+   "description": "A sponsor resource represents a sponsor for a YouTube channel. A sponsor provides recurring monetary support to a creator and receives special benefits.",
+   "properties": {
+    "etag": {
+     "type": "string",
+     "description": "Etag of this resource."
+    },
+    "id": {
+     "type": "string",
+     "description": "The ID that YouTube assigns to uniquely identify the sponsor."
+    },
+    "kind": {
+     "type": "string",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"youtube#sponsor\".",
+     "default": "youtube#sponsor"
+    },
+    "snippet": {
+     "$ref": "SponsorSnippet",
+     "description": "The snippet object contains basic details about the sponsor."
+    }
+   }
+  },
+  "SponsorListResponse": {
+   "id": "SponsorListResponse",
+   "type": "object",
+   "properties": {
+    "etag": {
+     "type": "string",
+     "description": "Etag of this resource."
+    },
+    "eventId": {
+     "type": "string",
+     "description": "Serialized EventId of the request which produced this response."
+    },
+    "items": {
+     "type": "array",
+     "description": "A list of sponsors that match the request criteria.",
+     "items": {
+      "$ref": "Sponsor"
+     }
+    },
+    "kind": {
+     "type": "string",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"youtube#sponsorListResponse\".",
+     "default": "youtube#sponsorListResponse"
+    },
+    "nextPageToken": {
+     "type": "string",
+     "description": "The token that can be used as the value of the pageToken parameter to retrieve the next page in the result set."
+    },
+    "pageInfo": {
+     "$ref": "PageInfo"
+    },
+    "tokenPagination": {
+     "$ref": "TokenPagination"
+    },
+    "visitorId": {
+     "type": "string",
+     "description": "The visitorId identifies the visitor."
+    }
+   }
+  },
+  "SponsorSnippet": {
+   "id": "SponsorSnippet",
+   "type": "object",
+   "properties": {
+    "channelId": {
+     "type": "string",
+     "description": "The id of the channel being sponsored."
+    },
+    "sponsorDetails": {
+     "$ref": "ChannelProfileDetails",
+     "description": "Details about the sponsor."
+    },
+    "sponsorSince": {
+     "type": "string",
+     "description": "The date and time when the user became a sponsor. The value is specified in ISO 8601 (YYYY-MM-DDThh:mm:ss.sZ) format.",
+     "format": "date-time"
     }
    }
   },
@@ -5055,6 +5986,111 @@
     }
    }
   },
+  "SuperChatEvent": {
+   "id": "SuperChatEvent",
+   "type": "object",
+   "description": "A superChatEvent resource represents a Super Chat purchase on a YouTube channel.",
+   "properties": {
+    "etag": {
+     "type": "string",
+     "description": "Etag of this resource."
+    },
+    "id": {
+     "type": "string",
+     "description": "The ID that YouTube assigns to uniquely identify the Super Chat event."
+    },
+    "kind": {
+     "type": "string",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"youtube#superChatEvent\".",
+     "default": "youtube#superChatEvent"
+    },
+    "snippet": {
+     "$ref": "SuperChatEventSnippet",
+     "description": "The snippet object contains basic details about the Super Chat event."
+    }
+   }
+  },
+  "SuperChatEventListResponse": {
+   "id": "SuperChatEventListResponse",
+   "type": "object",
+   "properties": {
+    "etag": {
+     "type": "string",
+     "description": "Etag of this resource."
+    },
+    "eventId": {
+     "type": "string",
+     "description": "Serialized EventId of the request which produced this response."
+    },
+    "items": {
+     "type": "array",
+     "description": "A list of Super Chat purchases that match the request criteria.",
+     "items": {
+      "$ref": "SuperChatEvent"
+     }
+    },
+    "kind": {
+     "type": "string",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"youtube#superChatEventListResponse\".",
+     "default": "youtube#superChatEventListResponse"
+    },
+    "nextPageToken": {
+     "type": "string",
+     "description": "The token that can be used as the value of the pageToken parameter to retrieve the next page in the result set."
+    },
+    "pageInfo": {
+     "$ref": "PageInfo"
+    },
+    "tokenPagination": {
+     "$ref": "TokenPagination"
+    },
+    "visitorId": {
+     "type": "string",
+     "description": "The visitorId identifies the visitor."
+    }
+   }
+  },
+  "SuperChatEventSnippet": {
+   "id": "SuperChatEventSnippet",
+   "type": "object",
+   "properties": {
+    "amountMicros": {
+     "type": "string",
+     "description": "The purchase amount, in micros of the purchase currency. e.g., 1 is represented as 1000000.",
+     "format": "uint64"
+    },
+    "channelId": {
+     "type": "string",
+     "description": "Channel id where the event occurred."
+    },
+    "commentText": {
+     "type": "string",
+     "description": "The text contents of the comment left by the user."
+    },
+    "createdAt": {
+     "type": "string",
+     "description": "The date and time when the event occurred. The value is specified in ISO 8601 (YYYY-MM-DDThh:mm:ss.sZ) format.",
+     "format": "date-time"
+    },
+    "currency": {
+     "type": "string",
+     "description": "The currency in which the purchase was made. ISO 4217."
+    },
+    "displayString": {
+     "type": "string",
+     "description": "A rendered string that displays the purchase amount and currency (e.g., \"$1.00\"). The string is rendered for the given language."
+    },
+    "messageType": {
+     "type": "integer",
+     "description": "The tier for the paid message, which is based on the amount of money spent to purchase the message.",
+     "format": "uint32"
+    },
+    "supporterDetails": {
+     "$ref": "ChannelProfileDetails",
+     "description": "Details about the supporter."
+    }
+   }
+  },
   "Thumbnail": {
    "id": "Thumbnail",
    "type": "object",
@@ -5145,15 +6181,11 @@
    "properties": {
     "ageGating": {
      "$ref": "VideoAgeGating",
-     "description": "Age restriction details related to a video."
+     "description": "Age restriction details related to a video. This data can only be retrieved by the video owner."
     },
     "contentDetails": {
      "$ref": "VideoContentDetails",
      "description": "The contentDetails object contains information about the video content, including the length of the video and its aspect ratio."
-    },
-    "conversionPings": {
-     "$ref": "VideoConversionPings",
-     "description": "The conversionPings object encapsulates information about url pings that need to be respected by the App in different video contexts."
     },
     "etag": {
      "type": "string",
@@ -5505,9 +6537,25 @@
      "type": "string",
      "description": "The length of the video. The tag value is an ISO 8601 duration in the format PT#M#S, in which the letters PT indicate that the value specifies a period of time, and the letters M and S refer to length in minutes and seconds, respectively. The # characters preceding the M and S letters are both integers that specify the number of minutes (or seconds) of the video. For example, a value of PT15M51S indicates that the video is 15 minutes and 51 seconds long."
     },
+    "hasCustomThumbnail": {
+     "type": "boolean",
+     "description": "Indicates whether the video uploader has provided a custom thumbnail image for the video. This property is only visible to the video uploader."
+    },
     "licensedContent": {
      "type": "boolean",
      "description": "The value of is_license_content indicates whether the video is licensed content."
+    },
+    "projection": {
+     "type": "string",
+     "description": "Specifies the projection format of the video.",
+     "enum": [
+      "360",
+      "rectangular"
+     ],
+     "enumDescriptions": [
+      "",
+      ""
+     ]
     },
     "regionRestriction": {
      "$ref": "VideoContentDetailsRegionRestriction",
@@ -5532,45 +6580,6 @@
      "description": "A list of region codes that identify countries where the video is blocked. If this property is present and a country is not listed in its value, then the video is viewable in that country. If this property is present and contains an empty list, the video is viewable in all countries.",
      "items": {
       "type": "string"
-     }
-    }
-   }
-  },
-  "VideoConversionPing": {
-   "id": "VideoConversionPing",
-   "type": "object",
-   "properties": {
-    "context": {
-     "type": "string",
-     "description": "Defines the context of the ping.",
-     "enum": [
-      "comment",
-      "dislike",
-      "like",
-      "share"
-     ],
-     "enumDescriptions": [
-      "",
-      "",
-      "",
-      ""
-     ]
-    },
-    "conversionUrl": {
-     "type": "string",
-     "description": "The url (without the schema) that the app shall send the ping to. It's at caller's descretion to decide which schema to use (http vs https) Example of a returned url: //googleads.g.doubleclick.net/pagead/ viewthroughconversion/962985656/?data=path%3DtHe_path%3Btype%3D like%3Butuid%3DGISQtTNGYqaYl4sKxoVvKA%3Bytvid%3DUrIaJUvIQDg&labe=default The caller must append biscotti authentication (ms param in case of mobile, for example) to this ping."
-    }
-   }
-  },
-  "VideoConversionPings": {
-   "id": "VideoConversionPings",
-   "type": "object",
-   "properties": {
-    "pings": {
-     "type": "array",
-     "description": "Pings that the app shall fire for a video (authenticated by biscotti cookie). Each ping has a context, in which the app must fire the ping, and a url identifying the ping.",
-     "items": {
-      "$ref": "VideoConversionPing"
      }
     }
    }
@@ -5635,10 +6644,6 @@
       "",
       ""
      ]
-    },
-    "recordingLocation": {
-     "$ref": "GeoPoint",
-     "description": "Geographic coordinates that identify the place where the uploaded video was recorded. Coordinates are defined using WGS 84."
     },
     "videoStreams": {
      "type": "array",
@@ -5811,6 +6816,10 @@
    "type": "object",
    "description": "Details about the live streaming metadata.",
    "properties": {
+    "activeLiveChatId": {
+     "type": "string",
+     "description": "The ID of the currently active live chat attached to this video. This field is filled only if the video is a currently live broadcast that has live chat. Once the broadcast transitions to complete this field will be removed and the live chat closed down. For persistent broadcasts that live chat id will no longer be tied to this video but rather to the new video being displayed at the persistent page."
+    },
     "actualEndTime": {
      "type": "string",
      "description": "The time that the broadcast actually ended. The value is specified in ISO 8601 (YYYY-MM-DDThh:mm:ss.sZ) format. This value will not be available until the broadcast is over.",
@@ -5869,9 +6878,18 @@
    "type": "object",
    "description": "Player to be used for a video playback.",
    "properties": {
+    "embedHeight": {
+     "type": "string",
+     "format": "int64"
+    },
     "embedHtml": {
      "type": "string",
      "description": "An \u003ciframe\u003e tag that embeds a player that will play the video."
+    },
+    "embedWidth": {
+     "type": "string",
+     "description": "The embed width",
+     "format": "int64"
     }
    }
   },
@@ -6072,7 +7090,7 @@
     },
     "tags": {
      "type": "array",
-     "description": "A list of keyword tags associated with the video. Tags may contain spaces. This field is only visible to the video's uploader.",
+     "description": "A list of keyword tags associated with the video. Tags may contain spaces.",
      "items": {
       "type": "string"
      }
@@ -6191,6 +7209,7 @@
       "copyright",
       "duplicate",
       "inappropriate",
+      "legal",
       "length",
       "termsOfUse",
       "trademark",
@@ -6198,6 +7217,7 @@
       "uploaderAccountSuspended"
      ],
      "enumDescriptions": [
+      "",
       "",
       "",
       "",
@@ -6264,9 +7284,11 @@
        "docFile",
        "imageFile",
        "notAVideoFile",
-       "projectFile"
+       "projectFile",
+       "unsupportedSpatialAudioLayout"
       ],
       "enumDescriptions": [
+       "",
        "",
        "",
        "",
@@ -6282,10 +7304,18 @@
      "items": {
       "type": "string",
       "enum": [
+       "hdrVideo",
        "nonStreamableMov",
-       "sendBestQualityVideo"
+       "sendBestQualityVideo",
+       "spatialAudio",
+       "sphericalVideo",
+       "vrVideo"
       ],
       "enumDescriptions": [
+       "",
+       "",
+       "",
+       "",
        "",
        ""
       ]
@@ -6300,12 +7330,22 @@
        "hasEditlist",
        "inconsistentResolution",
        "problematicAudioCodec",
+       "problematicHdrLookupTable",
        "problematicVideoCodec",
        "unknownAudioCodec",
        "unknownContainer",
-       "unknownVideoCodec"
+       "unknownVideoCodec",
+       "unsupportedHdrColorMetadata",
+       "unsupportedHdrPixelFormat",
+       "unsupportedSphericalProjectionType",
+       "unsupportedVrStereoMode"
       ],
       "enumDescriptions": [
+       "",
+       "",
+       "",
+       "",
+       "",
        "",
        "",
        "",
@@ -6355,6 +7395,13 @@
       "type": "string"
      }
     },
+    "topicCategories": {
+     "type": "array",
+     "description": "A list of Wikipedia URLs that provide a high-level description of the video's content.",
+     "items": {
+      "type": "string"
+     }
+    },
     "topicIds": {
      "type": "array",
      "description": "A list of Freebase topic IDs that are centrally associated with the video. These are topics that are centrally featured in the video, and it can be said that the video is mainly about each of these. You can retrieve information about each topic using the Freebase Topic API.",
@@ -6367,7 +7414,7 @@
   "WatchSettings": {
    "id": "WatchSettings",
    "type": "object",
-   "description": "Branding properties for the watch.",
+   "description": "Branding properties for the watch. All deprecated.",
    "properties": {
     "backgroundColor": {
      "type": "string",
@@ -6495,12 +7542,6 @@
      "httpMethod": "DELETE",
      "description": "Deletes a specified caption track.",
      "parameters": {
-      "debugProjectIdOverride": {
-       "type": "string",
-       "description": "The debugProjectIdOverride parameter should be used for mimicking a request for a certain project ID",
-       "format": "int64",
-       "location": "query"
-      },
       "id": {
        "type": "string",
        "description": "The id parameter identifies the caption track that is being deleted. The value is a caption track ID as identified by the id property in a caption resource.",
@@ -6532,12 +7573,6 @@
      "httpMethod": "GET",
      "description": "Downloads a caption track. The caption track is returned in its original format unless the request specifies a value for the tfmt parameter and in its original language unless the request specifies a value for the tlang parameter.",
      "parameters": {
-      "debugProjectIdOverride": {
-       "type": "string",
-       "description": "The debugProjectIdOverride parameter should be used for mimicking a request for a certain project ID",
-       "format": "int64",
-       "location": "query"
-      },
       "id": {
        "type": "string",
        "description": "The id parameter identifies the caption track that is being retrieved. The value is a caption track ID as identified by the id property in a caption resource.",
@@ -6594,12 +7629,6 @@
      "httpMethod": "POST",
      "description": "Uploads a caption track.",
      "parameters": {
-      "debugProjectIdOverride": {
-       "type": "string",
-       "description": "The debugProjectIdOverride parameter should be used for mimicking a request for a certain project ID.",
-       "format": "int64",
-       "location": "query"
-      },
       "onBehalfOf": {
        "type": "string",
        "description": "ID of the Google+ Page for the channel that the request is be on behalf of",
@@ -6661,12 +7690,6 @@
      "httpMethod": "GET",
      "description": "Returns a list of caption tracks that are associated with a specified video. Note that the API response does not contain the actual captions and that the captions.download method provides the ability to retrieve a caption track.",
      "parameters": {
-      "debugProjectIdOverride": {
-       "type": "string",
-       "description": "The debugProjectIdOverride parameter should be used for mimicking a request for a certain project ID.",
-       "format": "int64",
-       "location": "query"
-      },
       "id": {
        "type": "string",
        "description": "The id parameter specifies a comma-separated list of IDs that identify the caption resources that should be retrieved. Each ID must identify a caption track associated with the specified video.",
@@ -6713,12 +7736,6 @@
      "httpMethod": "PUT",
      "description": "Updates a caption track. When updating a caption track, you can change the track's draft status, upload a new caption file for the track, or both.",
      "parameters": {
-      "debugProjectIdOverride": {
-       "type": "string",
-       "description": "The debugProjectIdOverride parameter should be used for mimicking a request for a certain project ID.",
-       "format": "int64",
-       "location": "query"
-      },
       "onBehalfOf": {
        "type": "string",
        "description": "ID of the Google+ Page for the channel that the request is be on behalf of",
@@ -6784,6 +7801,11 @@
      "httpMethod": "POST",
      "description": "Uploads a channel banner image to YouTube. This method represents the first two steps in a three-step process to update the banner image for a channel:\n\n- Call the channelBanners.insert method to upload the binary image data to YouTube. The image must have a 16:9 aspect ratio and be at least 2120x1192 pixels.\n- Extract the url property's value from the response that the API returns for step 1.\n- Call the channels.update method to update the channel's branding settings. Set the brandingSettings.image.bannerExternalUrl property's value to the URL obtained in step 2.",
      "parameters": {
+      "channelId": {
+       "type": "string",
+       "description": "The channelId parameter identifies the YouTube channel to which the banner is uploaded. The channelId parameter was introduced as a required parameter in May 2017. As this was a backward-incompatible change, channelBanners.insert requests that do not specify this parameter will not return an error until six months have passed from the time that the parameter was introduced. Please see the API Terms of Service for the official policy regarding backward incompatible changes and the API revision history for the exact date that the parameter was introduced.",
+       "location": "query"
+      },
       "onBehalfOfContentOwner": {
        "type": "string",
        "description": "Note: This parameter is intended exclusively for YouTube content partners.\n\nThe onBehalfOfContentOwner parameter indicates that the request's authorization credentials identify a YouTube CMS user who is acting on behalf of the content owner specified in the parameter value. This parameter is intended for YouTube content partners that own and manage many different YouTube channels. It allows content owners to authenticate once and get access to all their video and channel data, without having to provide authentication credentials for each individual channel. The CMS account that the user authenticates with must be linked to the specified YouTube content owner.",
@@ -7106,12 +8128,6 @@
        "type": "string",
        "description": "The part parameter identifies the properties that the API response will include. Set the parameter value to snippet. The snippet part has a quota cost of 2 units.",
        "required": true,
-       "location": "query"
-      },
-      "shareOnGooglePlus": {
-       "type": "boolean",
-       "description": "The shareOnGooglePlus parameter indicates whether the top-level comment and any replies that are made to that comment should also be posted to the author's Google+ profile.",
-       "default": "false",
        "location": "query"
       }
      },
@@ -7462,6 +8478,54 @@
     }
    }
   },
+  "fanFundingEvents": {
+   "methods": {
+    "list": {
+     "id": "youtube.fanFundingEvents.list",
+     "path": "fanFundingEvents",
+     "httpMethod": "GET",
+     "description": "Lists fan funding events for a channel.",
+     "parameters": {
+      "hl": {
+       "type": "string",
+       "description": "The hl parameter instructs the API to retrieve localized resource metadata for a specific application language that the YouTube website supports. The parameter value must be a language code included in the list returned by the i18nLanguages.list method.\n\nIf localized resource details are available in that language, the resource's snippet.localized object will contain the localized values. However, if localized details are not available, the snippet.localized object will contain resource details in the resource's default language.",
+       "location": "query"
+      },
+      "maxResults": {
+       "type": "integer",
+       "description": "The maxResults parameter specifies the maximum number of items that should be returned in the result set.",
+       "default": "5",
+       "format": "uint32",
+       "minimum": "0",
+       "maximum": "50",
+       "location": "query"
+      },
+      "pageToken": {
+       "type": "string",
+       "description": "The pageToken parameter identifies a specific page in the result set that should be returned. In an API response, the nextPageToken and prevPageToken properties identify other pages that could be retrieved.",
+       "location": "query"
+      },
+      "part": {
+       "type": "string",
+       "description": "The part parameter specifies the fanFundingEvent resource parts that the API response will include. Supported values are id and snippet.",
+       "required": true,
+       "location": "query"
+      }
+     },
+     "parameterOrder": [
+      "part"
+     ],
+     "response": {
+      "$ref": "FanFundingEventListResponse"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/youtube",
+      "https://www.googleapis.com/auth/youtube.force-ssl",
+      "https://www.googleapis.com/auth/youtube.readonly"
+     ]
+    }
+   }
+  },
   "guideCategories": {
    "methods": {
     "list": {
@@ -7777,6 +8841,22 @@
        ],
        "location": "query"
       },
+      "broadcastType": {
+       "type": "string",
+       "description": "The broadcastType parameter filters the API response to only include broadcasts with the specified type. This is only compatible with the mine filter for now.",
+       "default": "BROADCAST_TYPE_FILTER_EVENT",
+       "enum": [
+        "all",
+        "event",
+        "persistent"
+       ],
+       "enumDescriptions": [
+        "Return all broadcasts.",
+        "Return only scheduled event broadcasts.",
+        "Return only persistent broadcasts."
+       ],
+       "location": "query"
+      },
       "id": {
        "type": "string",
        "description": "The id parameter specifies a comma-separated list of YouTube broadcast IDs that identify the broadcasts being retrieved. In a liveBroadcast resource, the id property specifies the broadcast's ID.",
@@ -7923,6 +9003,267 @@
      "scopes": [
       "https://www.googleapis.com/auth/youtube",
       "https://www.googleapis.com/auth/youtube.force-ssl"
+     ]
+    }
+   }
+  },
+  "liveChatBans": {
+   "methods": {
+    "delete": {
+     "id": "youtube.liveChatBans.delete",
+     "path": "liveChat/bans",
+     "httpMethod": "DELETE",
+     "description": "Removes a chat ban.",
+     "parameters": {
+      "id": {
+       "type": "string",
+       "description": "The id parameter identifies the chat ban to remove. The value uniquely identifies both the ban and the chat.",
+       "required": true,
+       "location": "query"
+      }
+     },
+     "parameterOrder": [
+      "id"
+     ],
+     "scopes": [
+      "https://www.googleapis.com/auth/youtube",
+      "https://www.googleapis.com/auth/youtube.force-ssl"
+     ]
+    },
+    "insert": {
+     "id": "youtube.liveChatBans.insert",
+     "path": "liveChat/bans",
+     "httpMethod": "POST",
+     "description": "Adds a new ban to the chat.",
+     "parameters": {
+      "part": {
+       "type": "string",
+       "description": "The part parameter serves two purposes in this operation. It identifies the properties that the write operation will set as well as the properties that the API response returns. Set the parameter value to snippet.",
+       "required": true,
+       "location": "query"
+      }
+     },
+     "parameterOrder": [
+      "part"
+     ],
+     "request": {
+      "$ref": "LiveChatBan"
+     },
+     "response": {
+      "$ref": "LiveChatBan"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/youtube",
+      "https://www.googleapis.com/auth/youtube.force-ssl"
+     ]
+    }
+   }
+  },
+  "liveChatMessages": {
+   "methods": {
+    "delete": {
+     "id": "youtube.liveChatMessages.delete",
+     "path": "liveChat/messages",
+     "httpMethod": "DELETE",
+     "description": "Deletes a chat message.",
+     "parameters": {
+      "id": {
+       "type": "string",
+       "description": "The id parameter specifies the YouTube chat message ID of the resource that is being deleted.",
+       "required": true,
+       "location": "query"
+      }
+     },
+     "parameterOrder": [
+      "id"
+     ],
+     "scopes": [
+      "https://www.googleapis.com/auth/youtube",
+      "https://www.googleapis.com/auth/youtube.force-ssl"
+     ]
+    },
+    "insert": {
+     "id": "youtube.liveChatMessages.insert",
+     "path": "liveChat/messages",
+     "httpMethod": "POST",
+     "description": "Adds a message to a live chat.",
+     "parameters": {
+      "part": {
+       "type": "string",
+       "description": "The part parameter serves two purposes. It identifies the properties that the write operation will set as well as the properties that the API response will include. Set the parameter value to snippet.",
+       "required": true,
+       "location": "query"
+      }
+     },
+     "parameterOrder": [
+      "part"
+     ],
+     "request": {
+      "$ref": "LiveChatMessage"
+     },
+     "response": {
+      "$ref": "LiveChatMessage"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/youtube",
+      "https://www.googleapis.com/auth/youtube.force-ssl"
+     ]
+    },
+    "list": {
+     "id": "youtube.liveChatMessages.list",
+     "path": "liveChat/messages",
+     "httpMethod": "GET",
+     "description": "Lists live chat messages for a specific chat.",
+     "parameters": {
+      "hl": {
+       "type": "string",
+       "description": "The hl parameter instructs the API to retrieve localized resource metadata for a specific application language that the YouTube website supports. The parameter value must be a language code included in the list returned by the i18nLanguages.list method.\n\nIf localized resource details are available in that language, the resource's snippet.localized object will contain the localized values. However, if localized details are not available, the snippet.localized object will contain resource details in the resource's default language.",
+       "location": "query"
+      },
+      "liveChatId": {
+       "type": "string",
+       "description": "The liveChatId parameter specifies the ID of the chat whose messages will be returned.",
+       "required": true,
+       "location": "query"
+      },
+      "maxResults": {
+       "type": "integer",
+       "description": "The maxResults parameter specifies the maximum number of messages that should be returned in the result set.",
+       "default": "500",
+       "format": "uint32",
+       "minimum": "200",
+       "maximum": "2000",
+       "location": "query"
+      },
+      "pageToken": {
+       "type": "string",
+       "description": "The pageToken parameter identifies a specific page in the result set that should be returned. In an API response, the nextPageToken property identify other pages that could be retrieved.",
+       "location": "query"
+      },
+      "part": {
+       "type": "string",
+       "description": "The part parameter specifies the liveChatComment resource parts that the API response will include. Supported values are id and snippet.",
+       "required": true,
+       "location": "query"
+      },
+      "profileImageSize": {
+       "type": "integer",
+       "description": "The profileImageSize parameter specifies the size of the user profile pictures that should be returned in the result set. Default: 88.",
+       "format": "uint32",
+       "minimum": "16",
+       "maximum": "720",
+       "location": "query"
+      }
+     },
+     "parameterOrder": [
+      "liveChatId",
+      "part"
+     ],
+     "response": {
+      "$ref": "LiveChatMessageListResponse"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/youtube",
+      "https://www.googleapis.com/auth/youtube.force-ssl",
+      "https://www.googleapis.com/auth/youtube.readonly"
+     ]
+    }
+   }
+  },
+  "liveChatModerators": {
+   "methods": {
+    "delete": {
+     "id": "youtube.liveChatModerators.delete",
+     "path": "liveChat/moderators",
+     "httpMethod": "DELETE",
+     "description": "Removes a chat moderator.",
+     "parameters": {
+      "id": {
+       "type": "string",
+       "description": "The id parameter identifies the chat moderator to remove. The value uniquely identifies both the moderator and the chat.",
+       "required": true,
+       "location": "query"
+      }
+     },
+     "parameterOrder": [
+      "id"
+     ],
+     "scopes": [
+      "https://www.googleapis.com/auth/youtube",
+      "https://www.googleapis.com/auth/youtube.force-ssl"
+     ]
+    },
+    "insert": {
+     "id": "youtube.liveChatModerators.insert",
+     "path": "liveChat/moderators",
+     "httpMethod": "POST",
+     "description": "Adds a new moderator for the chat.",
+     "parameters": {
+      "part": {
+       "type": "string",
+       "description": "The part parameter serves two purposes in this operation. It identifies the properties that the write operation will set as well as the properties that the API response returns. Set the parameter value to snippet.",
+       "required": true,
+       "location": "query"
+      }
+     },
+     "parameterOrder": [
+      "part"
+     ],
+     "request": {
+      "$ref": "LiveChatModerator"
+     },
+     "response": {
+      "$ref": "LiveChatModerator"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/youtube",
+      "https://www.googleapis.com/auth/youtube.force-ssl"
+     ]
+    },
+    "list": {
+     "id": "youtube.liveChatModerators.list",
+     "path": "liveChat/moderators",
+     "httpMethod": "GET",
+     "description": "Lists moderators for a live chat.",
+     "parameters": {
+      "liveChatId": {
+       "type": "string",
+       "description": "The liveChatId parameter specifies the YouTube live chat for which the API should return moderators.",
+       "required": true,
+       "location": "query"
+      },
+      "maxResults": {
+       "type": "integer",
+       "description": "The maxResults parameter specifies the maximum number of items that should be returned in the result set.",
+       "default": "5",
+       "format": "uint32",
+       "minimum": "0",
+       "maximum": "50",
+       "location": "query"
+      },
+      "pageToken": {
+       "type": "string",
+       "description": "The pageToken parameter identifies a specific page in the result set that should be returned. In an API response, the nextPageToken and prevPageToken properties identify other pages that could be retrieved.",
+       "location": "query"
+      },
+      "part": {
+       "type": "string",
+       "description": "The part parameter specifies the liveChatModerator resource parts that the API response will include. Supported values are id and snippet.",
+       "required": true,
+       "location": "query"
+      }
+     },
+     "parameterOrder": [
+      "liveChatId",
+      "part"
+     ],
+     "response": {
+      "$ref": "LiveChatModeratorListResponse"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/youtube",
+      "https://www.googleapis.com/auth/youtube.force-ssl",
+      "https://www.googleapis.com/auth/youtube.readonly"
      ]
     }
    }
@@ -8108,6 +9449,11 @@
        "description": "The id parameter specifies the YouTube playlist item ID for the playlist item that is being deleted. In a playlistItem resource, the id property specifies the playlist item's ID.",
        "required": true,
        "location": "query"
+      },
+      "onBehalfOfContentOwner": {
+       "type": "string",
+       "description": "Note: This parameter is intended exclusively for YouTube content partners.\n\nThe onBehalfOfContentOwner parameter indicates that the request's authorization credentials identify a YouTube CMS user who is acting on behalf of the content owner specified in the parameter value. This parameter is intended for YouTube content partners that own and manage many different YouTube channels. It allows content owners to authenticate once and get access to all their video and channel data, without having to provide authentication credentials for each individual channel. The CMS account that the user authenticates with must be linked to the specified YouTube content owner.",
+       "location": "query"
       }
      },
      "parameterOrder": [
@@ -8219,6 +9565,11 @@
      "httpMethod": "PUT",
      "description": "Modifies a playlist item. For example, you could update the item's position in the playlist.",
      "parameters": {
+      "onBehalfOfContentOwner": {
+       "type": "string",
+       "description": "Note: This parameter is intended exclusively for YouTube content partners.\n\nThe onBehalfOfContentOwner parameter indicates that the request's authorization credentials identify a YouTube CMS user who is acting on behalf of the content owner specified in the parameter value. This parameter is intended for YouTube content partners that own and manage many different YouTube channels. It allows content owners to authenticate once and get access to all their video and channel data, without having to provide authentication credentials for each individual channel. The CMS account that the user authenticates with must be linked to the specified YouTube content owner.",
+       "location": "query"
+      },
       "part": {
        "type": "string",
        "description": "The part parameter serves two purposes in this operation. It identifies the properties that the write operation will set as well as the properties that the API response will include.\n\nNote that this method will override the existing values for all of the mutable properties that are contained in any parts that the parameter value specifies. For example, a playlist item can specify a start time and end time, which identify the times portion of the video that should play when users watch the video in the playlist. If your request is updating a playlist item that sets these values, and the request's part parameter value includes the contentDetails part, the playlist item's start and end times will be updated to whatever value the request body specifies. If the request body does not specify values, the existing start and end times will be removed and replaced with the default settings.",
@@ -8725,6 +10076,63 @@
     }
    }
   },
+  "sponsors": {
+   "methods": {
+    "list": {
+     "id": "youtube.sponsors.list",
+     "path": "sponsors",
+     "httpMethod": "GET",
+     "description": "Lists sponsors for a channel.",
+     "parameters": {
+      "filter": {
+       "type": "string",
+       "description": "The filter parameter specifies which channel sponsors to return.",
+       "default": "POLL_NEWEST",
+       "enum": [
+        "all",
+        "newest"
+       ],
+       "enumDescriptions": [
+        "Return all sponsors, from newest to oldest.",
+        "Return the most recent sponsors, from newest to oldest."
+       ],
+       "location": "query"
+      },
+      "maxResults": {
+       "type": "integer",
+       "description": "The maxResults parameter specifies the maximum number of items that should be returned in the result set.",
+       "default": "5",
+       "format": "uint32",
+       "minimum": "0",
+       "maximum": "50",
+       "location": "query"
+      },
+      "pageToken": {
+       "type": "string",
+       "description": "The pageToken parameter identifies a specific page in the result set that should be returned. In an API response, the nextPageToken and prevPageToken properties identify other pages that could be retrieved.",
+       "location": "query"
+      },
+      "part": {
+       "type": "string",
+       "description": "The part parameter specifies the sponsor resource parts that the API response will include. Supported values are id and snippet.",
+       "required": true,
+       "location": "query"
+      }
+     },
+     "parameterOrder": [
+      "part"
+     ],
+     "response": {
+      "$ref": "SponsorListResponse"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/youtube",
+      "https://www.googleapis.com/auth/youtube.force-ssl",
+      "https://www.googleapis.com/auth/youtube.readonly"
+     ]
+    }
+   }
+  },
   "subscriptions": {
    "methods": {
     "delete": {
@@ -8812,9 +10220,14 @@
        "description": "Set this parameter's value to true to retrieve a feed of the authenticated user's subscriptions.",
        "location": "query"
       },
+      "myRecentSubscribers": {
+       "type": "boolean",
+       "description": "Set this parameter's value to true to retrieve a feed of the subscribers of the authenticated user in reverse chronological order (newest first).",
+       "location": "query"
+      },
       "mySubscribers": {
        "type": "boolean",
-       "description": "Set this parameter's value to true to retrieve a feed of the subscribers of the authenticated user.",
+       "description": "Set this parameter's value to true to retrieve a feed of the subscribers of the authenticated user in no particular order.",
        "location": "query"
       },
       "onBehalfOfContentOwner": {
@@ -8866,6 +10279,54 @@
       "https://www.googleapis.com/auth/youtube.force-ssl",
       "https://www.googleapis.com/auth/youtube.readonly",
       "https://www.googleapis.com/auth/youtubepartner"
+     ]
+    }
+   }
+  },
+  "superChatEvents": {
+   "methods": {
+    "list": {
+     "id": "youtube.superChatEvents.list",
+     "path": "superChatEvents",
+     "httpMethod": "GET",
+     "description": "Lists Super Chat events for a channel.",
+     "parameters": {
+      "hl": {
+       "type": "string",
+       "description": "The hl parameter instructs the API to retrieve localized resource metadata for a specific application language that the YouTube website supports. The parameter value must be a language code included in the list returned by the i18nLanguages.list method.\n\nIf localized resource details are available in that language, the resource's snippet.localized object will contain the localized values. However, if localized details are not available, the snippet.localized object will contain resource details in the resource's default language.",
+       "location": "query"
+      },
+      "maxResults": {
+       "type": "integer",
+       "description": "The maxResults parameter specifies the maximum number of items that should be returned in the result set.",
+       "default": "5",
+       "format": "uint32",
+       "minimum": "1",
+       "maximum": "50",
+       "location": "query"
+      },
+      "pageToken": {
+       "type": "string",
+       "description": "The pageToken parameter identifies a specific page in the result set that should be returned. In an API response, the nextPageToken and prevPageToken properties identify other pages that could be retrieved.",
+       "location": "query"
+      },
+      "part": {
+       "type": "string",
+       "description": "The part parameter specifies the superChatEvent resource parts that the API response will include. Supported values are id and snippet.",
+       "required": true,
+       "location": "query"
+      }
+     },
+     "parameterOrder": [
+      "part"
+     ],
+     "response": {
+      "$ref": "SuperChatEventListResponse"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/youtube",
+      "https://www.googleapis.com/auth/youtube.force-ssl",
+      "https://www.googleapis.com/auth/youtube.readonly"
      ]
     }
    }
@@ -9154,12 +10615,6 @@
        ],
        "location": "query"
       },
-      "debugProjectIdOverride": {
-       "type": "string",
-       "description": "The debugProjectIdOverride parameter should be used for mimicking a request for a certain project ID",
-       "format": "int64",
-       "location": "query"
-      },
       "hl": {
        "type": "string",
        "description": "The hl parameter instructs the API to retrieve localized resource metadata for a specific application language that the YouTube website supports. The parameter value must be a language code included in the list returned by the i18nLanguages.list method.\n\nIf localized resource details are available in that language, the resource's snippet.localized object will contain the localized values. However, if localized details are not available, the snippet.localized object will contain resource details in the resource's default language.",
@@ -9175,13 +10630,29 @@
        "description": "DEPRECATED",
        "location": "query"
       },
+      "maxHeight": {
+       "type": "integer",
+       "description": "The maxHeight parameter specifies a maximum height of the embedded player. If maxWidth is provided, maxHeight may not be reached in order to not violate the width request.",
+       "format": "uint32",
+       "minimum": "72",
+       "maximum": "8192",
+       "location": "query"
+      },
       "maxResults": {
        "type": "integer",
-       "description": "The maxResults parameter specifies the maximum number of items that should be returned in the result set.\n\nNote: This parameter is supported for use in conjunction with the myRating parameter, but it is not supported for use in conjunction with the id parameter.",
+       "description": "The maxResults parameter specifies the maximum number of items that should be returned in the result set.\n\nNote: This parameter is supported for use in conjunction with the myRating and chart parameters, but it is not supported for use in conjunction with the id parameter.",
        "default": "5",
        "format": "uint32",
        "minimum": "1",
        "maximum": "50",
+       "location": "query"
+      },
+      "maxWidth": {
+       "type": "integer",
+       "description": "The maxWidth parameter specifies a maximum width of the embedded player. If maxHeight is provided, maxWidth may not be reached in order to not violate the height request.",
+       "format": "uint32",
+       "minimum": "72",
+       "maximum": "8192",
        "location": "query"
       },
       "myRating": {
@@ -9204,7 +10675,7 @@
       },
       "pageToken": {
        "type": "string",
-       "description": "The pageToken parameter identifies a specific page in the result set that should be returned. In an API response, the nextPageToken and prevPageToken properties identify other pages that could be retrieved.\n\nNote: This parameter is supported for use in conjunction with the myRating parameter, but it is not supported for use in conjunction with the id parameter.",
+       "description": "The pageToken parameter identifies a specific page in the result set that should be returned. In an API response, the nextPageToken and prevPageToken properties identify other pages that could be retrieved.\n\nNote: This parameter is supported for use in conjunction with the myRating and chart parameters, but it is not supported for use in conjunction with the id parameter.",
        "location": "query"
       },
       "part": {

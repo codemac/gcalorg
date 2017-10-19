@@ -1,12 +1,12 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"ye6orv2F-1npMW3u9suM3a7C5Bo/rJ-Wlqqs_yJDjtCFAIylPtmqXPY\"",
+ "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/K3nEDF6hixE8Pks2-9Ysn9j9prQ\"",
  "discoveryVersion": "v1",
  "id": "discovery:v1",
  "name": "discovery",
  "version": "v1",
  "title": "APIs Discovery Service",
- "description": "Lets you discover information about other Google APIs, such as what APIs are available, the resource and method details for each API.",
+ "description": "Provides information about other Google APIs, such as what APIs are available, the resource, and method details for each API.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "icons": {
@@ -19,7 +19,7 @@
  "basePath": "/discovery/v1/",
  "rootUrl": "https://www.googleapis.com/",
  "servicePath": "discovery/v1/",
- "batchPath": "batch",
+ "batchPath": "batch/discovery/v1",
  "parameters": {
   "alt": {
    "type": "string",
@@ -319,8 +319,7 @@
     },
     "batchPath": {
      "type": "string",
-     "description": "The path for REST batch requests.",
-     "default": "batch"
+     "description": "The path for REST batch requests."
     },
     "canonicalName": {
      "type": "string",
@@ -343,6 +342,10 @@
      "type": "string",
      "description": "The ETag for this response.",
      "readOnly": true
+    },
+    "exponentialBackoffDefault": {
+     "type": "boolean",
+     "description": "Enable exponential backoff for suitable methods in the generated clients."
     },
     "features": {
      "type": "array",
@@ -453,6 +456,9 @@
     "version": {
      "type": "string",
      "description": "The version of this API."
+    },
+    "version_module": {
+     "type": "boolean"
     }
    }
   },

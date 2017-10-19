@@ -7,15 +7,17 @@
 //   import "google.golang.org/api/books/v1"
 //   ...
 //   booksService, err := books.New(oauthHttpClient)
-package books
+package books // import "google.golang.org/api/books/v1"
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"golang.org/x/net/context"
-	"google.golang.org/api/googleapi"
+	context "golang.org/x/net/context"
+	ctxhttp "golang.org/x/net/context/ctxhttp"
+	gensupport "google.golang.org/api/gensupport"
+	googleapi "google.golang.org/api/googleapi"
 	"io"
 	"net/http"
 	"net/url"
@@ -31,10 +33,12 @@ var _ = fmt.Sprintf
 var _ = json.NewDecoder
 var _ = io.Copy
 var _ = url.Parse
+var _ = gensupport.MarshalJSON
 var _ = googleapi.Version
 var _ = errors.New
 var _ = strings.Replace
-var _ = context.Background
+var _ = context.Canceled
+var _ = ctxhttp.Do
 
 const apiId = "books:v1"
 const apiName = "books"
@@ -58,8 +62,11 @@ func New(client *http.Client) (*Service, error) {
 	s.Layers = NewLayersService(s)
 	s.Myconfig = NewMyconfigService(s)
 	s.Mylibrary = NewMylibraryService(s)
+	s.Notification = NewNotificationService(s)
 	s.Onboarding = NewOnboardingService(s)
+	s.Personalizedstream = NewPersonalizedstreamService(s)
 	s.Promooffer = NewPromoofferService(s)
+	s.Series = NewSeriesService(s)
 	s.Volumes = NewVolumesService(s)
 	return s, nil
 }
@@ -81,9 +88,15 @@ type Service struct {
 
 	Mylibrary *MylibraryService
 
+	Notification *NotificationService
+
 	Onboarding *OnboardingService
 
+	Personalizedstream *PersonalizedstreamService
+
 	Promooffer *PromoofferService
+
+	Series *SeriesService
 
 	Volumes *VolumesService
 }
@@ -233,6 +246,15 @@ type MylibraryReadingpositionsService struct {
 	s *Service
 }
 
+func NewNotificationService(s *Service) *NotificationService {
+	rs := &NotificationService{s: s}
+	return rs
+}
+
+type NotificationService struct {
+	s *Service
+}
+
 func NewOnboardingService(s *Service) *OnboardingService {
 	rs := &OnboardingService{s: s}
 	return rs
@@ -242,12 +264,42 @@ type OnboardingService struct {
 	s *Service
 }
 
+func NewPersonalizedstreamService(s *Service) *PersonalizedstreamService {
+	rs := &PersonalizedstreamService{s: s}
+	return rs
+}
+
+type PersonalizedstreamService struct {
+	s *Service
+}
+
 func NewPromoofferService(s *Service) *PromoofferService {
 	rs := &PromoofferService{s: s}
 	return rs
 }
 
 type PromoofferService struct {
+	s *Service
+}
+
+func NewSeriesService(s *Service) *SeriesService {
+	rs := &SeriesService{s: s}
+	rs.Membership = NewSeriesMembershipService(s)
+	return rs
+}
+
+type SeriesService struct {
+	s *Service
+
+	Membership *SeriesMembershipService
+}
+
+func NewSeriesMembershipService(s *Service) *SeriesMembershipService {
+	rs := &SeriesMembershipService{s: s}
+	return rs
+}
+
+type SeriesMembershipService struct {
 	s *Service
 }
 
@@ -363,8 +415,36 @@ type Annotation struct {
 
 	// VolumeId: The volume that this annotation belongs to.
 	VolumeId string `json:"volumeId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "AfterSelectedText")
+	// to unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AfterSelectedText") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *Annotation) MarshalJSON() ([]byte, error) {
+	type noMethod Annotation
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// AnnotationClientVersionRanges: Selection ranges sent from the client.
 type AnnotationClientVersionRanges struct {
 	// CfiRange: Range in CFI format for this annotation sent by client.
 	CfiRange *BooksAnnotationsRange `json:"cfiRange,omitempty"`
@@ -383,8 +463,32 @@ type AnnotationClientVersionRanges struct {
 	// ImageCfiRange: Range in image CFI format for this annotation sent by
 	// client.
 	ImageCfiRange *BooksAnnotationsRange `json:"imageCfiRange,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "CfiRange") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CfiRange") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *AnnotationClientVersionRanges) MarshalJSON() ([]byte, error) {
+	type noMethod AnnotationClientVersionRanges
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// AnnotationCurrentVersionRanges: Selection ranges for the most recent
+// content version.
 type AnnotationCurrentVersionRanges struct {
 	// CfiRange: Range in CFI format for this annotation for version above.
 	CfiRange *BooksAnnotationsRange `json:"cfiRange,omitempty"`
@@ -403,6 +507,28 @@ type AnnotationCurrentVersionRanges struct {
 	// ImageCfiRange: Range in image CFI format for this annotation for
 	// version above.
 	ImageCfiRange *BooksAnnotationsRange `json:"imageCfiRange,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "CfiRange") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CfiRange") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *AnnotationCurrentVersionRanges) MarshalJSON() ([]byte, error) {
+	type noMethod AnnotationCurrentVersionRanges
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type AnnotationLayerSummary struct {
@@ -417,6 +543,30 @@ type AnnotationLayerSummary struct {
 	// RemainingCharacterCount: Remaining allowed characters on this layer,
 	// especially for the "copy" layer.
 	RemainingCharacterCount int64 `json:"remainingCharacterCount,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "AllowedCharacterCount") to unconditionally include in API requests.
+	// By default, fields with empty values are omitted from API requests.
+	// However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AllowedCharacterCount") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *AnnotationLayerSummary) MarshalJSON() ([]byte, error) {
+	type noMethod AnnotationLayerSummary
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Annotationdata struct {
@@ -446,6 +596,33 @@ type Annotationdata struct {
 
 	// VolumeId: The volume id for this data. *
 	VolumeId string `json:"volumeId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "AnnotationType") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AnnotationType") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Annotationdata) MarshalJSON() ([]byte, error) {
+	type noMethod Annotationdata
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Annotations struct {
@@ -463,12 +640,64 @@ type Annotations struct {
 	// than the number of notes returned in this response if results have
 	// been paginated.
 	TotalItems int64 `json:"totalItems,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Items") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Items") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Annotations) MarshalJSON() ([]byte, error) {
+	type noMethod Annotations
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type AnnotationsSummary struct {
 	Kind string `json:"kind,omitempty"`
 
 	Layers []*AnnotationsSummaryLayers `json:"layers,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Kind") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Kind") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *AnnotationsSummary) MarshalJSON() ([]byte, error) {
+	type noMethod AnnotationsSummary
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type AnnotationsSummaryLayers struct {
@@ -481,6 +710,30 @@ type AnnotationsSummaryLayers struct {
 	RemainingCharacterCount int64 `json:"remainingCharacterCount,omitempty"`
 
 	Updated string `json:"updated,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "AllowedCharacterCount") to unconditionally include in API requests.
+	// By default, fields with empty values are omitted from API requests.
+	// However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AllowedCharacterCount") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *AnnotationsSummaryLayers) MarshalJSON() ([]byte, error) {
+	type noMethod AnnotationsSummaryLayers
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Annotationsdata struct {
@@ -496,6 +749,32 @@ type Annotationsdata struct {
 
 	// TotalItems: The total number of volume annotations found.
 	TotalItems int64 `json:"totalItems,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Items") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Items") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Annotationsdata) MarshalJSON() ([]byte, error) {
+	type noMethod Annotationsdata
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type BooksAnnotationsRange struct {
@@ -510,6 +789,28 @@ type BooksAnnotationsRange struct {
 
 	// StartPosition: The starting position for the range.
 	StartPosition string `json:"startPosition,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "EndOffset") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "EndOffset") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *BooksAnnotationsRange) MarshalJSON() ([]byte, error) {
+	type noMethod BooksAnnotationsRange
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type BooksCloudloadingResource struct {
@@ -520,10 +821,63 @@ type BooksCloudloadingResource struct {
 	Title string `json:"title,omitempty"`
 
 	VolumeId string `json:"volumeId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Author") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Author") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *BooksCloudloadingResource) MarshalJSON() ([]byte, error) {
+	type noMethod BooksCloudloadingResource
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type BooksVolumesRecommendedRateResponse struct {
 	ConsistencyToken string `json:"consistency_token,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "ConsistencyToken") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ConsistencyToken") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *BooksVolumesRecommendedRateResponse) MarshalJSON() ([]byte, error) {
+	type noMethod BooksVolumesRecommendedRateResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Bookshelf struct {
@@ -559,6 +913,32 @@ type Bookshelf struct {
 	// VolumesLastUpdated: Last time a volume was added or removed from this
 	// bookshelf (formatted UTC timestamp with millisecond resolution).
 	VolumesLastUpdated string `json:"volumesLastUpdated,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Access") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Access") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Bookshelf) MarshalJSON() ([]byte, error) {
+	type noMethod Bookshelf
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Bookshelves struct {
@@ -567,6 +947,32 @@ type Bookshelves struct {
 
 	// Kind: Resource type.
 	Kind string `json:"kind,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Items") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Items") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Bookshelves) MarshalJSON() ([]byte, error) {
+	type noMethod Bookshelves
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Category struct {
@@ -575,6 +981,32 @@ type Category struct {
 
 	// Kind: Resource type.
 	Kind string `json:"kind,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Items") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Items") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Category) MarshalJSON() ([]byte, error) {
+	type noMethod Category
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type CategoryItems struct {
@@ -583,6 +1015,28 @@ type CategoryItems struct {
 	CategoryId string `json:"categoryId,omitempty"`
 
 	Name string `json:"name,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "BadgeUrl") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BadgeUrl") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *CategoryItems) MarshalJSON() ([]byte, error) {
+	type noMethod CategoryItems
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type ConcurrentAccessRestriction struct {
@@ -623,6 +1077,28 @@ type ConcurrentAccessRestriction struct {
 
 	// VolumeId: Identifies the volume for which this entry applies.
 	VolumeId string `json:"volumeId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "DeviceAllowed") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DeviceAllowed") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ConcurrentAccessRestriction) MarshalJSON() ([]byte, error) {
+	type noMethod ConcurrentAccessRestriction
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Dictlayerdata struct {
@@ -631,12 +1107,56 @@ type Dictlayerdata struct {
 	Dict *DictlayerdataDict `json:"dict,omitempty"`
 
 	Kind string `json:"kind,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Common") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Common") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Dictlayerdata) MarshalJSON() ([]byte, error) {
+	type noMethod Dictlayerdata
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type DictlayerdataCommon struct {
 	// Title: The display title and localized canonical name to use when
 	// searching for this entity on Google search.
 	Title string `json:"title,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Title") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Title") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DictlayerdataCommon) MarshalJSON() ([]byte, error) {
+	type noMethod DictlayerdataCommon
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type DictlayerdataDict struct {
@@ -644,12 +1164,58 @@ type DictlayerdataDict struct {
 	Source *DictlayerdataDictSource `json:"source,omitempty"`
 
 	Words []*DictlayerdataDictWords `json:"words,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Source") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Source") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *DictlayerdataDict) MarshalJSON() ([]byte, error) {
+	type noMethod DictlayerdataDict
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// DictlayerdataDictSource: The source, url and attribution for this
+// dictionary data.
 type DictlayerdataDictSource struct {
 	Attribution string `json:"attribution,omitempty"`
 
 	Url string `json:"url,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Attribution") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Attribution") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DictlayerdataDictSource) MarshalJSON() ([]byte, error) {
+	type noMethod DictlayerdataDictSource
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type DictlayerdataDictWords struct {
@@ -662,30 +1228,140 @@ type DictlayerdataDictWords struct {
 	// Source: The words with different meanings but not related words, e.g.
 	// "go" (game) and "go" (verb).
 	Source *DictlayerdataDictWordsSource `json:"source,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Derivatives") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Derivatives") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DictlayerdataDictWords) MarshalJSON() ([]byte, error) {
+	type noMethod DictlayerdataDictWords
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type DictlayerdataDictWordsDerivatives struct {
 	Source *DictlayerdataDictWordsDerivativesSource `json:"source,omitempty"`
 
 	Text string `json:"text,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Source") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Source") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DictlayerdataDictWordsDerivatives) MarshalJSON() ([]byte, error) {
+	type noMethod DictlayerdataDictWordsDerivatives
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type DictlayerdataDictWordsDerivativesSource struct {
 	Attribution string `json:"attribution,omitempty"`
 
 	Url string `json:"url,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Attribution") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Attribution") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DictlayerdataDictWordsDerivativesSource) MarshalJSON() ([]byte, error) {
+	type noMethod DictlayerdataDictWordsDerivativesSource
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type DictlayerdataDictWordsExamples struct {
 	Source *DictlayerdataDictWordsExamplesSource `json:"source,omitempty"`
 
 	Text string `json:"text,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Source") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Source") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DictlayerdataDictWordsExamples) MarshalJSON() ([]byte, error) {
+	type noMethod DictlayerdataDictWordsExamples
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type DictlayerdataDictWordsExamplesSource struct {
 	Attribution string `json:"attribution,omitempty"`
 
 	Url string `json:"url,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Attribution") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Attribution") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DictlayerdataDictWordsExamplesSource) MarshalJSON() ([]byte, error) {
+	type noMethod DictlayerdataDictWordsExamplesSource
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type DictlayerdataDictWordsSenses struct {
@@ -704,54 +1380,363 @@ type DictlayerdataDictWordsSenses struct {
 	Syllabification string `json:"syllabification,omitempty"`
 
 	Synonyms []*DictlayerdataDictWordsSensesSynonyms `json:"synonyms,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Conjugations") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Conjugations") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DictlayerdataDictWordsSenses) MarshalJSON() ([]byte, error) {
+	type noMethod DictlayerdataDictWordsSenses
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type DictlayerdataDictWordsSensesConjugations struct {
 	Type string `json:"type,omitempty"`
 
 	Value string `json:"value,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Type") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Type") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DictlayerdataDictWordsSensesConjugations) MarshalJSON() ([]byte, error) {
+	type noMethod DictlayerdataDictWordsSensesConjugations
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type DictlayerdataDictWordsSensesDefinitions struct {
 	Definition string `json:"definition,omitempty"`
 
 	Examples []*DictlayerdataDictWordsSensesDefinitionsExamples `json:"examples,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Definition") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Definition") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DictlayerdataDictWordsSensesDefinitions) MarshalJSON() ([]byte, error) {
+	type noMethod DictlayerdataDictWordsSensesDefinitions
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type DictlayerdataDictWordsSensesDefinitionsExamples struct {
 	Source *DictlayerdataDictWordsSensesDefinitionsExamplesSource `json:"source,omitempty"`
 
 	Text string `json:"text,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Source") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Source") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DictlayerdataDictWordsSensesDefinitionsExamples) MarshalJSON() ([]byte, error) {
+	type noMethod DictlayerdataDictWordsSensesDefinitionsExamples
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type DictlayerdataDictWordsSensesDefinitionsExamplesSource struct {
 	Attribution string `json:"attribution,omitempty"`
 
 	Url string `json:"url,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Attribution") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Attribution") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DictlayerdataDictWordsSensesDefinitionsExamplesSource) MarshalJSON() ([]byte, error) {
+	type noMethod DictlayerdataDictWordsSensesDefinitionsExamplesSource
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type DictlayerdataDictWordsSensesSource struct {
 	Attribution string `json:"attribution,omitempty"`
 
 	Url string `json:"url,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Attribution") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Attribution") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DictlayerdataDictWordsSensesSource) MarshalJSON() ([]byte, error) {
+	type noMethod DictlayerdataDictWordsSensesSource
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type DictlayerdataDictWordsSensesSynonyms struct {
 	Source *DictlayerdataDictWordsSensesSynonymsSource `json:"source,omitempty"`
 
 	Text string `json:"text,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Source") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Source") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DictlayerdataDictWordsSensesSynonyms) MarshalJSON() ([]byte, error) {
+	type noMethod DictlayerdataDictWordsSensesSynonyms
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type DictlayerdataDictWordsSensesSynonymsSource struct {
 	Attribution string `json:"attribution,omitempty"`
 
 	Url string `json:"url,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Attribution") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Attribution") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *DictlayerdataDictWordsSensesSynonymsSource) MarshalJSON() ([]byte, error) {
+	type noMethod DictlayerdataDictWordsSensesSynonymsSource
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// DictlayerdataDictWordsSource: The words with different meanings but
+// not related words, e.g. "go" (game) and "go" (verb).
 type DictlayerdataDictWordsSource struct {
 	Attribution string `json:"attribution,omitempty"`
 
 	Url string `json:"url,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Attribution") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Attribution") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DictlayerdataDictWordsSource) MarshalJSON() ([]byte, error) {
+	type noMethod DictlayerdataDictWordsSource
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type Discoveryclusters struct {
+	Clusters []*DiscoveryclustersClusters `json:"clusters,omitempty"`
+
+	// Kind: Resorce type.
+	Kind string `json:"kind,omitempty"`
+
+	TotalClusters int64 `json:"totalClusters,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Clusters") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Clusters") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Discoveryclusters) MarshalJSON() ([]byte, error) {
+	type noMethod Discoveryclusters
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type DiscoveryclustersClusters struct {
+	BannerWithContentContainer *DiscoveryclustersClustersBannerWithContentContainer `json:"banner_with_content_container,omitempty"`
+
+	SubTitle string `json:"subTitle,omitempty"`
+
+	Title string `json:"title,omitempty"`
+
+	TotalVolumes int64 `json:"totalVolumes,omitempty"`
+
+	Uid string `json:"uid,omitempty"`
+
+	Volumes []*Volume `json:"volumes,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "BannerWithContentContainer") to unconditionally include in API
+	// requests. By default, fields with empty values are omitted from API
+	// requests. However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g.
+	// "BannerWithContentContainer") to include in API requests with the
+	// JSON null value. By default, fields with empty values are omitted
+	// from API requests. However, any field with an empty value appearing
+	// in NullFields will be sent to the server as null. It is an error if a
+	// field in this list has a non-empty value. This may be used to include
+	// null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DiscoveryclustersClusters) MarshalJSON() ([]byte, error) {
+	type noMethod DiscoveryclustersClusters
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type DiscoveryclustersClustersBannerWithContentContainer struct {
+	FillColorArgb string `json:"fillColorArgb,omitempty"`
+
+	ImageUrl string `json:"imageUrl,omitempty"`
+
+	MaskColorArgb string `json:"maskColorArgb,omitempty"`
+
+	MoreButtonText string `json:"moreButtonText,omitempty"`
+
+	MoreButtonUrl string `json:"moreButtonUrl,omitempty"`
+
+	TextColorArgb string `json:"textColorArgb,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "FillColorArgb") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "FillColorArgb") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DiscoveryclustersClustersBannerWithContentContainer) MarshalJSON() ([]byte, error) {
+	type noMethod DiscoveryclustersClustersBannerWithContentContainer
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type DownloadAccessRestriction struct {
@@ -799,6 +1784,28 @@ type DownloadAccessRestriction struct {
 
 	// VolumeId: Identifies the volume for which this entry applies.
 	VolumeId string `json:"volumeId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "DeviceAllowed") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DeviceAllowed") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DownloadAccessRestriction) MarshalJSON() ([]byte, error) {
+	type noMethod DownloadAccessRestriction
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type DownloadAccesses struct {
@@ -807,6 +1814,33 @@ type DownloadAccesses struct {
 
 	// Kind: Resource type.
 	Kind string `json:"kind,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "DownloadAccessList")
+	// to unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DownloadAccessList") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DownloadAccesses) MarshalJSON() ([]byte, error) {
+	type noMethod DownloadAccesses
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Geolayerdata struct {
@@ -815,6 +1849,28 @@ type Geolayerdata struct {
 	Geo *GeolayerdataGeo `json:"geo,omitempty"`
 
 	Kind string `json:"kind,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Common") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Common") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Geolayerdata) MarshalJSON() ([]byte, error) {
+	type noMethod Geolayerdata
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type GeolayerdataCommon struct {
@@ -834,6 +1890,28 @@ type GeolayerdataCommon struct {
 	// Title: The display title and localized canonical name to use when
 	// searching for this entity on Google search.
 	Title string `json:"title,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Lang") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Lang") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *GeolayerdataCommon) MarshalJSON() ([]byte, error) {
+	type noMethod GeolayerdataCommon
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type GeolayerdataGeo struct {
@@ -865,33 +1943,192 @@ type GeolayerdataGeo struct {
 	// Zoom: The Zoom level to use for the map. Zoom levels between 0 (the
 	// lowest zoom level, in which the entire world can be seen on one map)
 	// to 21+ (down to individual buildings). See:
-	// https://developers.google.com/maps/documentation/staticmaps/#Zoomlevel
-	// s
+	// https://developers.google.com/maps/documentation/staticmaps/#Zoomlevels
 	Zoom int64 `json:"zoom,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Boundary") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Boundary") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *GeolayerdataGeo) MarshalJSON() ([]byte, error) {
+	type noMethod GeolayerdataGeo
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *GeolayerdataGeo) UnmarshalJSON(data []byte) error {
+	type noMethod GeolayerdataGeo
+	var s1 struct {
+		Latitude  gensupport.JSONFloat64 `json:"latitude"`
+		Longitude gensupport.JSONFloat64 `json:"longitude"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Latitude = float64(s1.Latitude)
+	s.Longitude = float64(s1.Longitude)
+	return nil
 }
 
 type GeolayerdataGeoBoundaryItem struct {
 	Latitude int64 `json:"latitude,omitempty"`
 
 	Longitude int64 `json:"longitude,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Latitude") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Latitude") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *GeolayerdataGeoBoundaryItem) MarshalJSON() ([]byte, error) {
+	type noMethod GeolayerdataGeoBoundaryItem
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// GeolayerdataGeoViewport: The viewport for showing this location. This
+// is a latitude, longitude rectangle.
 type GeolayerdataGeoViewport struct {
 	Hi *GeolayerdataGeoViewportHi `json:"hi,omitempty"`
 
 	Lo *GeolayerdataGeoViewportLo `json:"lo,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Hi") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Hi") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *GeolayerdataGeoViewport) MarshalJSON() ([]byte, error) {
+	type noMethod GeolayerdataGeoViewport
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type GeolayerdataGeoViewportHi struct {
 	Latitude float64 `json:"latitude,omitempty"`
 
 	Longitude float64 `json:"longitude,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Latitude") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Latitude") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *GeolayerdataGeoViewportHi) MarshalJSON() ([]byte, error) {
+	type noMethod GeolayerdataGeoViewportHi
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *GeolayerdataGeoViewportHi) UnmarshalJSON(data []byte) error {
+	type noMethod GeolayerdataGeoViewportHi
+	var s1 struct {
+		Latitude  gensupport.JSONFloat64 `json:"latitude"`
+		Longitude gensupport.JSONFloat64 `json:"longitude"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Latitude = float64(s1.Latitude)
+	s.Longitude = float64(s1.Longitude)
+	return nil
 }
 
 type GeolayerdataGeoViewportLo struct {
 	Latitude float64 `json:"latitude,omitempty"`
 
 	Longitude float64 `json:"longitude,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Latitude") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Latitude") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *GeolayerdataGeoViewportLo) MarshalJSON() ([]byte, error) {
+	type noMethod GeolayerdataGeoViewportLo
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *GeolayerdataGeoViewportLo) UnmarshalJSON(data []byte) error {
+	type noMethod GeolayerdataGeoViewportLo
+	var s1 struct {
+		Latitude  gensupport.JSONFloat64 `json:"latitude"`
+		Longitude gensupport.JSONFloat64 `json:"longitude"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Latitude = float64(s1.Latitude)
+	s.Longitude = float64(s1.Longitude)
+	return nil
 }
 
 type Layersummaries struct {
@@ -903,6 +2140,32 @@ type Layersummaries struct {
 
 	// TotalItems: The total number of layer summaries found.
 	TotalItems int64 `json:"totalItems,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Items") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Items") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Layersummaries) MarshalJSON() ([]byte, error) {
+	type noMethod Layersummaries
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Layersummary struct {
@@ -949,6 +2212,33 @@ type Layersummary struct {
 
 	// VolumeId: The volume id this resource is for.
 	VolumeId string `json:"volumeId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "AnnotationCount") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AnnotationCount") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Layersummary) MarshalJSON() ([]byte, error) {
+	type noMethod Layersummary
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Metadata struct {
@@ -957,6 +2247,32 @@ type Metadata struct {
 
 	// Kind: Resource type.
 	Kind string `json:"kind,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Items") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Items") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Metadata) MarshalJSON() ([]byte, error) {
+	type noMethod Metadata
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type MetadataItems struct {
@@ -969,6 +2285,86 @@ type MetadataItems struct {
 	Size int64 `json:"size,omitempty,string"`
 
 	Version int64 `json:"version,omitempty,string"`
+
+	// ForceSendFields is a list of field names (e.g. "DownloadUrl") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DownloadUrl") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *MetadataItems) MarshalJSON() ([]byte, error) {
+	type noMethod MetadataItems
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type Notification struct {
+	Body string `json:"body,omitempty"`
+
+	// CrmExperimentIds: The list of crm experiment ids.
+	CrmExperimentIds googleapi.Int64s `json:"crmExperimentIds,omitempty"`
+
+	DocId string `json:"doc_id,omitempty"`
+
+	DocType string `json:"doc_type,omitempty"`
+
+	DontShowNotification bool `json:"dont_show_notification,omitempty"`
+
+	IconUrl string `json:"iconUrl,omitempty"`
+
+	// Kind: Resource type.
+	Kind string `json:"kind,omitempty"`
+
+	NotificationGroup string `json:"notificationGroup,omitempty"`
+
+	NotificationType string `json:"notification_type,omitempty"`
+
+	PcampaignId string `json:"pcampaign_id,omitempty"`
+
+	Reason string `json:"reason,omitempty"`
+
+	ShowNotificationSettingsAction bool `json:"show_notification_settings_action,omitempty"`
+
+	TargetUrl string `json:"targetUrl,omitempty"`
+
+	Title string `json:"title,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Body") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Body") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Notification) MarshalJSON() ([]byte, error) {
+	type noMethod Notification
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Offers struct {
@@ -977,6 +2373,32 @@ type Offers struct {
 
 	// Kind: Resource type.
 	Kind string `json:"kind,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Items") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Items") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Offers) MarshalJSON() ([]byte, error) {
+	type noMethod Offers
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type OffersItems struct {
@@ -987,6 +2409,28 @@ type OffersItems struct {
 	Id string `json:"id,omitempty"`
 
 	Items []*OffersItemsItems `json:"items,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ArtUrl") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ArtUrl") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *OffersItems) MarshalJSON() ([]byte, error) {
+	type noMethod OffersItems
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type OffersItemsItems struct {
@@ -1001,6 +2445,28 @@ type OffersItemsItems struct {
 	Title string `json:"title,omitempty"`
 
 	VolumeId string `json:"volumeId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Author") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Author") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *OffersItemsItems) MarshalJSON() ([]byte, error) {
+	type noMethod OffersItemsItems
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type ReadingPosition struct {
@@ -1025,6 +2491,33 @@ type ReadingPosition struct {
 
 	// VolumeId: Volume id associated with this reading position.
 	VolumeId string `json:"volumeId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "EpubCfiPosition") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "EpubCfiPosition") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ReadingPosition) MarshalJSON() ([]byte, error) {
+	type noMethod ReadingPosition
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type RequestAccess struct {
@@ -1036,6 +2529,33 @@ type RequestAccess struct {
 
 	// Kind: Resource type.
 	Kind string `json:"kind,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "ConcurrentAccess") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ConcurrentAccess") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *RequestAccess) MarshalJSON() ([]byte, error) {
+	type noMethod RequestAccess
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Review struct {
@@ -1072,13 +2592,60 @@ type Review struct {
 
 	// VolumeId: Volume that this review is for.
 	VolumeId string `json:"volumeId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Author") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Author") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *Review) MarshalJSON() ([]byte, error) {
+	type noMethod Review
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ReviewAuthor: Author of this review.
 type ReviewAuthor struct {
 	// DisplayName: Name of this person.
 	DisplayName string `json:"displayName,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "DisplayName") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DisplayName") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ReviewAuthor) MarshalJSON() ([]byte, error) {
+	type noMethod ReviewAuthor
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ReviewSource: Information regarding the source of this review, when
+// the review is not from a Google Books user.
 type ReviewSource struct {
 	// Description: Name of the source.
 	Description string `json:"description,omitempty"`
@@ -1088,6 +2655,131 @@ type ReviewSource struct {
 
 	// Url: URL of the source of the review.
 	Url string `json:"url,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Description") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Description") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ReviewSource) MarshalJSON() ([]byte, error) {
+	type noMethod ReviewSource
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type Series struct {
+	// Kind: Resource type.
+	Kind string `json:"kind,omitempty"`
+
+	Series []*SeriesSeries `json:"series,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Kind") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Kind") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Series) MarshalJSON() ([]byte, error) {
+	type noMethod Series
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type SeriesSeries struct {
+	BannerImageUrl string `json:"bannerImageUrl,omitempty"`
+
+	ImageUrl string `json:"imageUrl,omitempty"`
+
+	SeriesId string `json:"seriesId,omitempty"`
+
+	SeriesType string `json:"seriesType,omitempty"`
+
+	Title string `json:"title,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "BannerImageUrl") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BannerImageUrl") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *SeriesSeries) MarshalJSON() ([]byte, error) {
+	type noMethod SeriesSeries
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type Seriesmembership struct {
+	// Kind: Resorce type.
+	Kind string `json:"kind,omitempty"`
+
+	Member []*Volume `json:"member,omitempty"`
+
+	NextPageToken string `json:"nextPageToken,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Kind") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Kind") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Seriesmembership) MarshalJSON() ([]byte, error) {
+	type noMethod Seriesmembership
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Usersettings struct {
@@ -1097,12 +2789,173 @@ type Usersettings struct {
 	// NotesExport: User settings in sub-objects, each for different
 	// purposes.
 	NotesExport *UsersettingsNotesExport `json:"notesExport,omitempty"`
+
+	Notification *UsersettingsNotification `json:"notification,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Kind") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Kind") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *Usersettings) MarshalJSON() ([]byte, error) {
+	type noMethod Usersettings
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// UsersettingsNotesExport: User settings in sub-objects, each for
+// different purposes.
 type UsersettingsNotesExport struct {
 	FolderName string `json:"folderName,omitempty"`
 
 	IsEnabled bool `json:"isEnabled,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "FolderName") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "FolderName") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *UsersettingsNotesExport) MarshalJSON() ([]byte, error) {
+	type noMethod UsersettingsNotesExport
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type UsersettingsNotification struct {
+	MoreFromAuthors *UsersettingsNotificationMoreFromAuthors `json:"moreFromAuthors,omitempty"`
+
+	MoreFromSeries *UsersettingsNotificationMoreFromSeries `json:"moreFromSeries,omitempty"`
+
+	RewardExpirations *UsersettingsNotificationRewardExpirations `json:"rewardExpirations,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "MoreFromAuthors") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "MoreFromAuthors") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *UsersettingsNotification) MarshalJSON() ([]byte, error) {
+	type noMethod UsersettingsNotification
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type UsersettingsNotificationMoreFromAuthors struct {
+	OptedState string `json:"opted_state,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "OptedState") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "OptedState") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *UsersettingsNotificationMoreFromAuthors) MarshalJSON() ([]byte, error) {
+	type noMethod UsersettingsNotificationMoreFromAuthors
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type UsersettingsNotificationMoreFromSeries struct {
+	OptedState string `json:"opted_state,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "OptedState") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "OptedState") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *UsersettingsNotificationMoreFromSeries) MarshalJSON() ([]byte, error) {
+	type noMethod UsersettingsNotificationMoreFromSeries
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type UsersettingsNotificationRewardExpirations struct {
+	OptedState string `json:"opted_state,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "OptedState") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "OptedState") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *UsersettingsNotificationRewardExpirations) MarshalJSON() ([]byte, error) {
+	type noMethod UsersettingsNotificationRewardExpirations
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Volume struct {
@@ -1146,8 +2999,37 @@ type Volume struct {
 
 	// VolumeInfo: General volume information.
 	VolumeInfo *VolumeVolumeInfo `json:"volumeInfo,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "AccessInfo") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AccessInfo") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *Volume) MarshalJSON() ([]byte, error) {
+	type noMethod Volume
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VolumeAccessInfo: Any information about a volume related to reading
+// or obtaining that volume text. This information can depend on country
+// (books may be public domain in one country but not in another, e.g.).
 type VolumeAccessInfo struct {
 	// AccessViewStatus: Combines the access and viewability of this volume
 	// into a single status field for this user. Values can be
@@ -1212,8 +3094,33 @@ type VolumeAccessInfo struct {
 	// WebReaderLink: URL to read this volume on the Google Books site. Link
 	// will not allow users to read non-viewable volumes.
 	WebReaderLink string `json:"webReaderLink,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "AccessViewStatus") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AccessViewStatus") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VolumeAccessInfo) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeAccessInfo
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VolumeAccessInfoEpub: Information about epub content. (In LITE
+// projection.)
 type VolumeAccessInfoEpub struct {
 	// AcsTokenLink: URL to retrieve ACS token for epub download. (In LITE
 	// projection.)
@@ -1225,8 +3132,32 @@ type VolumeAccessInfoEpub struct {
 	// IsAvailable: Is a flowing text epub available either as public domain
 	// or for purchase. (In LITE projection.)
 	IsAvailable bool `json:"isAvailable,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "AcsTokenLink") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AcsTokenLink") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VolumeAccessInfoEpub) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeAccessInfoEpub
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VolumeAccessInfoPdf: Information about pdf content. (In LITE
+// projection.)
 type VolumeAccessInfoPdf struct {
 	// AcsTokenLink: URL to retrieve ACS token for pdf download. (In LITE
 	// projection.)
@@ -1238,12 +3169,58 @@ type VolumeAccessInfoPdf struct {
 	// IsAvailable: Is a scanned image pdf available either as public domain
 	// or for purchase. (In LITE projection.)
 	IsAvailable bool `json:"isAvailable,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "AcsTokenLink") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AcsTokenLink") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VolumeAccessInfoPdf) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeAccessInfoPdf
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VolumeLayerInfo: What layers exist in this volume and high level
+// information about them.
 type VolumeLayerInfo struct {
 	// Layers: A layer should appear here if and only if the layer exists
 	// for this book.
 	Layers []*VolumeLayerInfoLayers `json:"layers,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Layers") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Layers") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *VolumeLayerInfo) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeLayerInfo
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type VolumeLayerInfoLayers struct {
@@ -1255,13 +3232,63 @@ type VolumeLayerInfoLayers struct {
 	// books.layers.volumeAnnotations.* responses. The actual annotation
 	// data is versioned separately.
 	VolumeAnnotationsVersion string `json:"volumeAnnotationsVersion,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "LayerId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "LayerId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VolumeLayerInfoLayers) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeLayerInfoLayers
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VolumeRecommendedInfo: Recommendation related information for this
+// volume.
 type VolumeRecommendedInfo struct {
 	// Explanation: A text explaining why this volume is recommended.
 	Explanation string `json:"explanation,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Explanation") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Explanation") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VolumeRecommendedInfo) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeRecommendedInfo
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VolumeSaleInfo: Any information about a volume related to the
+// eBookstore and/or purchaseability. This information can depend on the
+// country where the request originates from (i.e. books may not be for
+// sale in certain countries).
 type VolumeSaleInfo struct {
 	// BuyLink: URL to purchase this volume on the Google Books site. (In
 	// LITE projection)
@@ -1294,8 +3321,32 @@ type VolumeSaleInfo struct {
 	// above. Possible values are FOR_SALE, FOR_RENTAL_ONLY,
 	// FOR_SALE_AND_RENTAL, FREE, NOT_FOR_SALE, or FOR_PREORDER.
 	Saleability string `json:"saleability,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "BuyLink") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BuyLink") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VolumeSaleInfo) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeSaleInfo
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VolumeSaleInfoListPrice: Suggested retail price. (In LITE
+// projection.)
 type VolumeSaleInfoListPrice struct {
 	// Amount: Amount in the currency listed below. (In LITE projection.)
 	Amount float64 `json:"amount,omitempty"`
@@ -1303,11 +3354,50 @@ type VolumeSaleInfoListPrice struct {
 	// CurrencyCode: An ISO 4217, three-letter currency code. (In LITE
 	// projection.)
 	CurrencyCode string `json:"currencyCode,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Amount") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Amount") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *VolumeSaleInfoListPrice) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeSaleInfoListPrice
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *VolumeSaleInfoListPrice) UnmarshalJSON(data []byte) error {
+	type noMethod VolumeSaleInfoListPrice
+	var s1 struct {
+		Amount gensupport.JSONFloat64 `json:"amount"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Amount = float64(s1.Amount)
+	return nil
 }
 
 type VolumeSaleInfoOffers struct {
 	// FinskyOfferType: The finsky offer type (e.g., PURCHASE=0 RENTAL=3)
 	FinskyOfferType int64 `json:"finskyOfferType,omitempty"`
+
+	// Giftable: Indicates whether the offer is giftable.
+	Giftable bool `json:"giftable,omitempty"`
 
 	// ListPrice: Offer list (=undiscounted) price in Micros.
 	ListPrice *VolumeSaleInfoOffersListPrice `json:"listPrice,omitempty"`
@@ -1317,26 +3407,168 @@ type VolumeSaleInfoOffers struct {
 
 	// RetailPrice: Offer retail (=discounted) price in Micros
 	RetailPrice *VolumeSaleInfoOffersRetailPrice `json:"retailPrice,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "FinskyOfferType") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "FinskyOfferType") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VolumeSaleInfoOffers) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeSaleInfoOffers
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VolumeSaleInfoOffersListPrice: Offer list (=undiscounted) price in
+// Micros.
 type VolumeSaleInfoOffersListPrice struct {
 	AmountInMicros float64 `json:"amountInMicros,omitempty"`
 
 	CurrencyCode string `json:"currencyCode,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "AmountInMicros") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AmountInMicros") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VolumeSaleInfoOffersListPrice) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeSaleInfoOffersListPrice
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *VolumeSaleInfoOffersListPrice) UnmarshalJSON(data []byte) error {
+	type noMethod VolumeSaleInfoOffersListPrice
+	var s1 struct {
+		AmountInMicros gensupport.JSONFloat64 `json:"amountInMicros"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.AmountInMicros = float64(s1.AmountInMicros)
+	return nil
+}
+
+// VolumeSaleInfoOffersRentalDuration: The rental duration (for rental
+// offers only).
 type VolumeSaleInfoOffersRentalDuration struct {
 	Count float64 `json:"count,omitempty"`
 
 	Unit string `json:"unit,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Count") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Count") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VolumeSaleInfoOffersRentalDuration) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeSaleInfoOffersRentalDuration
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *VolumeSaleInfoOffersRentalDuration) UnmarshalJSON(data []byte) error {
+	type noMethod VolumeSaleInfoOffersRentalDuration
+	var s1 struct {
+		Count gensupport.JSONFloat64 `json:"count"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Count = float64(s1.Count)
+	return nil
+}
+
+// VolumeSaleInfoOffersRetailPrice: Offer retail (=discounted) price in
+// Micros
 type VolumeSaleInfoOffersRetailPrice struct {
 	AmountInMicros float64 `json:"amountInMicros,omitempty"`
 
 	CurrencyCode string `json:"currencyCode,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "AmountInMicros") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AmountInMicros") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VolumeSaleInfoOffersRetailPrice) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeSaleInfoOffersRetailPrice
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *VolumeSaleInfoOffersRetailPrice) UnmarshalJSON(data []byte) error {
+	type noMethod VolumeSaleInfoOffersRetailPrice
+	var s1 struct {
+		AmountInMicros gensupport.JSONFloat64 `json:"amountInMicros"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.AmountInMicros = float64(s1.AmountInMicros)
+	return nil
+}
+
+// VolumeSaleInfoRetailPrice: The actual selling price of the book. This
+// is the same as the suggested retail or list price unless there are
+// offers or discounts on this volume. (In LITE projection.)
 type VolumeSaleInfoRetailPrice struct {
 	// Amount: Amount in the currency listed below. (In LITE projection.)
 	Amount float64 `json:"amount,omitempty"`
@@ -1344,16 +3576,106 @@ type VolumeSaleInfoRetailPrice struct {
 	// CurrencyCode: An ISO 4217, three-letter currency code. (In LITE
 	// projection.)
 	CurrencyCode string `json:"currencyCode,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Amount") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Amount") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VolumeSaleInfoRetailPrice) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeSaleInfoRetailPrice
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *VolumeSaleInfoRetailPrice) UnmarshalJSON(data []byte) error {
+	type noMethod VolumeSaleInfoRetailPrice
+	var s1 struct {
+		Amount gensupport.JSONFloat64 `json:"amount"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Amount = float64(s1.Amount)
+	return nil
+}
+
+// VolumeSearchInfo: Search result information related to this volume.
 type VolumeSearchInfo struct {
 	// TextSnippet: A text snippet containing the search query.
 	TextSnippet string `json:"textSnippet,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "TextSnippet") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "TextSnippet") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VolumeSearchInfo) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeSearchInfo
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VolumeUserInfo: User specific information related to this volume.
+// (e.g. page this user last read or whether they purchased this book)
 type VolumeUserInfo struct {
+	// AcquiredTime: Timestamp when this volume was acquired by the user.
+	// (RFC 3339 UTC date-time format) Acquiring includes purchase, user
+	// upload, receiving family sharing, etc.
+	AcquiredTime string `json:"acquiredTime,omitempty"`
+
+	// AcquisitionType: How this volume was acquired.
+	AcquisitionType int64 `json:"acquisitionType,omitempty"`
+
 	// Copy: Copy/Paste accounting information.
 	Copy *VolumeUserInfoCopy `json:"copy,omitempty"`
+
+	// EntitlementType: Whether this volume is purchased, sample, pd
+	// download etc.
+	EntitlementType int64 `json:"entitlementType,omitempty"`
+
+	// FamilySharing: Information on the ability to share with the family.
+	FamilySharing *VolumeUserInfoFamilySharing `json:"familySharing,omitempty"`
+
+	// IsFamilySharedFromUser: Whether or not the user shared this volume
+	// with the family.
+	IsFamilySharedFromUser bool `json:"isFamilySharedFromUser,omitempty"`
+
+	// IsFamilySharedToUser: Whether or not the user received this volume
+	// through family sharing.
+	IsFamilySharedToUser bool `json:"isFamilySharedToUser,omitempty"`
+
+	// IsFamilySharingAllowed: Deprecated: Replaced by familySharing.
+	IsFamilySharingAllowed bool `json:"isFamilySharingAllowed,omitempty"`
+
+	// IsFamilySharingDisabledByFop: Deprecated: Replaced by familySharing.
+	IsFamilySharingDisabledByFop bool `json:"isFamilySharingDisabledByFop,omitempty"`
 
 	// IsInMyBooks: Whether or not this volume is currently in "my books."
 	IsInMyBooks bool `json:"isInMyBooks,omitempty"`
@@ -1388,8 +3710,31 @@ type VolumeUserInfo struct {
 	Updated string `json:"updated,omitempty"`
 
 	UserUploadedVolumeInfo *VolumeUserInfoUserUploadedVolumeInfo `json:"userUploadedVolumeInfo,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "AcquiredTime") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AcquiredTime") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VolumeUserInfo) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeUserInfo
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VolumeUserInfoCopy: Copy/Paste accounting information.
 type VolumeUserInfoCopy struct {
 	AllowedCharacterCount int64 `json:"allowedCharacterCount,omitempty"`
 
@@ -1398,18 +3743,129 @@ type VolumeUserInfoCopy struct {
 	RemainingCharacterCount int64 `json:"remainingCharacterCount,omitempty"`
 
 	Updated string `json:"updated,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "AllowedCharacterCount") to unconditionally include in API requests.
+	// By default, fields with empty values are omitted from API requests.
+	// However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AllowedCharacterCount") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VolumeUserInfoCopy) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeUserInfoCopy
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VolumeUserInfoFamilySharing: Information on the ability to share with
+// the family.
+type VolumeUserInfoFamilySharing struct {
+	// FamilyRole: The role of the user in the family.
+	FamilyRole string `json:"familyRole,omitempty"`
+
+	// IsSharingAllowed: Whether or not this volume can be shared with the
+	// family by the user. This includes sharing eligibility of both the
+	// volume and the user. If the value is true, the user can initiate a
+	// family sharing action.
+	IsSharingAllowed bool `json:"isSharingAllowed,omitempty"`
+
+	// IsSharingDisabledByFop: Whether or not sharing this volume is
+	// temporarily disabled due to issues with the Family Wallet.
+	IsSharingDisabledByFop bool `json:"isSharingDisabledByFop,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "FamilyRole") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "FamilyRole") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *VolumeUserInfoFamilySharing) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeUserInfoFamilySharing
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VolumeUserInfoRentalPeriod: Period during this book is/was a valid
+// rental.
 type VolumeUserInfoRentalPeriod struct {
 	EndUtcSec int64 `json:"endUtcSec,omitempty,string"`
 
 	StartUtcSec int64 `json:"startUtcSec,omitempty,string"`
+
+	// ForceSendFields is a list of field names (e.g. "EndUtcSec") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "EndUtcSec") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *VolumeUserInfoRentalPeriod) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeUserInfoRentalPeriod
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type VolumeUserInfoUserUploadedVolumeInfo struct {
 	ProcessingState string `json:"processingState,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ProcessingState") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ProcessingState") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VolumeUserInfoUserUploadedVolumeInfo) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeUserInfoUserUploadedVolumeInfo
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VolumeVolumeInfo: General volume information.
 type VolumeVolumeInfo struct {
 	// AllowAnonLogging: Whether anonymous logging should be allowed.
 	AllowAnonLogging bool `json:"allowAnonLogging,omitempty"`
@@ -1467,6 +3923,10 @@ type VolumeVolumeInfo struct {
 	// PageCount: Total number of pages as per publisher metadata.
 	PageCount int64 `json:"pageCount,omitempty"`
 
+	// PanelizationSummary: A top-level summary of the panelization info in
+	// this volume.
+	PanelizationSummary *VolumeVolumeInfoPanelizationSummary `json:"panelizationSummary,omitempty"`
+
 	// PreviewLink: URL to preview this volume on the Google Books site.
 	PreviewLink string `json:"previewLink,omitempty"`
 
@@ -1494,13 +3954,53 @@ type VolumeVolumeInfo struct {
 	// metadata.
 	SamplePageCount int64 `json:"samplePageCount,omitempty"`
 
+	SeriesInfo *Volumeseriesinfo `json:"seriesInfo,omitempty"`
+
 	// Subtitle: Volume subtitle. (In LITE projection.)
 	Subtitle string `json:"subtitle,omitempty"`
 
 	// Title: Volume title. (In LITE projection.)
 	Title string `json:"title,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "AllowAnonLogging") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AllowAnonLogging") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VolumeVolumeInfo) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeVolumeInfo
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *VolumeVolumeInfo) UnmarshalJSON(data []byte) error {
+	type noMethod VolumeVolumeInfo
+	var s1 struct {
+		AverageRating gensupport.JSONFloat64 `json:"averageRating"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.AverageRating = float64(s1.AverageRating)
+	return nil
+}
+
+// VolumeVolumeInfoDimensions: Physical dimensions of this volume.
 type VolumeVolumeInfoDimensions struct {
 	// Height: Height or length of this volume (in cm).
 	Height string `json:"height,omitempty"`
@@ -1510,8 +4010,32 @@ type VolumeVolumeInfoDimensions struct {
 
 	// Width: Width of this volume (in cm).
 	Width string `json:"width,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Height") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Height") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VolumeVolumeInfoDimensions) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeVolumeInfoDimensions
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VolumeVolumeInfoImageLinks: A list of image links for all the sizes
+// that are available. (In LITE projection.)
 type VolumeVolumeInfoImageLinks struct {
 	// ExtraLarge: Image link for extra large size (width of ~1280 pixels).
 	// (In LITE projection)
@@ -1536,6 +4060,28 @@ type VolumeVolumeInfoImageLinks struct {
 	// Thumbnail: Image link for thumbnail size (width of ~128 pixels). (In
 	// LITE projection)
 	Thumbnail string `json:"thumbnail,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ExtraLarge") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ExtraLarge") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *VolumeVolumeInfoImageLinks) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeVolumeInfoImageLinks
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type VolumeVolumeInfoIndustryIdentifiers struct {
@@ -1545,6 +4091,63 @@ type VolumeVolumeInfoIndustryIdentifiers struct {
 	// Type: Identifier type. Possible values are ISBN_10, ISBN_13, ISSN and
 	// OTHER.
 	Type string `json:"type,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Identifier") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Identifier") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *VolumeVolumeInfoIndustryIdentifiers) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeVolumeInfoIndustryIdentifiers
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VolumeVolumeInfoPanelizationSummary: A top-level summary of the
+// panelization info in this volume.
+type VolumeVolumeInfoPanelizationSummary struct {
+	ContainsEpubBubbles bool `json:"containsEpubBubbles,omitempty"`
+
+	ContainsImageBubbles bool `json:"containsImageBubbles,omitempty"`
+
+	EpubBubbleVersion string `json:"epubBubbleVersion,omitempty"`
+
+	ImageBubbleVersion string `json:"imageBubbleVersion,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ContainsEpubBubbles")
+	// to unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ContainsEpubBubbles") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *VolumeVolumeInfoPanelizationSummary) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeVolumeInfoPanelizationSummary
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Volume2 struct {
@@ -1555,6 +4158,32 @@ type Volume2 struct {
 	Kind string `json:"kind,omitempty"`
 
 	NextPageToken string `json:"nextPageToken,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Items") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Items") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Volume2) MarshalJSON() ([]byte, error) {
+	type noMethod Volume2
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Volumeannotation struct {
@@ -1600,8 +4229,37 @@ type Volumeannotation struct {
 
 	// VolumeId: The Volume this annotation is for.
 	VolumeId string `json:"volumeId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "AnnotationDataId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AnnotationDataId") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *Volumeannotation) MarshalJSON() ([]byte, error) {
+	type noMethod Volumeannotation
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VolumeannotationContentRanges: The content ranges to identify the
+// selected text.
 type VolumeannotationContentRanges struct {
 	// CfiRange: Range in CFI format for this annotation for version above.
 	CfiRange *BooksAnnotationsRange `json:"cfiRange,omitempty"`
@@ -1616,6 +4274,28 @@ type VolumeannotationContentRanges struct {
 	// GbTextRange: Range in GB text format for this annotation for version
 	// above.
 	GbTextRange *BooksAnnotationsRange `json:"gbTextRange,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "CfiRange") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CfiRange") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *VolumeannotationContentRanges) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeannotationContentRanges
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Volumeannotations struct {
@@ -1637,6 +4317,32 @@ type Volumeannotations struct {
 	// doesn't apply to the annotation data, just the information in this
 	// response (e.g. the location of annotations in the book).
 	Version string `json:"version,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Items") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Items") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Volumeannotations) MarshalJSON() ([]byte, error) {
+	type noMethod Volumeannotations
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Volumes struct {
@@ -1650,21 +4356,155 @@ type Volumes struct {
 	// the number of volumes returned in this response if results have been
 	// paginated.
 	TotalItems int64 `json:"totalItems,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Items") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Items") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Volumes) MarshalJSON() ([]byte, error) {
+	type noMethod Volumes
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type Volumeseriesinfo struct {
+	// BookDisplayNumber: The display number string. This should be used
+	// only for display purposes and the actual sequence should be inferred
+	// from the below orderNumber.
+	BookDisplayNumber string `json:"bookDisplayNumber,omitempty"`
+
+	// Kind: Resource type.
+	Kind string `json:"kind,omitempty"`
+
+	// ShortSeriesBookTitle: Short book title in the context of the series.
+	ShortSeriesBookTitle string `json:"shortSeriesBookTitle,omitempty"`
+
+	VolumeSeries []*VolumeseriesinfoVolumeSeries `json:"volumeSeries,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "BookDisplayNumber")
+	// to unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BookDisplayNumber") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Volumeseriesinfo) MarshalJSON() ([]byte, error) {
+	type noMethod Volumeseriesinfo
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type VolumeseriesinfoVolumeSeries struct {
+	// Issue: List of issues. Applicable only for Collection Edition and
+	// Omnibus.
+	Issue []*VolumeseriesinfoVolumeSeriesIssue `json:"issue,omitempty"`
+
+	// OrderNumber: The book order number in the series.
+	OrderNumber int64 `json:"orderNumber,omitempty"`
+
+	// SeriesBookType: The book type in the context of series. Examples -
+	// Single Issue, Collection Edition, etc.
+	SeriesBookType string `json:"seriesBookType,omitempty"`
+
+	// SeriesId: The series id.
+	SeriesId string `json:"seriesId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Issue") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Issue") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *VolumeseriesinfoVolumeSeries) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeseriesinfoVolumeSeries
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type VolumeseriesinfoVolumeSeriesIssue struct {
+	IssueDisplayNumber string `json:"issueDisplayNumber,omitempty"`
+
+	IssueOrderNumber int64 `json:"issueOrderNumber,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "IssueDisplayNumber")
+	// to unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "IssueDisplayNumber") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *VolumeseriesinfoVolumeSeriesIssue) MarshalJSON() ([]byte, error) {
+	type noMethod VolumeseriesinfoVolumeSeriesIssue
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // method id "books.bookshelves.get":
 
 type BookshelvesGetCall struct {
-	s      *Service
-	userId string
-	shelf  string
-	opt_   map[string]interface{}
+	s            *Service
+	userId       string
+	shelf        string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // Get: Retrieves metadata for a specific bookshelf for the specified
 // user.
 func (r *BookshelvesService) Get(userId string, shelf string) *BookshelvesGetCall {
-	c := &BookshelvesGetCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &BookshelvesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
 	c.shelf = shelf
 	return c
@@ -1673,37 +4513,86 @@ func (r *BookshelvesService) Get(userId string, shelf string) *BookshelvesGetCal
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *BookshelvesGetCall) Source(source string) *BookshelvesGetCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *BookshelvesGetCall) Fields(s ...googleapi.Field) *BookshelvesGetCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *BookshelvesGetCall) Do() (*Bookshelf, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *BookshelvesGetCall) IfNoneMatch(entityTag string) *BookshelvesGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *BookshelvesGetCall) Context(ctx context.Context) *BookshelvesGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *BookshelvesGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *BookshelvesGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "users/{userId}/bookshelves/{shelf}")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"userId": c.userId,
 		"shelf":  c.shelf,
 	})
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.bookshelves.get" call.
+// Exactly one of *Bookshelf or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Bookshelf.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *BookshelvesGetCall) Do(opts ...googleapi.CallOption) (*Bookshelf, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -1711,8 +4600,14 @@ func (c *BookshelvesGetCall) Do() (*Bookshelf, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Bookshelf
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Bookshelf{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -1757,14 +4652,17 @@ func (c *BookshelvesGetCall) Do() (*Bookshelf, error) {
 // method id "books.bookshelves.list":
 
 type BookshelvesListCall struct {
-	s      *Service
-	userId string
-	opt_   map[string]interface{}
+	s            *Service
+	userId       string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Retrieves a list of public bookshelves for the specified user.
 func (r *BookshelvesService) List(userId string) *BookshelvesListCall {
-	c := &BookshelvesListCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &BookshelvesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
 	return c
 }
@@ -1772,36 +4670,85 @@ func (r *BookshelvesService) List(userId string) *BookshelvesListCall {
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *BookshelvesListCall) Source(source string) *BookshelvesListCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *BookshelvesListCall) Fields(s ...googleapi.Field) *BookshelvesListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *BookshelvesListCall) Do() (*Bookshelves, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *BookshelvesListCall) IfNoneMatch(entityTag string) *BookshelvesListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *BookshelvesListCall) Context(ctx context.Context) *BookshelvesListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *BookshelvesListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *BookshelvesListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "users/{userId}/bookshelves")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"userId": c.userId,
 	})
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.bookshelves.list" call.
+// Exactly one of *Bookshelves or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Bookshelves.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *BookshelvesListCall) Do(opts ...googleapi.CallOption) (*Bookshelves, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -1809,8 +4756,14 @@ func (c *BookshelvesListCall) Do() (*Bookshelves, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Bookshelves
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Bookshelves{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -1848,16 +4801,19 @@ func (c *BookshelvesListCall) Do() (*Bookshelves, error) {
 // method id "books.bookshelves.volumes.list":
 
 type BookshelvesVolumesListCall struct {
-	s      *Service
-	userId string
-	shelf  string
-	opt_   map[string]interface{}
+	s            *Service
+	userId       string
+	shelf        string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Retrieves volumes in a specific bookshelf for the specified
 // user.
 func (r *BookshelvesVolumesService) List(userId string, shelf string) *BookshelvesVolumesListCall {
-	c := &BookshelvesVolumesListCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &BookshelvesVolumesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.userId = userId
 	c.shelf = shelf
 	return c
@@ -1866,67 +4822,107 @@ func (r *BookshelvesVolumesService) List(userId string, shelf string) *Bookshelv
 // MaxResults sets the optional parameter "maxResults": Maximum number
 // of results to return
 func (c *BookshelvesVolumesListCall) MaxResults(maxResults int64) *BookshelvesVolumesListCall {
-	c.opt_["maxResults"] = maxResults
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
 	return c
 }
 
 // ShowPreorders sets the optional parameter "showPreorders": Set to
 // true to show pre-ordered books. Defaults to false.
 func (c *BookshelvesVolumesListCall) ShowPreorders(showPreorders bool) *BookshelvesVolumesListCall {
-	c.opt_["showPreorders"] = showPreorders
+	c.urlParams_.Set("showPreorders", fmt.Sprint(showPreorders))
 	return c
 }
 
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *BookshelvesVolumesListCall) Source(source string) *BookshelvesVolumesListCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
 // StartIndex sets the optional parameter "startIndex": Index of the
 // first element to return (starts at 0)
 func (c *BookshelvesVolumesListCall) StartIndex(startIndex int64) *BookshelvesVolumesListCall {
-	c.opt_["startIndex"] = startIndex
+	c.urlParams_.Set("startIndex", fmt.Sprint(startIndex))
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *BookshelvesVolumesListCall) Fields(s ...googleapi.Field) *BookshelvesVolumesListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *BookshelvesVolumesListCall) Do() (*Volumes, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *BookshelvesVolumesListCall) IfNoneMatch(entityTag string) *BookshelvesVolumesListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *BookshelvesVolumesListCall) Context(ctx context.Context) *BookshelvesVolumesListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *BookshelvesVolumesListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *BookshelvesVolumesListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["maxResults"]; ok {
-		params.Set("maxResults", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["showPreorders"]; ok {
-		params.Set("showPreorders", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["startIndex"]; ok {
-		params.Set("startIndex", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "users/{userId}/bookshelves/{shelf}/volumes")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"userId": c.userId,
 		"shelf":  c.shelf,
 	})
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.bookshelves.volumes.list" call.
+// Exactly one of *Volumes or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Volumes.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *BookshelvesVolumesListCall) Do(opts ...googleapi.CallOption) (*Volumes, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -1934,8 +4930,14 @@ func (c *BookshelvesVolumesListCall) Do() (*Volumes, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Volumes
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Volumes{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -1999,76 +5001,104 @@ func (c *BookshelvesVolumesListCall) Do() (*Volumes, error) {
 // method id "books.cloudloading.addBook":
 
 type CloudloadingAddBookCall struct {
-	s    *Service
-	opt_ map[string]interface{}
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // AddBook:
 func (r *CloudloadingService) AddBook() *CloudloadingAddBookCall {
-	c := &CloudloadingAddBookCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &CloudloadingAddBookCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	return c
 }
 
 // DriveDocumentId sets the optional parameter "drive_document_id": A
 // drive document id. The upload_client_token must not be set.
 func (c *CloudloadingAddBookCall) DriveDocumentId(driveDocumentId string) *CloudloadingAddBookCall {
-	c.opt_["drive_document_id"] = driveDocumentId
+	c.urlParams_.Set("drive_document_id", driveDocumentId)
 	return c
 }
 
 // MimeType sets the optional parameter "mime_type": The document MIME
 // type. It can be set only if the drive_document_id is set.
 func (c *CloudloadingAddBookCall) MimeType(mimeType string) *CloudloadingAddBookCall {
-	c.opt_["mime_type"] = mimeType
+	c.urlParams_.Set("mime_type", mimeType)
 	return c
 }
 
 // Name sets the optional parameter "name": The document name. It can be
 // set only if the drive_document_id is set.
 func (c *CloudloadingAddBookCall) Name(name string) *CloudloadingAddBookCall {
-	c.opt_["name"] = name
+	c.urlParams_.Set("name", name)
 	return c
 }
 
 // UploadClientToken sets the optional parameter "upload_client_token":
 func (c *CloudloadingAddBookCall) UploadClientToken(uploadClientToken string) *CloudloadingAddBookCall {
-	c.opt_["upload_client_token"] = uploadClientToken
+	c.urlParams_.Set("upload_client_token", uploadClientToken)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *CloudloadingAddBookCall) Fields(s ...googleapi.Field) *CloudloadingAddBookCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *CloudloadingAddBookCall) Do() (*BooksCloudloadingResource, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *CloudloadingAddBookCall) Context(ctx context.Context) *CloudloadingAddBookCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CloudloadingAddBookCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *CloudloadingAddBookCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["drive_document_id"]; ok {
-		params.Set("drive_document_id", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["mime_type"]; ok {
-		params.Set("mime_type", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["name"]; ok {
-		params.Set("name", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["upload_client_token"]; ok {
-		params.Set("upload_client_token", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "cloudloading/addBook")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.cloudloading.addBook" call.
+// Exactly one of *BooksCloudloadingResource or error will be non-nil.
+// Any non-2xx status code is an error. Response headers are in either
+// *BooksCloudloadingResource.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *CloudloadingAddBookCall) Do(opts ...googleapi.CallOption) (*BooksCloudloadingResource, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -2076,8 +5106,14 @@ func (c *CloudloadingAddBookCall) Do() (*BooksCloudloadingResource, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *BooksCloudloadingResource
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &BooksCloudloadingResource{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2120,40 +5156,63 @@ func (c *CloudloadingAddBookCall) Do() (*BooksCloudloadingResource, error) {
 // method id "books.cloudloading.deleteBook":
 
 type CloudloadingDeleteBookCall struct {
-	s        *Service
-	volumeId string
-	opt_     map[string]interface{}
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // DeleteBook: Remove the book and its contents
 func (r *CloudloadingService) DeleteBook(volumeId string) *CloudloadingDeleteBookCall {
-	c := &CloudloadingDeleteBookCall{s: r.s, opt_: make(map[string]interface{})}
-	c.volumeId = volumeId
+	c := &CloudloadingDeleteBookCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("volumeId", volumeId)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *CloudloadingDeleteBookCall) Fields(s ...googleapi.Field) *CloudloadingDeleteBookCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *CloudloadingDeleteBookCall) Do() error {
-	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("volumeId", fmt.Sprintf("%v", c.volumeId))
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *CloudloadingDeleteBookCall) Context(ctx context.Context) *CloudloadingDeleteBookCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CloudloadingDeleteBookCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
 	}
+	return c.header_
+}
+
+func (c *CloudloadingDeleteBookCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "cloudloading/deleteBook")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.cloudloading.deleteBook" call.
+func (c *CloudloadingDeleteBookCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
 	if err != nil {
 		return err
 	}
@@ -2190,43 +5249,82 @@ func (c *CloudloadingDeleteBookCall) Do() error {
 type CloudloadingUpdateBookCall struct {
 	s                         *Service
 	bookscloudloadingresource *BooksCloudloadingResource
-	opt_                      map[string]interface{}
+	urlParams_                gensupport.URLParams
+	ctx_                      context.Context
+	header_                   http.Header
 }
 
 // UpdateBook:
 func (r *CloudloadingService) UpdateBook(bookscloudloadingresource *BooksCloudloadingResource) *CloudloadingUpdateBookCall {
-	c := &CloudloadingUpdateBookCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &CloudloadingUpdateBookCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.bookscloudloadingresource = bookscloudloadingresource
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *CloudloadingUpdateBookCall) Fields(s ...googleapi.Field) *CloudloadingUpdateBookCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *CloudloadingUpdateBookCall) Do() (*BooksCloudloadingResource, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *CloudloadingUpdateBookCall) Context(ctx context.Context) *CloudloadingUpdateBookCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CloudloadingUpdateBookCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *CloudloadingUpdateBookCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.bookscloudloadingresource)
 	if err != nil {
 		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "cloudloading/updateBook")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("Content-Type", ctype)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.cloudloading.updateBook" call.
+// Exactly one of *BooksCloudloadingResource or error will be non-nil.
+// Any non-2xx status code is an error. Response headers are in either
+// *BooksCloudloadingResource.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *CloudloadingUpdateBookCall) Do(opts ...googleapi.CallOption) (*BooksCloudloadingResource, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -2234,8 +5332,14 @@ func (c *CloudloadingUpdateBookCall) Do() (*BooksCloudloadingResource, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *BooksCloudloadingResource
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &BooksCloudloadingResource{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2260,41 +5364,93 @@ func (c *CloudloadingUpdateBookCall) Do() (*BooksCloudloadingResource, error) {
 // method id "books.dictionary.listOfflineMetadata":
 
 type DictionaryListOfflineMetadataCall struct {
-	s       *Service
-	cpksver string
-	opt_    map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
-// ListOfflineMetadata: Returns a list of offline dictionary meatadata
+// ListOfflineMetadata: Returns a list of offline dictionary metadata
 // available
 func (r *DictionaryService) ListOfflineMetadata(cpksver string) *DictionaryListOfflineMetadataCall {
-	c := &DictionaryListOfflineMetadataCall{s: r.s, opt_: make(map[string]interface{})}
-	c.cpksver = cpksver
+	c := &DictionaryListOfflineMetadataCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("cpksver", cpksver)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *DictionaryListOfflineMetadataCall) Fields(s ...googleapi.Field) *DictionaryListOfflineMetadataCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *DictionaryListOfflineMetadataCall) Do() (*Metadata, error) {
-	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("cpksver", fmt.Sprintf("%v", c.cpksver))
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *DictionaryListOfflineMetadataCall) IfNoneMatch(entityTag string) *DictionaryListOfflineMetadataCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *DictionaryListOfflineMetadataCall) Context(ctx context.Context) *DictionaryListOfflineMetadataCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *DictionaryListOfflineMetadataCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
 	}
+	return c.header_
+}
+
+func (c *DictionaryListOfflineMetadataCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "dictionary/listOfflineMetadata")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.dictionary.listOfflineMetadata" call.
+// Exactly one of *Metadata or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Metadata.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *DictionaryListOfflineMetadataCall) Do(opts ...googleapi.CallOption) (*Metadata, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -2302,13 +5458,19 @@ func (c *DictionaryListOfflineMetadataCall) Do() (*Metadata, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Metadata
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Metadata{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
 	// {
-	//   "description": "Returns a list of offline dictionary meatadata available",
+	//   "description": "Returns a list of offline dictionary metadata available",
 	//   "httpMethod": "GET",
 	//   "id": "books.dictionary.listOfflineMetadata",
 	//   "parameterOrder": [
@@ -2336,15 +5498,18 @@ func (c *DictionaryListOfflineMetadataCall) Do() (*Metadata, error) {
 // method id "books.layers.get":
 
 type LayersGetCall struct {
-	s         *Service
-	volumeId  string
-	summaryId string
-	opt_      map[string]interface{}
+	s            *Service
+	volumeId     string
+	summaryId    string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // Get: Gets the layer summary for a volume.
 func (r *LayersService) Get(volumeId string, summaryId string) *LayersGetCall {
-	c := &LayersGetCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &LayersGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.volumeId = volumeId
 	c.summaryId = summaryId
 	return c
@@ -2353,47 +5518,93 @@ func (r *LayersService) Get(volumeId string, summaryId string) *LayersGetCall {
 // ContentVersion sets the optional parameter "contentVersion": The
 // content version for the requested volume.
 func (c *LayersGetCall) ContentVersion(contentVersion string) *LayersGetCall {
-	c.opt_["contentVersion"] = contentVersion
+	c.urlParams_.Set("contentVersion", contentVersion)
 	return c
 }
 
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *LayersGetCall) Source(source string) *LayersGetCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *LayersGetCall) Fields(s ...googleapi.Field) *LayersGetCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *LayersGetCall) Do() (*Layersummary, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *LayersGetCall) IfNoneMatch(entityTag string) *LayersGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LayersGetCall) Context(ctx context.Context) *LayersGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LayersGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LayersGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["contentVersion"]; ok {
-		params.Set("contentVersion", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "volumes/{volumeId}/layersummary/{summaryId}")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"volumeId":  c.volumeId,
 		"summaryId": c.summaryId,
 	})
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.layers.get" call.
+// Exactly one of *Layersummary or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Layersummary.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *LayersGetCall) Do(opts ...googleapi.CallOption) (*Layersummary, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -2401,8 +5612,14 @@ func (c *LayersGetCall) Do() (*Layersummary, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Layersummary
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Layersummary{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2452,14 +5669,17 @@ func (c *LayersGetCall) Do() (*Layersummary, error) {
 // method id "books.layers.list":
 
 type LayersListCall struct {
-	s        *Service
-	volumeId string
-	opt_     map[string]interface{}
+	s            *Service
+	volumeId     string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: List the layer summaries for a volume.
 func (r *LayersService) List(volumeId string) *LayersListCall {
-	c := &LayersListCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &LayersListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.volumeId = volumeId
 	return c
 }
@@ -2467,66 +5687,106 @@ func (r *LayersService) List(volumeId string) *LayersListCall {
 // ContentVersion sets the optional parameter "contentVersion": The
 // content version for the requested volume.
 func (c *LayersListCall) ContentVersion(contentVersion string) *LayersListCall {
-	c.opt_["contentVersion"] = contentVersion
+	c.urlParams_.Set("contentVersion", contentVersion)
 	return c
 }
 
 // MaxResults sets the optional parameter "maxResults": Maximum number
 // of results to return
 func (c *LayersListCall) MaxResults(maxResults int64) *LayersListCall {
-	c.opt_["maxResults"] = maxResults
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
 	return c
 }
 
 // PageToken sets the optional parameter "pageToken": The value of the
 // nextToken from the previous page.
 func (c *LayersListCall) PageToken(pageToken string) *LayersListCall {
-	c.opt_["pageToken"] = pageToken
+	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *LayersListCall) Source(source string) *LayersListCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *LayersListCall) Fields(s ...googleapi.Field) *LayersListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *LayersListCall) Do() (*Layersummaries, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *LayersListCall) IfNoneMatch(entityTag string) *LayersListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LayersListCall) Context(ctx context.Context) *LayersListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LayersListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LayersListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["contentVersion"]; ok {
-		params.Set("contentVersion", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["maxResults"]; ok {
-		params.Set("maxResults", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["pageToken"]; ok {
-		params.Set("pageToken", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "volumes/{volumeId}/layersummary")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"volumeId": c.volumeId,
 	})
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.layers.list" call.
+// Exactly one of *Layersummaries or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Layersummaries.ServerResponse.Header or (if a response was returned
+// at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *LayersListCall) Do(opts ...googleapi.CallOption) (*Layersummaries, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -2534,8 +5794,14 @@ func (c *LayersListCall) Do() (*Layersummaries, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Layersummaries
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Layersummaries{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2595,17 +5861,19 @@ type LayersAnnotationDataGetCall struct {
 	volumeId         string
 	layerId          string
 	annotationDataId string
-	contentVersion   string
-	opt_             map[string]interface{}
+	urlParams_       gensupport.URLParams
+	ifNoneMatch_     string
+	ctx_             context.Context
+	header_          http.Header
 }
 
 // Get: Gets the annotation data.
 func (r *LayersAnnotationDataService) Get(volumeId string, layerId string, annotationDataId string, contentVersion string) *LayersAnnotationDataGetCall {
-	c := &LayersAnnotationDataGetCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &LayersAnnotationDataGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.volumeId = volumeId
 	c.layerId = layerId
 	c.annotationDataId = annotationDataId
-	c.contentVersion = contentVersion
+	c.urlParams_.Set("contentVersion", contentVersion)
 	return c
 }
 
@@ -2613,14 +5881,14 @@ func (r *LayersAnnotationDataService) Get(volumeId string, layerId string, annot
 // "allowWebDefinitions": For the dictionary layer. Whether or not to
 // allow web definitions.
 func (c *LayersAnnotationDataGetCall) AllowWebDefinitions(allowWebDefinitions bool) *LayersAnnotationDataGetCall {
-	c.opt_["allowWebDefinitions"] = allowWebDefinitions
+	c.urlParams_.Set("allowWebDefinitions", fmt.Sprint(allowWebDefinitions))
 	return c
 }
 
 // H sets the optional parameter "h": The requested pixel height for any
 // images. If height is provided width must also be provided.
 func (c *LayersAnnotationDataGetCall) H(h int64) *LayersAnnotationDataGetCall {
-	c.opt_["h"] = h
+	c.urlParams_.Set("h", fmt.Sprint(h))
 	return c
 }
 
@@ -2628,75 +5896,108 @@ func (c *LayersAnnotationDataGetCall) H(h int64) *LayersAnnotationDataGetCall {
 // for the data. ISO-639-1 language and ISO-3166-1 country code. Ex:
 // 'en_US'.
 func (c *LayersAnnotationDataGetCall) Locale(locale string) *LayersAnnotationDataGetCall {
-	c.opt_["locale"] = locale
+	c.urlParams_.Set("locale", locale)
 	return c
 }
 
 // Scale sets the optional parameter "scale": The requested scale for
 // the image.
 func (c *LayersAnnotationDataGetCall) Scale(scale int64) *LayersAnnotationDataGetCall {
-	c.opt_["scale"] = scale
+	c.urlParams_.Set("scale", fmt.Sprint(scale))
 	return c
 }
 
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *LayersAnnotationDataGetCall) Source(source string) *LayersAnnotationDataGetCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
 // W sets the optional parameter "w": The requested pixel width for any
 // images. If width is provided height must also be provided.
 func (c *LayersAnnotationDataGetCall) W(w int64) *LayersAnnotationDataGetCall {
-	c.opt_["w"] = w
+	c.urlParams_.Set("w", fmt.Sprint(w))
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *LayersAnnotationDataGetCall) Fields(s ...googleapi.Field) *LayersAnnotationDataGetCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *LayersAnnotationDataGetCall) Do() (*Annotationdata, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *LayersAnnotationDataGetCall) IfNoneMatch(entityTag string) *LayersAnnotationDataGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LayersAnnotationDataGetCall) Context(ctx context.Context) *LayersAnnotationDataGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LayersAnnotationDataGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LayersAnnotationDataGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("contentVersion", fmt.Sprintf("%v", c.contentVersion))
-	if v, ok := c.opt_["allowWebDefinitions"]; ok {
-		params.Set("allowWebDefinitions", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["h"]; ok {
-		params.Set("h", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["locale"]; ok {
-		params.Set("locale", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["scale"]; ok {
-		params.Set("scale", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["w"]; ok {
-		params.Set("w", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "volumes/{volumeId}/layers/{layerId}/data/{annotationDataId}")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"volumeId":         c.volumeId,
 		"layerId":          c.layerId,
 		"annotationDataId": c.annotationDataId,
 	})
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.layers.annotationData.get" call.
+// Exactly one of *Annotationdata or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Annotationdata.ServerResponse.Header or (if a response was returned
+// at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *LayersAnnotationDataGetCall) Do(opts ...googleapi.CallOption) (*Annotationdata, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -2704,8 +6005,14 @@ func (c *LayersAnnotationDataGetCall) Do() (*Annotationdata, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Annotationdata
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Annotationdata{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2793,34 +6100,36 @@ func (c *LayersAnnotationDataGetCall) Do() (*Annotationdata, error) {
 // method id "books.layers.annotationData.list":
 
 type LayersAnnotationDataListCall struct {
-	s              *Service
-	volumeId       string
-	layerId        string
-	contentVersion string
-	opt_           map[string]interface{}
+	s            *Service
+	volumeId     string
+	layerId      string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Gets the annotation data for a volume and layer.
 func (r *LayersAnnotationDataService) List(volumeId string, layerId string, contentVersion string) *LayersAnnotationDataListCall {
-	c := &LayersAnnotationDataListCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &LayersAnnotationDataListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.volumeId = volumeId
 	c.layerId = layerId
-	c.contentVersion = contentVersion
+	c.urlParams_.Set("contentVersion", contentVersion)
 	return c
 }
 
 // AnnotationDataId sets the optional parameter "annotationDataId": The
 // list of Annotation Data Ids to retrieve. Pagination is ignored if
 // this is set.
-func (c *LayersAnnotationDataListCall) AnnotationDataId(annotationDataId string) *LayersAnnotationDataListCall {
-	c.opt_["annotationDataId"] = annotationDataId
+func (c *LayersAnnotationDataListCall) AnnotationDataId(annotationDataId ...string) *LayersAnnotationDataListCall {
+	c.urlParams_.SetMulti("annotationDataId", append([]string{}, annotationDataId...))
 	return c
 }
 
 // H sets the optional parameter "h": The requested pixel height for any
 // images. If height is provided width must also be provided.
 func (c *LayersAnnotationDataListCall) H(h int64) *LayersAnnotationDataListCall {
-	c.opt_["h"] = h
+	c.urlParams_.Set("h", fmt.Sprint(h))
 	return c
 }
 
@@ -2828,35 +6137,35 @@ func (c *LayersAnnotationDataListCall) H(h int64) *LayersAnnotationDataListCall 
 // for the data. ISO-639-1 language and ISO-3166-1 country code. Ex:
 // 'en_US'.
 func (c *LayersAnnotationDataListCall) Locale(locale string) *LayersAnnotationDataListCall {
-	c.opt_["locale"] = locale
+	c.urlParams_.Set("locale", locale)
 	return c
 }
 
 // MaxResults sets the optional parameter "maxResults": Maximum number
 // of results to return
 func (c *LayersAnnotationDataListCall) MaxResults(maxResults int64) *LayersAnnotationDataListCall {
-	c.opt_["maxResults"] = maxResults
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
 	return c
 }
 
 // PageToken sets the optional parameter "pageToken": The value of the
 // nextToken from the previous page.
 func (c *LayersAnnotationDataListCall) PageToken(pageToken string) *LayersAnnotationDataListCall {
-	c.opt_["pageToken"] = pageToken
+	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
 // Scale sets the optional parameter "scale": The requested scale for
 // the image.
 func (c *LayersAnnotationDataListCall) Scale(scale int64) *LayersAnnotationDataListCall {
-	c.opt_["scale"] = scale
+	c.urlParams_.Set("scale", fmt.Sprint(scale))
 	return c
 }
 
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *LayersAnnotationDataListCall) Source(source string) *LayersAnnotationDataListCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
@@ -2864,7 +6173,7 @@ func (c *LayersAnnotationDataListCall) Source(source string) *LayersAnnotationDa
 // timestamp to restrict to items updated prior to this timestamp
 // (exclusive).
 func (c *LayersAnnotationDataListCall) UpdatedMax(updatedMax string) *LayersAnnotationDataListCall {
-	c.opt_["updatedMax"] = updatedMax
+	c.urlParams_.Set("updatedMax", updatedMax)
 	return c
 }
 
@@ -2872,72 +6181,93 @@ func (c *LayersAnnotationDataListCall) UpdatedMax(updatedMax string) *LayersAnno
 // timestamp to restrict to items updated since this timestamp
 // (inclusive).
 func (c *LayersAnnotationDataListCall) UpdatedMin(updatedMin string) *LayersAnnotationDataListCall {
-	c.opt_["updatedMin"] = updatedMin
+	c.urlParams_.Set("updatedMin", updatedMin)
 	return c
 }
 
 // W sets the optional parameter "w": The requested pixel width for any
 // images. If width is provided height must also be provided.
 func (c *LayersAnnotationDataListCall) W(w int64) *LayersAnnotationDataListCall {
-	c.opt_["w"] = w
+	c.urlParams_.Set("w", fmt.Sprint(w))
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *LayersAnnotationDataListCall) Fields(s ...googleapi.Field) *LayersAnnotationDataListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *LayersAnnotationDataListCall) Do() (*Annotationsdata, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *LayersAnnotationDataListCall) IfNoneMatch(entityTag string) *LayersAnnotationDataListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LayersAnnotationDataListCall) Context(ctx context.Context) *LayersAnnotationDataListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LayersAnnotationDataListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LayersAnnotationDataListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("contentVersion", fmt.Sprintf("%v", c.contentVersion))
-	if v, ok := c.opt_["annotationDataId"]; ok {
-		params.Set("annotationDataId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["h"]; ok {
-		params.Set("h", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["locale"]; ok {
-		params.Set("locale", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["maxResults"]; ok {
-		params.Set("maxResults", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["pageToken"]; ok {
-		params.Set("pageToken", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["scale"]; ok {
-		params.Set("scale", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["updatedMax"]; ok {
-		params.Set("updatedMax", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["updatedMin"]; ok {
-		params.Set("updatedMin", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["w"]; ok {
-		params.Set("w", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "volumes/{volumeId}/layers/{layerId}/data")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"volumeId": c.volumeId,
 		"layerId":  c.layerId,
 	})
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.layers.annotationData.list" call.
+// Exactly one of *Annotationsdata or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Annotationsdata.ServerResponse.Header or (if a response was returned
+// at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *LayersAnnotationDataListCall) Do(opts ...googleapi.CallOption) (*Annotationsdata, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -2945,8 +6275,14 @@ func (c *LayersAnnotationDataListCall) Do() (*Annotationsdata, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Annotationsdata
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Annotationsdata{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3048,6 +6384,27 @@ func (c *LayersAnnotationDataListCall) Do() (*Annotationsdata, error) {
 
 }
 
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *LayersAnnotationDataListCall) Pages(ctx context.Context, f func(*Annotationsdata) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
 // method id "books.layers.volumeAnnotations.get":
 
 type LayersVolumeAnnotationsGetCall struct {
@@ -3055,12 +6412,15 @@ type LayersVolumeAnnotationsGetCall struct {
 	volumeId     string
 	layerId      string
 	annotationId string
-	opt_         map[string]interface{}
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // Get: Gets the volume annotation.
 func (r *LayersVolumeAnnotationsService) Get(volumeId string, layerId string, annotationId string) *LayersVolumeAnnotationsGetCall {
-	c := &LayersVolumeAnnotationsGetCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &LayersVolumeAnnotationsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.volumeId = volumeId
 	c.layerId = layerId
 	c.annotationId = annotationId
@@ -3071,48 +6431,94 @@ func (r *LayersVolumeAnnotationsService) Get(volumeId string, layerId string, an
 // for the data. ISO-639-1 language and ISO-3166-1 country code. Ex:
 // 'en_US'.
 func (c *LayersVolumeAnnotationsGetCall) Locale(locale string) *LayersVolumeAnnotationsGetCall {
-	c.opt_["locale"] = locale
+	c.urlParams_.Set("locale", locale)
 	return c
 }
 
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *LayersVolumeAnnotationsGetCall) Source(source string) *LayersVolumeAnnotationsGetCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *LayersVolumeAnnotationsGetCall) Fields(s ...googleapi.Field) *LayersVolumeAnnotationsGetCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *LayersVolumeAnnotationsGetCall) Do() (*Volumeannotation, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *LayersVolumeAnnotationsGetCall) IfNoneMatch(entityTag string) *LayersVolumeAnnotationsGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LayersVolumeAnnotationsGetCall) Context(ctx context.Context) *LayersVolumeAnnotationsGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LayersVolumeAnnotationsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LayersVolumeAnnotationsGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["locale"]; ok {
-		params.Set("locale", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "volumes/{volumeId}/layers/{layerId}/annotations/{annotationId}")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"volumeId":     c.volumeId,
 		"layerId":      c.layerId,
 		"annotationId": c.annotationId,
 	})
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.layers.volumeAnnotations.get" call.
+// Exactly one of *Volumeannotation or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *Volumeannotation.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *LayersVolumeAnnotationsGetCall) Do(opts ...googleapi.CallOption) (*Volumeannotation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -3120,8 +6526,14 @@ func (c *LayersVolumeAnnotationsGetCall) Do() (*Volumeannotation, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Volumeannotation
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Volumeannotation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3178,33 +6590,35 @@ func (c *LayersVolumeAnnotationsGetCall) Do() (*Volumeannotation, error) {
 // method id "books.layers.volumeAnnotations.list":
 
 type LayersVolumeAnnotationsListCall struct {
-	s              *Service
-	volumeId       string
-	layerId        string
-	contentVersion string
-	opt_           map[string]interface{}
+	s            *Service
+	volumeId     string
+	layerId      string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Gets the volume annotations for a volume and layer.
 func (r *LayersVolumeAnnotationsService) List(volumeId string, layerId string, contentVersion string) *LayersVolumeAnnotationsListCall {
-	c := &LayersVolumeAnnotationsListCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &LayersVolumeAnnotationsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.volumeId = volumeId
 	c.layerId = layerId
-	c.contentVersion = contentVersion
+	c.urlParams_.Set("contentVersion", contentVersion)
 	return c
 }
 
 // EndOffset sets the optional parameter "endOffset": The end offset to
 // end retrieving data from.
 func (c *LayersVolumeAnnotationsListCall) EndOffset(endOffset string) *LayersVolumeAnnotationsListCall {
-	c.opt_["endOffset"] = endOffset
+	c.urlParams_.Set("endOffset", endOffset)
 	return c
 }
 
 // EndPosition sets the optional parameter "endPosition": The end
 // position to end retrieving data from.
 func (c *LayersVolumeAnnotationsListCall) EndPosition(endPosition string) *LayersVolumeAnnotationsListCall {
-	c.opt_["endPosition"] = endPosition
+	c.urlParams_.Set("endPosition", endPosition)
 	return c
 }
 
@@ -3212,21 +6626,21 @@ func (c *LayersVolumeAnnotationsListCall) EndPosition(endPosition string) *Layer
 // for the data. ISO-639-1 language and ISO-3166-1 country code. Ex:
 // 'en_US'.
 func (c *LayersVolumeAnnotationsListCall) Locale(locale string) *LayersVolumeAnnotationsListCall {
-	c.opt_["locale"] = locale
+	c.urlParams_.Set("locale", locale)
 	return c
 }
 
 // MaxResults sets the optional parameter "maxResults": Maximum number
 // of results to return
 func (c *LayersVolumeAnnotationsListCall) MaxResults(maxResults int64) *LayersVolumeAnnotationsListCall {
-	c.opt_["maxResults"] = maxResults
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
 	return c
 }
 
 // PageToken sets the optional parameter "pageToken": The value of the
 // nextToken from the previous page.
 func (c *LayersVolumeAnnotationsListCall) PageToken(pageToken string) *LayersVolumeAnnotationsListCall {
-	c.opt_["pageToken"] = pageToken
+	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
@@ -3234,28 +6648,28 @@ func (c *LayersVolumeAnnotationsListCall) PageToken(pageToken string) *LayersVol
 // return deleted annotations. updatedMin must be in the request to use
 // this. Defaults to false.
 func (c *LayersVolumeAnnotationsListCall) ShowDeleted(showDeleted bool) *LayersVolumeAnnotationsListCall {
-	c.opt_["showDeleted"] = showDeleted
+	c.urlParams_.Set("showDeleted", fmt.Sprint(showDeleted))
 	return c
 }
 
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *LayersVolumeAnnotationsListCall) Source(source string) *LayersVolumeAnnotationsListCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
 // StartOffset sets the optional parameter "startOffset": The start
 // offset to start retrieving data from.
 func (c *LayersVolumeAnnotationsListCall) StartOffset(startOffset string) *LayersVolumeAnnotationsListCall {
-	c.opt_["startOffset"] = startOffset
+	c.urlParams_.Set("startOffset", startOffset)
 	return c
 }
 
 // StartPosition sets the optional parameter "startPosition": The start
 // position to start retrieving data from.
 func (c *LayersVolumeAnnotationsListCall) StartPosition(startPosition string) *LayersVolumeAnnotationsListCall {
-	c.opt_["startPosition"] = startPosition
+	c.urlParams_.Set("startPosition", startPosition)
 	return c
 }
 
@@ -3263,7 +6677,7 @@ func (c *LayersVolumeAnnotationsListCall) StartPosition(startPosition string) *L
 // timestamp to restrict to items updated prior to this timestamp
 // (exclusive).
 func (c *LayersVolumeAnnotationsListCall) UpdatedMax(updatedMax string) *LayersVolumeAnnotationsListCall {
-	c.opt_["updatedMax"] = updatedMax
+	c.urlParams_.Set("updatedMax", updatedMax)
 	return c
 }
 
@@ -3271,7 +6685,7 @@ func (c *LayersVolumeAnnotationsListCall) UpdatedMax(updatedMax string) *LayersV
 // timestamp to restrict to items updated since this timestamp
 // (inclusive).
 func (c *LayersVolumeAnnotationsListCall) UpdatedMin(updatedMin string) *LayersVolumeAnnotationsListCall {
-	c.opt_["updatedMin"] = updatedMin
+	c.urlParams_.Set("updatedMin", updatedMin)
 	return c
 }
 
@@ -3279,71 +6693,86 @@ func (c *LayersVolumeAnnotationsListCall) UpdatedMin(updatedMin string) *LayersV
 // "volumeAnnotationsVersion": The version of the volume annotations
 // that you are requesting.
 func (c *LayersVolumeAnnotationsListCall) VolumeAnnotationsVersion(volumeAnnotationsVersion string) *LayersVolumeAnnotationsListCall {
-	c.opt_["volumeAnnotationsVersion"] = volumeAnnotationsVersion
+	c.urlParams_.Set("volumeAnnotationsVersion", volumeAnnotationsVersion)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *LayersVolumeAnnotationsListCall) Fields(s ...googleapi.Field) *LayersVolumeAnnotationsListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *LayersVolumeAnnotationsListCall) Do() (*Volumeannotations, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *LayersVolumeAnnotationsListCall) IfNoneMatch(entityTag string) *LayersVolumeAnnotationsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LayersVolumeAnnotationsListCall) Context(ctx context.Context) *LayersVolumeAnnotationsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LayersVolumeAnnotationsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LayersVolumeAnnotationsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("contentVersion", fmt.Sprintf("%v", c.contentVersion))
-	if v, ok := c.opt_["endOffset"]; ok {
-		params.Set("endOffset", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["endPosition"]; ok {
-		params.Set("endPosition", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["locale"]; ok {
-		params.Set("locale", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["maxResults"]; ok {
-		params.Set("maxResults", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["pageToken"]; ok {
-		params.Set("pageToken", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["showDeleted"]; ok {
-		params.Set("showDeleted", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["startOffset"]; ok {
-		params.Set("startOffset", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["startPosition"]; ok {
-		params.Set("startPosition", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["updatedMax"]; ok {
-		params.Set("updatedMax", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["updatedMin"]; ok {
-		params.Set("updatedMin", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["volumeAnnotationsVersion"]; ok {
-		params.Set("volumeAnnotationsVersion", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "volumes/{volumeId}/layers/{layerId}")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"volumeId": c.volumeId,
 		"layerId":  c.layerId,
 	})
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.layers.volumeAnnotations.list" call.
+// Exactly one of *Volumeannotations or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *Volumeannotations.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *LayersVolumeAnnotationsListCall) Do(opts ...googleapi.CallOption) (*Volumeannotations, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -3351,8 +6780,14 @@ func (c *LayersVolumeAnnotationsListCall) Do() (*Volumeannotations, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Volumeannotations
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Volumeannotations{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3459,40 +6894,115 @@ func (c *LayersVolumeAnnotationsListCall) Do() (*Volumeannotations, error) {
 
 }
 
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *LayersVolumeAnnotationsListCall) Pages(ctx context.Context, f func(*Volumeannotations) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
 // method id "books.myconfig.getUserSettings":
 
 type MyconfigGetUserSettingsCall struct {
-	s    *Service
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // GetUserSettings: Gets the current settings for the user.
 func (r *MyconfigService) GetUserSettings() *MyconfigGetUserSettingsCall {
-	c := &MyconfigGetUserSettingsCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &MyconfigGetUserSettingsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *MyconfigGetUserSettingsCall) Fields(s ...googleapi.Field) *MyconfigGetUserSettingsCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *MyconfigGetUserSettingsCall) Do() (*Usersettings, error) {
-	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *MyconfigGetUserSettingsCall) IfNoneMatch(entityTag string) *MyconfigGetUserSettingsCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *MyconfigGetUserSettingsCall) Context(ctx context.Context) *MyconfigGetUserSettingsCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *MyconfigGetUserSettingsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
 	}
+	return c.header_
+}
+
+func (c *MyconfigGetUserSettingsCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "myconfig/getUserSettings")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.myconfig.getUserSettings" call.
+// Exactly one of *Usersettings or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Usersettings.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *MyconfigGetUserSettingsCall) Do(opts ...googleapi.CallOption) (*Usersettings, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -3500,8 +7010,14 @@ func (c *MyconfigGetUserSettingsCall) Do() (*Usersettings, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Usersettings
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Usersettings{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3523,65 +7039,93 @@ func (c *MyconfigGetUserSettingsCall) Do() (*Usersettings, error) {
 // method id "books.myconfig.releaseDownloadAccess":
 
 type MyconfigReleaseDownloadAccessCall struct {
-	s         *Service
-	volumeIds []string
-	cpksver   string
-	opt_      map[string]interface{}
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // ReleaseDownloadAccess: Release downloaded content access restriction.
 func (r *MyconfigService) ReleaseDownloadAccess(volumeIds []string, cpksver string) *MyconfigReleaseDownloadAccessCall {
-	c := &MyconfigReleaseDownloadAccessCall{s: r.s, opt_: make(map[string]interface{})}
-	c.volumeIds = volumeIds
-	c.cpksver = cpksver
+	c := &MyconfigReleaseDownloadAccessCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.SetMulti("volumeIds", append([]string{}, volumeIds...))
+	c.urlParams_.Set("cpksver", cpksver)
 	return c
 }
 
 // Locale sets the optional parameter "locale": ISO-639-1, ISO-3166-1
 // codes for message localization, i.e. en_US.
 func (c *MyconfigReleaseDownloadAccessCall) Locale(locale string) *MyconfigReleaseDownloadAccessCall {
-	c.opt_["locale"] = locale
+	c.urlParams_.Set("locale", locale)
 	return c
 }
 
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *MyconfigReleaseDownloadAccessCall) Source(source string) *MyconfigReleaseDownloadAccessCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *MyconfigReleaseDownloadAccessCall) Fields(s ...googleapi.Field) *MyconfigReleaseDownloadAccessCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *MyconfigReleaseDownloadAccessCall) Do() (*DownloadAccesses, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *MyconfigReleaseDownloadAccessCall) Context(ctx context.Context) *MyconfigReleaseDownloadAccessCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *MyconfigReleaseDownloadAccessCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *MyconfigReleaseDownloadAccessCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("cpksver", fmt.Sprintf("%v", c.cpksver))
-	for _, v := range c.volumeIds {
-		params.Add("volumeIds", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["locale"]; ok {
-		params.Set("locale", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "myconfig/releaseDownloadAccess")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.myconfig.releaseDownloadAccess" call.
+// Exactly one of *DownloadAccesses or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *DownloadAccesses.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *MyconfigReleaseDownloadAccessCall) Do(opts ...googleapi.CallOption) (*DownloadAccesses, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -3589,8 +7133,14 @@ func (c *MyconfigReleaseDownloadAccessCall) Do() (*DownloadAccesses, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *DownloadAccesses
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &DownloadAccesses{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3641,21 +7191,19 @@ func (c *MyconfigReleaseDownloadAccessCall) Do() (*DownloadAccesses, error) {
 // method id "books.myconfig.requestAccess":
 
 type MyconfigRequestAccessCall struct {
-	s        *Service
-	source   string
-	volumeId string
-	nonce    string
-	cpksver  string
-	opt_     map[string]interface{}
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // RequestAccess: Request concurrent and download access restrictions.
 func (r *MyconfigService) RequestAccess(source string, volumeId string, nonce string, cpksver string) *MyconfigRequestAccessCall {
-	c := &MyconfigRequestAccessCall{s: r.s, opt_: make(map[string]interface{})}
-	c.source = source
-	c.volumeId = volumeId
-	c.nonce = nonce
-	c.cpksver = cpksver
+	c := &MyconfigRequestAccessCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("source", source)
+	c.urlParams_.Set("volumeId", volumeId)
+	c.urlParams_.Set("nonce", nonce)
+	c.urlParams_.Set("cpksver", cpksver)
 	return c
 }
 
@@ -3667,48 +7215,76 @@ func (r *MyconfigService) RequestAccess(source string, volumeId string, nonce st
 //   "CONCURRENT" - Concurrent access license.
 //   "DOWNLOAD" - Offline download access license.
 func (c *MyconfigRequestAccessCall) LicenseTypes(licenseTypes string) *MyconfigRequestAccessCall {
-	c.opt_["licenseTypes"] = licenseTypes
+	c.urlParams_.Set("licenseTypes", licenseTypes)
 	return c
 }
 
 // Locale sets the optional parameter "locale": ISO-639-1, ISO-3166-1
 // codes for message localization, i.e. en_US.
 func (c *MyconfigRequestAccessCall) Locale(locale string) *MyconfigRequestAccessCall {
-	c.opt_["locale"] = locale
+	c.urlParams_.Set("locale", locale)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *MyconfigRequestAccessCall) Fields(s ...googleapi.Field) *MyconfigRequestAccessCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *MyconfigRequestAccessCall) Do() (*RequestAccess, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *MyconfigRequestAccessCall) Context(ctx context.Context) *MyconfigRequestAccessCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *MyconfigRequestAccessCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *MyconfigRequestAccessCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("cpksver", fmt.Sprintf("%v", c.cpksver))
-	params.Set("nonce", fmt.Sprintf("%v", c.nonce))
-	params.Set("source", fmt.Sprintf("%v", c.source))
-	params.Set("volumeId", fmt.Sprintf("%v", c.volumeId))
-	if v, ok := c.opt_["licenseTypes"]; ok {
-		params.Set("licenseTypes", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["locale"]; ok {
-		params.Set("locale", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "myconfig/requestAccess")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.myconfig.requestAccess" call.
+// Exactly one of *RequestAccess or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *RequestAccess.ServerResponse.Header or (if a response was returned
+// at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *MyconfigRequestAccessCall) Do(opts ...googleapi.CallOption) (*RequestAccess, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -3716,8 +7292,14 @@ func (c *MyconfigRequestAccessCall) Do() (*RequestAccess, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *RequestAccess
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &RequestAccess{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3791,20 +7373,19 @@ func (c *MyconfigRequestAccessCall) Do() (*RequestAccess, error) {
 // method id "books.myconfig.syncVolumeLicenses":
 
 type MyconfigSyncVolumeLicensesCall struct {
-	s       *Service
-	source  string
-	nonce   string
-	cpksver string
-	opt_    map[string]interface{}
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // SyncVolumeLicenses: Request downloaded content access for specified
 // volumes on the My eBooks shelf.
 func (r *MyconfigService) SyncVolumeLicenses(source string, nonce string, cpksver string) *MyconfigSyncVolumeLicensesCall {
-	c := &MyconfigSyncVolumeLicensesCall{s: r.s, opt_: make(map[string]interface{})}
-	c.source = source
-	c.nonce = nonce
-	c.cpksver = cpksver
+	c := &MyconfigSyncVolumeLicensesCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("source", source)
+	c.urlParams_.Set("nonce", nonce)
+	c.urlParams_.Set("cpksver", cpksver)
 	return c
 }
 
@@ -3813,68 +7394,99 @@ func (r *MyconfigService) SyncVolumeLicenses(source string, nonce string, cpksve
 //
 // Possible values:
 //   "RENTALS" - Client supports rentals.
-func (c *MyconfigSyncVolumeLicensesCall) Features(features string) *MyconfigSyncVolumeLicensesCall {
-	c.opt_["features"] = features
+func (c *MyconfigSyncVolumeLicensesCall) Features(features ...string) *MyconfigSyncVolumeLicensesCall {
+	c.urlParams_.SetMulti("features", append([]string{}, features...))
+	return c
+}
+
+// IncludeNonComicsSeries sets the optional parameter
+// "includeNonComicsSeries": Set to true to include non-comics series.
+// Defaults to false.
+func (c *MyconfigSyncVolumeLicensesCall) IncludeNonComicsSeries(includeNonComicsSeries bool) *MyconfigSyncVolumeLicensesCall {
+	c.urlParams_.Set("includeNonComicsSeries", fmt.Sprint(includeNonComicsSeries))
 	return c
 }
 
 // Locale sets the optional parameter "locale": ISO-639-1, ISO-3166-1
 // codes for message localization, i.e. en_US.
 func (c *MyconfigSyncVolumeLicensesCall) Locale(locale string) *MyconfigSyncVolumeLicensesCall {
-	c.opt_["locale"] = locale
+	c.urlParams_.Set("locale", locale)
 	return c
 }
 
 // ShowPreorders sets the optional parameter "showPreorders": Set to
 // true to show pre-ordered books. Defaults to false.
 func (c *MyconfigSyncVolumeLicensesCall) ShowPreorders(showPreorders bool) *MyconfigSyncVolumeLicensesCall {
-	c.opt_["showPreorders"] = showPreorders
+	c.urlParams_.Set("showPreorders", fmt.Sprint(showPreorders))
 	return c
 }
 
 // VolumeIds sets the optional parameter "volumeIds": The volume(s) to
 // request download restrictions for.
-func (c *MyconfigSyncVolumeLicensesCall) VolumeIds(volumeIds string) *MyconfigSyncVolumeLicensesCall {
-	c.opt_["volumeIds"] = volumeIds
+func (c *MyconfigSyncVolumeLicensesCall) VolumeIds(volumeIds ...string) *MyconfigSyncVolumeLicensesCall {
+	c.urlParams_.SetMulti("volumeIds", append([]string{}, volumeIds...))
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *MyconfigSyncVolumeLicensesCall) Fields(s ...googleapi.Field) *MyconfigSyncVolumeLicensesCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *MyconfigSyncVolumeLicensesCall) Do() (*Volumes, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *MyconfigSyncVolumeLicensesCall) Context(ctx context.Context) *MyconfigSyncVolumeLicensesCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *MyconfigSyncVolumeLicensesCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *MyconfigSyncVolumeLicensesCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("cpksver", fmt.Sprintf("%v", c.cpksver))
-	params.Set("nonce", fmt.Sprintf("%v", c.nonce))
-	params.Set("source", fmt.Sprintf("%v", c.source))
-	if v, ok := c.opt_["features"]; ok {
-		params.Set("features", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["locale"]; ok {
-		params.Set("locale", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["showPreorders"]; ok {
-		params.Set("showPreorders", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["volumeIds"]; ok {
-		params.Set("volumeIds", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "myconfig/syncVolumeLicenses")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.myconfig.syncVolumeLicenses" call.
+// Exactly one of *Volumes or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Volumes.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *MyconfigSyncVolumeLicensesCall) Do(opts ...googleapi.CallOption) (*Volumes, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -3882,8 +7494,14 @@ func (c *MyconfigSyncVolumeLicensesCall) Do() (*Volumes, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Volumes
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Volumes{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3914,6 +7532,11 @@ func (c *MyconfigSyncVolumeLicensesCall) Do() (*Volumes, error) {
 	//       "location": "query",
 	//       "repeated": true,
 	//       "type": "string"
+	//     },
+	//     "includeNonComicsSeries": {
+	//       "description": "Set to true to include non-comics series. Defaults to false.",
+	//       "location": "query",
+	//       "type": "boolean"
 	//     },
 	//     "locale": {
 	//       "description": "ISO-639-1, ISO-3166-1 codes for message localization, i.e. en_US.",
@@ -3960,45 +7583,84 @@ func (c *MyconfigSyncVolumeLicensesCall) Do() (*Volumes, error) {
 type MyconfigUpdateUserSettingsCall struct {
 	s            *Service
 	usersettings *Usersettings
-	opt_         map[string]interface{}
+	urlParams_   gensupport.URLParams
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // UpdateUserSettings: Sets the settings for the user. If a sub-object
 // is specified, it will overwrite the existing sub-object stored in the
 // server. Unspecified sub-objects will retain the existing value.
 func (r *MyconfigService) UpdateUserSettings(usersettings *Usersettings) *MyconfigUpdateUserSettingsCall {
-	c := &MyconfigUpdateUserSettingsCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &MyconfigUpdateUserSettingsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.usersettings = usersettings
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *MyconfigUpdateUserSettingsCall) Fields(s ...googleapi.Field) *MyconfigUpdateUserSettingsCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *MyconfigUpdateUserSettingsCall) Do() (*Usersettings, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *MyconfigUpdateUserSettingsCall) Context(ctx context.Context) *MyconfigUpdateUserSettingsCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *MyconfigUpdateUserSettingsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *MyconfigUpdateUserSettingsCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.usersettings)
 	if err != nil {
 		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "myconfig/updateUserSettings")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("Content-Type", ctype)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.myconfig.updateUserSettings" call.
+// Exactly one of *Usersettings or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Usersettings.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *MyconfigUpdateUserSettingsCall) Do(opts ...googleapi.CallOption) (*Usersettings, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -4006,8 +7668,14 @@ func (c *MyconfigUpdateUserSettingsCall) Do() (*Usersettings, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Usersettings
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Usersettings{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -4034,12 +7702,14 @@ func (c *MyconfigUpdateUserSettingsCall) Do() (*Usersettings, error) {
 type MylibraryAnnotationsDeleteCall struct {
 	s            *Service
 	annotationId string
-	opt_         map[string]interface{}
+	urlParams_   gensupport.URLParams
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // Delete: Deletes an annotation.
 func (r *MylibraryAnnotationsService) Delete(annotationId string) *MylibraryAnnotationsDeleteCall {
-	c := &MylibraryAnnotationsDeleteCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &MylibraryAnnotationsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.annotationId = annotationId
 	return c
 }
@@ -4047,36 +7717,57 @@ func (r *MylibraryAnnotationsService) Delete(annotationId string) *MylibraryAnno
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *MylibraryAnnotationsDeleteCall) Source(source string) *MylibraryAnnotationsDeleteCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *MylibraryAnnotationsDeleteCall) Fields(s ...googleapi.Field) *MylibraryAnnotationsDeleteCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *MylibraryAnnotationsDeleteCall) Do() error {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *MylibraryAnnotationsDeleteCall) Context(ctx context.Context) *MylibraryAnnotationsDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *MylibraryAnnotationsDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *MylibraryAnnotationsDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "mylibrary/annotations/{annotationId}")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
+	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"annotationId": c.annotationId,
 	})
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.mylibrary.annotations.delete" call.
+func (c *MylibraryAnnotationsDeleteCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
 	if err != nil {
 		return err
 	}
@@ -4118,20 +7809,29 @@ func (c *MylibraryAnnotationsDeleteCall) Do() error {
 type MylibraryAnnotationsInsertCall struct {
 	s          *Service
 	annotation *Annotation
-	opt_       map[string]interface{}
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Insert: Inserts a new annotation.
 func (r *MylibraryAnnotationsService) Insert(annotation *Annotation) *MylibraryAnnotationsInsertCall {
-	c := &MylibraryAnnotationsInsertCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &MylibraryAnnotationsInsertCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.annotation = annotation
+	return c
+}
+
+// AnnotationId sets the optional parameter "annotationId": The ID for
+// the annotation to insert.
+func (c *MylibraryAnnotationsInsertCall) AnnotationId(annotationId string) *MylibraryAnnotationsInsertCall {
+	c.urlParams_.Set("annotationId", annotationId)
 	return c
 }
 
 // Country sets the optional parameter "country": ISO-3166-1 code to
 // override the IP-based location.
 func (c *MylibraryAnnotationsInsertCall) Country(country string) *MylibraryAnnotationsInsertCall {
-	c.opt_["country"] = country
+	c.urlParams_.Set("country", country)
 	return c
 }
 
@@ -4139,53 +7839,81 @@ func (c *MylibraryAnnotationsInsertCall) Country(country string) *MylibraryAnnot
 // "showOnlySummaryInResponse": Requests that only the summary of the
 // specified layer be provided in the response.
 func (c *MylibraryAnnotationsInsertCall) ShowOnlySummaryInResponse(showOnlySummaryInResponse bool) *MylibraryAnnotationsInsertCall {
-	c.opt_["showOnlySummaryInResponse"] = showOnlySummaryInResponse
+	c.urlParams_.Set("showOnlySummaryInResponse", fmt.Sprint(showOnlySummaryInResponse))
 	return c
 }
 
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *MylibraryAnnotationsInsertCall) Source(source string) *MylibraryAnnotationsInsertCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *MylibraryAnnotationsInsertCall) Fields(s ...googleapi.Field) *MylibraryAnnotationsInsertCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *MylibraryAnnotationsInsertCall) Do() (*Annotation, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *MylibraryAnnotationsInsertCall) Context(ctx context.Context) *MylibraryAnnotationsInsertCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *MylibraryAnnotationsInsertCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *MylibraryAnnotationsInsertCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.annotation)
 	if err != nil {
 		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["country"]; ok {
-		params.Set("country", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["showOnlySummaryInResponse"]; ok {
-		params.Set("showOnlySummaryInResponse", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "mylibrary/annotations")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("Content-Type", ctype)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.mylibrary.annotations.insert" call.
+// Exactly one of *Annotation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Annotation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *MylibraryAnnotationsInsertCall) Do(opts ...googleapi.CallOption) (*Annotation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -4193,8 +7921,14 @@ func (c *MylibraryAnnotationsInsertCall) Do() (*Annotation, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Annotation
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Annotation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -4203,6 +7937,11 @@ func (c *MylibraryAnnotationsInsertCall) Do() (*Annotation, error) {
 	//   "httpMethod": "POST",
 	//   "id": "books.mylibrary.annotations.insert",
 	//   "parameters": {
+	//     "annotationId": {
+	//       "description": "The ID for the annotation to insert.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
 	//     "country": {
 	//       "description": "ISO-3166-1 code to override the IP-based location.",
 	//       "location": "query",
@@ -4236,48 +7975,51 @@ func (c *MylibraryAnnotationsInsertCall) Do() (*Annotation, error) {
 // method id "books.mylibrary.annotations.list":
 
 type MylibraryAnnotationsListCall struct {
-	s    *Service
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Retrieves a list of annotations, possibly filtered.
 func (r *MylibraryAnnotationsService) List() *MylibraryAnnotationsListCall {
-	c := &MylibraryAnnotationsListCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &MylibraryAnnotationsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	return c
 }
 
 // ContentVersion sets the optional parameter "contentVersion": The
 // content version for the requested volume.
 func (c *MylibraryAnnotationsListCall) ContentVersion(contentVersion string) *MylibraryAnnotationsListCall {
-	c.opt_["contentVersion"] = contentVersion
+	c.urlParams_.Set("contentVersion", contentVersion)
 	return c
 }
 
 // LayerId sets the optional parameter "layerId": The layer ID to limit
 // annotation by.
 func (c *MylibraryAnnotationsListCall) LayerId(layerId string) *MylibraryAnnotationsListCall {
-	c.opt_["layerId"] = layerId
+	c.urlParams_.Set("layerId", layerId)
 	return c
 }
 
 // LayerIds sets the optional parameter "layerIds": The layer ID(s) to
 // limit annotation by.
-func (c *MylibraryAnnotationsListCall) LayerIds(layerIds string) *MylibraryAnnotationsListCall {
-	c.opt_["layerIds"] = layerIds
+func (c *MylibraryAnnotationsListCall) LayerIds(layerIds ...string) *MylibraryAnnotationsListCall {
+	c.urlParams_.SetMulti("layerIds", append([]string{}, layerIds...))
 	return c
 }
 
 // MaxResults sets the optional parameter "maxResults": Maximum number
 // of results to return
 func (c *MylibraryAnnotationsListCall) MaxResults(maxResults int64) *MylibraryAnnotationsListCall {
-	c.opt_["maxResults"] = maxResults
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
 	return c
 }
 
 // PageToken sets the optional parameter "pageToken": The value of the
 // nextToken from the previous page.
 func (c *MylibraryAnnotationsListCall) PageToken(pageToken string) *MylibraryAnnotationsListCall {
-	c.opt_["pageToken"] = pageToken
+	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
@@ -4285,14 +8027,14 @@ func (c *MylibraryAnnotationsListCall) PageToken(pageToken string) *MylibraryAnn
 // return deleted annotations. updatedMin must be in the request to use
 // this. Defaults to false.
 func (c *MylibraryAnnotationsListCall) ShowDeleted(showDeleted bool) *MylibraryAnnotationsListCall {
-	c.opt_["showDeleted"] = showDeleted
+	c.urlParams_.Set("showDeleted", fmt.Sprint(showDeleted))
 	return c
 }
 
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *MylibraryAnnotationsListCall) Source(source string) *MylibraryAnnotationsListCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
@@ -4300,7 +8042,7 @@ func (c *MylibraryAnnotationsListCall) Source(source string) *MylibraryAnnotatio
 // timestamp to restrict to items updated prior to this timestamp
 // (exclusive).
 func (c *MylibraryAnnotationsListCall) UpdatedMax(updatedMax string) *MylibraryAnnotationsListCall {
-	c.opt_["updatedMax"] = updatedMax
+	c.urlParams_.Set("updatedMax", updatedMax)
 	return c
 }
 
@@ -4308,68 +8050,89 @@ func (c *MylibraryAnnotationsListCall) UpdatedMax(updatedMax string) *MylibraryA
 // timestamp to restrict to items updated since this timestamp
 // (inclusive).
 func (c *MylibraryAnnotationsListCall) UpdatedMin(updatedMin string) *MylibraryAnnotationsListCall {
-	c.opt_["updatedMin"] = updatedMin
+	c.urlParams_.Set("updatedMin", updatedMin)
 	return c
 }
 
 // VolumeId sets the optional parameter "volumeId": The volume to
 // restrict annotations to.
 func (c *MylibraryAnnotationsListCall) VolumeId(volumeId string) *MylibraryAnnotationsListCall {
-	c.opt_["volumeId"] = volumeId
+	c.urlParams_.Set("volumeId", volumeId)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *MylibraryAnnotationsListCall) Fields(s ...googleapi.Field) *MylibraryAnnotationsListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *MylibraryAnnotationsListCall) Do() (*Annotations, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *MylibraryAnnotationsListCall) IfNoneMatch(entityTag string) *MylibraryAnnotationsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *MylibraryAnnotationsListCall) Context(ctx context.Context) *MylibraryAnnotationsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *MylibraryAnnotationsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *MylibraryAnnotationsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["contentVersion"]; ok {
-		params.Set("contentVersion", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["layerId"]; ok {
-		params.Set("layerId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["layerIds"]; ok {
-		params.Set("layerIds", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["maxResults"]; ok {
-		params.Set("maxResults", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["pageToken"]; ok {
-		params.Set("pageToken", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["showDeleted"]; ok {
-		params.Set("showDeleted", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["updatedMax"]; ok {
-		params.Set("updatedMax", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["updatedMin"]; ok {
-		params.Set("updatedMin", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["volumeId"]; ok {
-		params.Set("volumeId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "mylibrary/annotations")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.mylibrary.annotations.list" call.
+// Exactly one of *Annotations or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Annotations.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *MylibraryAnnotationsListCall) Do(opts ...googleapi.CallOption) (*Annotations, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -4377,8 +8140,14 @@ func (c *MylibraryAnnotationsListCall) Do() (*Annotations, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Annotations
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Annotations{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -4453,48 +8222,103 @@ func (c *MylibraryAnnotationsListCall) Do() (*Annotations, error) {
 
 }
 
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *MylibraryAnnotationsListCall) Pages(ctx context.Context, f func(*Annotations) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
 // method id "books.mylibrary.annotations.summary":
 
 type MylibraryAnnotationsSummaryCall struct {
-	s        *Service
-	layerIds []string
-	volumeId string
-	opt_     map[string]interface{}
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Summary: Gets the summary of specified layers.
 func (r *MylibraryAnnotationsService) Summary(layerIds []string, volumeId string) *MylibraryAnnotationsSummaryCall {
-	c := &MylibraryAnnotationsSummaryCall{s: r.s, opt_: make(map[string]interface{})}
-	c.layerIds = layerIds
-	c.volumeId = volumeId
+	c := &MylibraryAnnotationsSummaryCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.SetMulti("layerIds", append([]string{}, layerIds...))
+	c.urlParams_.Set("volumeId", volumeId)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *MylibraryAnnotationsSummaryCall) Fields(s ...googleapi.Field) *MylibraryAnnotationsSummaryCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *MylibraryAnnotationsSummaryCall) Do() (*AnnotationsSummary, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *MylibraryAnnotationsSummaryCall) Context(ctx context.Context) *MylibraryAnnotationsSummaryCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *MylibraryAnnotationsSummaryCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *MylibraryAnnotationsSummaryCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("volumeId", fmt.Sprintf("%v", c.volumeId))
-	for _, v := range c.layerIds {
-		params.Add("layerIds", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "mylibrary/annotations/summary")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.mylibrary.annotations.summary" call.
+// Exactly one of *AnnotationsSummary or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *AnnotationsSummary.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *MylibraryAnnotationsSummaryCall) Do(opts ...googleapi.CallOption) (*AnnotationsSummary, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -4502,8 +8326,14 @@ func (c *MylibraryAnnotationsSummaryCall) Do() (*AnnotationsSummary, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *AnnotationsSummary
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &AnnotationsSummary{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -4547,12 +8377,14 @@ type MylibraryAnnotationsUpdateCall struct {
 	s            *Service
 	annotationId string
 	annotation   *Annotation
-	opt_         map[string]interface{}
+	urlParams_   gensupport.URLParams
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // Update: Updates an existing annotation.
 func (r *MylibraryAnnotationsService) Update(annotationId string, annotation *Annotation) *MylibraryAnnotationsUpdateCall {
-	c := &MylibraryAnnotationsUpdateCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &MylibraryAnnotationsUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.annotationId = annotationId
 	c.annotation = annotation
 	return c
@@ -4561,42 +8393,77 @@ func (r *MylibraryAnnotationsService) Update(annotationId string, annotation *An
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *MylibraryAnnotationsUpdateCall) Source(source string) *MylibraryAnnotationsUpdateCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *MylibraryAnnotationsUpdateCall) Fields(s ...googleapi.Field) *MylibraryAnnotationsUpdateCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *MylibraryAnnotationsUpdateCall) Do() (*Annotation, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *MylibraryAnnotationsUpdateCall) Context(ctx context.Context) *MylibraryAnnotationsUpdateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *MylibraryAnnotationsUpdateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *MylibraryAnnotationsUpdateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.annotation)
 	if err != nil {
 		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "mylibrary/annotations/{annotationId}")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PUT", urls, body)
+	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"annotationId": c.annotationId,
 	})
-	req.Header.Set("Content-Type", ctype)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.mylibrary.annotations.update" call.
+// Exactly one of *Annotation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Annotation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *MylibraryAnnotationsUpdateCall) Do(opts ...googleapi.CallOption) (*Annotation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -4604,8 +8471,14 @@ func (c *MylibraryAnnotationsUpdateCall) Do() (*Annotation, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Annotation
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Annotation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -4646,17 +8519,18 @@ func (c *MylibraryAnnotationsUpdateCall) Do() (*Annotation, error) {
 // method id "books.mylibrary.bookshelves.addVolume":
 
 type MylibraryBookshelvesAddVolumeCall struct {
-	s        *Service
-	shelf    string
-	volumeId string
-	opt_     map[string]interface{}
+	s          *Service
+	shelf      string
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // AddVolume: Adds a volume to a bookshelf.
 func (r *MylibraryBookshelvesService) AddVolume(shelf string, volumeId string) *MylibraryBookshelvesAddVolumeCall {
-	c := &MylibraryBookshelvesAddVolumeCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &MylibraryBookshelvesAddVolumeCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.shelf = shelf
-	c.volumeId = volumeId
+	c.urlParams_.Set("volumeId", volumeId)
 	return c
 }
 
@@ -4668,47 +8542,64 @@ func (r *MylibraryBookshelvesService) AddVolume(shelf string, volumeId string) *
 //   "IOS_SEARCH" - Volumes added from the Search flow on iOS.
 //   "ONBOARDING" - Volumes added from the Onboarding flow.
 func (c *MylibraryBookshelvesAddVolumeCall) Reason(reason string) *MylibraryBookshelvesAddVolumeCall {
-	c.opt_["reason"] = reason
+	c.urlParams_.Set("reason", reason)
 	return c
 }
 
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *MylibraryBookshelvesAddVolumeCall) Source(source string) *MylibraryBookshelvesAddVolumeCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *MylibraryBookshelvesAddVolumeCall) Fields(s ...googleapi.Field) *MylibraryBookshelvesAddVolumeCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *MylibraryBookshelvesAddVolumeCall) Do() error {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *MylibraryBookshelvesAddVolumeCall) Context(ctx context.Context) *MylibraryBookshelvesAddVolumeCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *MylibraryBookshelvesAddVolumeCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *MylibraryBookshelvesAddVolumeCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("volumeId", fmt.Sprintf("%v", c.volumeId))
-	if v, ok := c.opt_["reason"]; ok {
-		params.Set("reason", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "mylibrary/bookshelves/{shelf}/addVolume")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"shelf": c.shelf,
 	})
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.mylibrary.bookshelves.addVolume" call.
+func (c *MylibraryBookshelvesAddVolumeCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
 	if err != nil {
 		return err
 	}
@@ -4770,14 +8661,16 @@ func (c *MylibraryBookshelvesAddVolumeCall) Do() error {
 // method id "books.mylibrary.bookshelves.clearVolumes":
 
 type MylibraryBookshelvesClearVolumesCall struct {
-	s     *Service
-	shelf string
-	opt_  map[string]interface{}
+	s          *Service
+	shelf      string
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // ClearVolumes: Clears all volumes from a bookshelf.
 func (r *MylibraryBookshelvesService) ClearVolumes(shelf string) *MylibraryBookshelvesClearVolumesCall {
-	c := &MylibraryBookshelvesClearVolumesCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &MylibraryBookshelvesClearVolumesCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.shelf = shelf
 	return c
 }
@@ -4785,36 +8678,57 @@ func (r *MylibraryBookshelvesService) ClearVolumes(shelf string) *MylibraryBooks
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *MylibraryBookshelvesClearVolumesCall) Source(source string) *MylibraryBookshelvesClearVolumesCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *MylibraryBookshelvesClearVolumesCall) Fields(s ...googleapi.Field) *MylibraryBookshelvesClearVolumesCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *MylibraryBookshelvesClearVolumesCall) Do() error {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *MylibraryBookshelvesClearVolumesCall) Context(ctx context.Context) *MylibraryBookshelvesClearVolumesCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *MylibraryBookshelvesClearVolumesCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *MylibraryBookshelvesClearVolumesCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "mylibrary/bookshelves/{shelf}/clearVolumes")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"shelf": c.shelf,
 	})
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.mylibrary.bookshelves.clearVolumes" call.
+func (c *MylibraryBookshelvesClearVolumesCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
 	if err != nil {
 		return err
 	}
@@ -4854,15 +8768,18 @@ func (c *MylibraryBookshelvesClearVolumesCall) Do() error {
 // method id "books.mylibrary.bookshelves.get":
 
 type MylibraryBookshelvesGetCall struct {
-	s     *Service
-	shelf string
-	opt_  map[string]interface{}
+	s            *Service
+	shelf        string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // Get: Retrieves metadata for a specific bookshelf belonging to the
 // authenticated user.
 func (r *MylibraryBookshelvesService) Get(shelf string) *MylibraryBookshelvesGetCall {
-	c := &MylibraryBookshelvesGetCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &MylibraryBookshelvesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.shelf = shelf
 	return c
 }
@@ -4870,36 +8787,85 @@ func (r *MylibraryBookshelvesService) Get(shelf string) *MylibraryBookshelvesGet
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *MylibraryBookshelvesGetCall) Source(source string) *MylibraryBookshelvesGetCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *MylibraryBookshelvesGetCall) Fields(s ...googleapi.Field) *MylibraryBookshelvesGetCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *MylibraryBookshelvesGetCall) Do() (*Bookshelf, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *MylibraryBookshelvesGetCall) IfNoneMatch(entityTag string) *MylibraryBookshelvesGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *MylibraryBookshelvesGetCall) Context(ctx context.Context) *MylibraryBookshelvesGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *MylibraryBookshelvesGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *MylibraryBookshelvesGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "mylibrary/bookshelves/{shelf}")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"shelf": c.shelf,
 	})
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.mylibrary.bookshelves.get" call.
+// Exactly one of *Bookshelf or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Bookshelf.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *MylibraryBookshelvesGetCall) Do(opts ...googleapi.CallOption) (*Bookshelf, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -4907,8 +8873,14 @@ func (c *MylibraryBookshelvesGetCall) Do() (*Bookshelf, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Bookshelf
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Bookshelf{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -4946,48 +8918,99 @@ func (c *MylibraryBookshelvesGetCall) Do() (*Bookshelf, error) {
 // method id "books.mylibrary.bookshelves.list":
 
 type MylibraryBookshelvesListCall struct {
-	s    *Service
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Retrieves a list of bookshelves belonging to the authenticated
 // user.
 func (r *MylibraryBookshelvesService) List() *MylibraryBookshelvesListCall {
-	c := &MylibraryBookshelvesListCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &MylibraryBookshelvesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	return c
 }
 
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *MylibraryBookshelvesListCall) Source(source string) *MylibraryBookshelvesListCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *MylibraryBookshelvesListCall) Fields(s ...googleapi.Field) *MylibraryBookshelvesListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *MylibraryBookshelvesListCall) Do() (*Bookshelves, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *MylibraryBookshelvesListCall) IfNoneMatch(entityTag string) *MylibraryBookshelvesListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *MylibraryBookshelvesListCall) Context(ctx context.Context) *MylibraryBookshelvesListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *MylibraryBookshelvesListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *MylibraryBookshelvesListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "mylibrary/bookshelves")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.mylibrary.bookshelves.list" call.
+// Exactly one of *Bookshelves or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Bookshelves.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *MylibraryBookshelvesListCall) Do(opts ...googleapi.CallOption) (*Bookshelves, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -4995,8 +9018,14 @@ func (c *MylibraryBookshelvesListCall) Do() (*Bookshelves, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Bookshelves
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Bookshelves{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -5025,57 +9054,76 @@ func (c *MylibraryBookshelvesListCall) Do() (*Bookshelves, error) {
 // method id "books.mylibrary.bookshelves.moveVolume":
 
 type MylibraryBookshelvesMoveVolumeCall struct {
-	s              *Service
-	shelf          string
-	volumeId       string
-	volumePosition int64
-	opt_           map[string]interface{}
+	s          *Service
+	shelf      string
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // MoveVolume: Moves a volume within a bookshelf.
 func (r *MylibraryBookshelvesService) MoveVolume(shelf string, volumeId string, volumePosition int64) *MylibraryBookshelvesMoveVolumeCall {
-	c := &MylibraryBookshelvesMoveVolumeCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &MylibraryBookshelvesMoveVolumeCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.shelf = shelf
-	c.volumeId = volumeId
-	c.volumePosition = volumePosition
+	c.urlParams_.Set("volumeId", volumeId)
+	c.urlParams_.Set("volumePosition", fmt.Sprint(volumePosition))
 	return c
 }
 
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *MylibraryBookshelvesMoveVolumeCall) Source(source string) *MylibraryBookshelvesMoveVolumeCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *MylibraryBookshelvesMoveVolumeCall) Fields(s ...googleapi.Field) *MylibraryBookshelvesMoveVolumeCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *MylibraryBookshelvesMoveVolumeCall) Do() error {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *MylibraryBookshelvesMoveVolumeCall) Context(ctx context.Context) *MylibraryBookshelvesMoveVolumeCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *MylibraryBookshelvesMoveVolumeCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *MylibraryBookshelvesMoveVolumeCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("volumeId", fmt.Sprintf("%v", c.volumeId))
-	params.Set("volumePosition", fmt.Sprintf("%v", c.volumePosition))
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "mylibrary/bookshelves/{shelf}/moveVolume")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"shelf": c.shelf,
 	})
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.mylibrary.bookshelves.moveVolume" call.
+func (c *MylibraryBookshelvesMoveVolumeCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
 	if err != nil {
 		return err
 	}
@@ -5130,17 +9178,18 @@ func (c *MylibraryBookshelvesMoveVolumeCall) Do() error {
 // method id "books.mylibrary.bookshelves.removeVolume":
 
 type MylibraryBookshelvesRemoveVolumeCall struct {
-	s        *Service
-	shelf    string
-	volumeId string
-	opt_     map[string]interface{}
+	s          *Service
+	shelf      string
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // RemoveVolume: Removes a volume from a bookshelf.
 func (r *MylibraryBookshelvesService) RemoveVolume(shelf string, volumeId string) *MylibraryBookshelvesRemoveVolumeCall {
-	c := &MylibraryBookshelvesRemoveVolumeCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &MylibraryBookshelvesRemoveVolumeCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.shelf = shelf
-	c.volumeId = volumeId
+	c.urlParams_.Set("volumeId", volumeId)
 	return c
 }
 
@@ -5150,47 +9199,64 @@ func (r *MylibraryBookshelvesService) RemoveVolume(shelf string, volumeId string
 // Possible values:
 //   "ONBOARDING" - Samples removed from the Onboarding flow.
 func (c *MylibraryBookshelvesRemoveVolumeCall) Reason(reason string) *MylibraryBookshelvesRemoveVolumeCall {
-	c.opt_["reason"] = reason
+	c.urlParams_.Set("reason", reason)
 	return c
 }
 
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *MylibraryBookshelvesRemoveVolumeCall) Source(source string) *MylibraryBookshelvesRemoveVolumeCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *MylibraryBookshelvesRemoveVolumeCall) Fields(s ...googleapi.Field) *MylibraryBookshelvesRemoveVolumeCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *MylibraryBookshelvesRemoveVolumeCall) Do() error {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *MylibraryBookshelvesRemoveVolumeCall) Context(ctx context.Context) *MylibraryBookshelvesRemoveVolumeCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *MylibraryBookshelvesRemoveVolumeCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *MylibraryBookshelvesRemoveVolumeCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("volumeId", fmt.Sprintf("%v", c.volumeId))
-	if v, ok := c.opt_["reason"]; ok {
-		params.Set("reason", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "mylibrary/bookshelves/{shelf}/removeVolume")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"shelf": c.shelf,
 	})
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.mylibrary.bookshelves.removeVolume" call.
+func (c *MylibraryBookshelvesRemoveVolumeCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
 	if err != nil {
 		return err
 	}
@@ -5248,14 +9314,17 @@ func (c *MylibraryBookshelvesRemoveVolumeCall) Do() error {
 // method id "books.mylibrary.bookshelves.volumes.list":
 
 type MylibraryBookshelvesVolumesListCall struct {
-	s     *Service
-	shelf string
-	opt_  map[string]interface{}
+	s            *Service
+	shelf        string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Gets volume information for volumes on a bookshelf.
 func (r *MylibraryBookshelvesVolumesService) List(shelf string) *MylibraryBookshelvesVolumesListCall {
-	c := &MylibraryBookshelvesVolumesListCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &MylibraryBookshelvesVolumesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.shelf = shelf
 	return c
 }
@@ -5263,14 +9332,14 @@ func (r *MylibraryBookshelvesVolumesService) List(shelf string) *MylibraryBooksh
 // Country sets the optional parameter "country": ISO-3166-1 code to
 // override the IP-based location.
 func (c *MylibraryBookshelvesVolumesListCall) Country(country string) *MylibraryBookshelvesVolumesListCall {
-	c.opt_["country"] = country
+	c.urlParams_.Set("country", country)
 	return c
 }
 
 // MaxResults sets the optional parameter "maxResults": Maximum number
 // of results to return
 func (c *MylibraryBookshelvesVolumesListCall) MaxResults(maxResults int64) *MylibraryBookshelvesVolumesListCall {
-	c.opt_["maxResults"] = maxResults
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
 	return c
 }
 
@@ -5281,82 +9350,113 @@ func (c *MylibraryBookshelvesVolumesListCall) MaxResults(maxResults int64) *Myli
 //   "full" - Includes all volume data.
 //   "lite" - Includes a subset of fields in volumeInfo and accessInfo.
 func (c *MylibraryBookshelvesVolumesListCall) Projection(projection string) *MylibraryBookshelvesVolumesListCall {
-	c.opt_["projection"] = projection
+	c.urlParams_.Set("projection", projection)
 	return c
 }
 
 // Q sets the optional parameter "q": Full-text search query string in
 // this bookshelf.
 func (c *MylibraryBookshelvesVolumesListCall) Q(q string) *MylibraryBookshelvesVolumesListCall {
-	c.opt_["q"] = q
+	c.urlParams_.Set("q", q)
 	return c
 }
 
 // ShowPreorders sets the optional parameter "showPreorders": Set to
 // true to show pre-ordered books. Defaults to false.
 func (c *MylibraryBookshelvesVolumesListCall) ShowPreorders(showPreorders bool) *MylibraryBookshelvesVolumesListCall {
-	c.opt_["showPreorders"] = showPreorders
+	c.urlParams_.Set("showPreorders", fmt.Sprint(showPreorders))
 	return c
 }
 
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *MylibraryBookshelvesVolumesListCall) Source(source string) *MylibraryBookshelvesVolumesListCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
 // StartIndex sets the optional parameter "startIndex": Index of the
 // first element to return (starts at 0)
 func (c *MylibraryBookshelvesVolumesListCall) StartIndex(startIndex int64) *MylibraryBookshelvesVolumesListCall {
-	c.opt_["startIndex"] = startIndex
+	c.urlParams_.Set("startIndex", fmt.Sprint(startIndex))
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *MylibraryBookshelvesVolumesListCall) Fields(s ...googleapi.Field) *MylibraryBookshelvesVolumesListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *MylibraryBookshelvesVolumesListCall) Do() (*Volumes, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *MylibraryBookshelvesVolumesListCall) IfNoneMatch(entityTag string) *MylibraryBookshelvesVolumesListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *MylibraryBookshelvesVolumesListCall) Context(ctx context.Context) *MylibraryBookshelvesVolumesListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *MylibraryBookshelvesVolumesListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *MylibraryBookshelvesVolumesListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["country"]; ok {
-		params.Set("country", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["maxResults"]; ok {
-		params.Set("maxResults", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["projection"]; ok {
-		params.Set("projection", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["q"]; ok {
-		params.Set("q", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["showPreorders"]; ok {
-		params.Set("showPreorders", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["startIndex"]; ok {
-		params.Set("startIndex", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "mylibrary/bookshelves/{shelf}/volumes")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"shelf": c.shelf,
 	})
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.mylibrary.bookshelves.volumes.list" call.
+// Exactly one of *Volumes or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Volumes.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *MylibraryBookshelvesVolumesListCall) Do(opts ...googleapi.CallOption) (*Volumes, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -5364,8 +9464,14 @@ func (c *MylibraryBookshelvesVolumesListCall) Do() (*Volumes, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Volumes
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Volumes{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -5445,14 +9551,17 @@ func (c *MylibraryBookshelvesVolumesListCall) Do() (*Volumes, error) {
 // method id "books.mylibrary.readingpositions.get":
 
 type MylibraryReadingpositionsGetCall struct {
-	s        *Service
-	volumeId string
-	opt_     map[string]interface{}
+	s            *Service
+	volumeId     string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // Get: Retrieves my reading position information for a volume.
 func (r *MylibraryReadingpositionsService) Get(volumeId string) *MylibraryReadingpositionsGetCall {
-	c := &MylibraryReadingpositionsGetCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &MylibraryReadingpositionsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.volumeId = volumeId
 	return c
 }
@@ -5460,46 +9569,92 @@ func (r *MylibraryReadingpositionsService) Get(volumeId string) *MylibraryReadin
 // ContentVersion sets the optional parameter "contentVersion": Volume
 // content version for which this reading position is requested.
 func (c *MylibraryReadingpositionsGetCall) ContentVersion(contentVersion string) *MylibraryReadingpositionsGetCall {
-	c.opt_["contentVersion"] = contentVersion
+	c.urlParams_.Set("contentVersion", contentVersion)
 	return c
 }
 
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *MylibraryReadingpositionsGetCall) Source(source string) *MylibraryReadingpositionsGetCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *MylibraryReadingpositionsGetCall) Fields(s ...googleapi.Field) *MylibraryReadingpositionsGetCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *MylibraryReadingpositionsGetCall) Do() (*ReadingPosition, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *MylibraryReadingpositionsGetCall) IfNoneMatch(entityTag string) *MylibraryReadingpositionsGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *MylibraryReadingpositionsGetCall) Context(ctx context.Context) *MylibraryReadingpositionsGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *MylibraryReadingpositionsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *MylibraryReadingpositionsGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["contentVersion"]; ok {
-		params.Set("contentVersion", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "mylibrary/readingpositions/{volumeId}")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"volumeId": c.volumeId,
 	})
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.mylibrary.readingpositions.get" call.
+// Exactly one of *ReadingPosition or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *ReadingPosition.ServerResponse.Header or (if a response was returned
+// at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *MylibraryReadingpositionsGetCall) Do(opts ...googleapi.CallOption) (*ReadingPosition, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -5507,8 +9662,14 @@ func (c *MylibraryReadingpositionsGetCall) Do() (*ReadingPosition, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *ReadingPosition
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &ReadingPosition{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -5551,19 +9712,19 @@ func (c *MylibraryReadingpositionsGetCall) Do() (*ReadingPosition, error) {
 // method id "books.mylibrary.readingpositions.setPosition":
 
 type MylibraryReadingpositionsSetPositionCall struct {
-	s         *Service
-	volumeId  string
-	timestamp string
-	position  string
-	opt_      map[string]interface{}
+	s          *Service
+	volumeId   string
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // SetPosition: Sets my reading position information for a volume.
 func (r *MylibraryReadingpositionsService) SetPosition(volumeId string, timestamp string, position string) *MylibraryReadingpositionsSetPositionCall {
-	c := &MylibraryReadingpositionsSetPositionCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &MylibraryReadingpositionsSetPositionCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.volumeId = volumeId
-	c.timestamp = timestamp
-	c.position = position
+	c.urlParams_.Set("timestamp", timestamp)
+	c.urlParams_.Set("position", position)
 	return c
 }
 
@@ -5578,68 +9739,78 @@ func (r *MylibraryReadingpositionsService) SetPosition(volumeId string, timestam
 //   "scroll" - User navigated to page.
 //   "search" - User chose search results within volume.
 func (c *MylibraryReadingpositionsSetPositionCall) Action(action string) *MylibraryReadingpositionsSetPositionCall {
-	c.opt_["action"] = action
+	c.urlParams_.Set("action", action)
 	return c
 }
 
 // ContentVersion sets the optional parameter "contentVersion": Volume
 // content version for which this reading position applies.
 func (c *MylibraryReadingpositionsSetPositionCall) ContentVersion(contentVersion string) *MylibraryReadingpositionsSetPositionCall {
-	c.opt_["contentVersion"] = contentVersion
+	c.urlParams_.Set("contentVersion", contentVersion)
 	return c
 }
 
 // DeviceCookie sets the optional parameter "deviceCookie": Random
 // persistent device cookie optional on set position.
 func (c *MylibraryReadingpositionsSetPositionCall) DeviceCookie(deviceCookie string) *MylibraryReadingpositionsSetPositionCall {
-	c.opt_["deviceCookie"] = deviceCookie
+	c.urlParams_.Set("deviceCookie", deviceCookie)
 	return c
 }
 
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *MylibraryReadingpositionsSetPositionCall) Source(source string) *MylibraryReadingpositionsSetPositionCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *MylibraryReadingpositionsSetPositionCall) Fields(s ...googleapi.Field) *MylibraryReadingpositionsSetPositionCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *MylibraryReadingpositionsSetPositionCall) Do() error {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *MylibraryReadingpositionsSetPositionCall) Context(ctx context.Context) *MylibraryReadingpositionsSetPositionCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *MylibraryReadingpositionsSetPositionCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *MylibraryReadingpositionsSetPositionCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("position", fmt.Sprintf("%v", c.position))
-	params.Set("timestamp", fmt.Sprintf("%v", c.timestamp))
-	if v, ok := c.opt_["action"]; ok {
-		params.Set("action", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["contentVersion"]; ok {
-		params.Set("contentVersion", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["deviceCookie"]; ok {
-		params.Set("deviceCookie", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "mylibrary/readingpositions/{volumeId}/setPosition")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"volumeId": c.volumeId,
 	})
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.mylibrary.readingpositions.setPosition" call.
+func (c *MylibraryReadingpositionsSetPositionCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
 	if err != nil {
 		return err
 	}
@@ -5721,50 +9892,110 @@ func (c *MylibraryReadingpositionsSetPositionCall) Do() error {
 
 }
 
-// method id "books.onboarding.listCategories":
+// method id "books.notification.get":
 
-type OnboardingListCategoriesCall struct {
-	s    *Service
-	opt_ map[string]interface{}
+type NotificationGetCall struct {
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
-// ListCategories: List categories for onboarding experience.
-func (r *OnboardingService) ListCategories() *OnboardingListCategoriesCall {
-	c := &OnboardingListCategoriesCall{s: r.s, opt_: make(map[string]interface{})}
+// Get: Returns notification details for a given notification id.
+func (r *NotificationService) Get(notificationId string) *NotificationGetCall {
+	c := &NotificationGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("notification_id", notificationId)
 	return c
 }
 
 // Locale sets the optional parameter "locale": ISO-639-1 language and
-// ISO-3166-1 country code. Default is en-US if unset.
-func (c *OnboardingListCategoriesCall) Locale(locale string) *OnboardingListCategoriesCall {
-	c.opt_["locale"] = locale
+// ISO-3166-1 country code. Ex: 'en_US'. Used for generating
+// notification title and body.
+func (c *NotificationGetCall) Locale(locale string) *NotificationGetCall {
+	c.urlParams_.Set("locale", locale)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Source sets the optional parameter "source": String to identify the
+// originator of this request.
+func (c *NotificationGetCall) Source(source string) *NotificationGetCall {
+	c.urlParams_.Set("source", source)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
-func (c *OnboardingListCategoriesCall) Fields(s ...googleapi.Field) *OnboardingListCategoriesCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+func (c *NotificationGetCall) Fields(s ...googleapi.Field) *NotificationGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *OnboardingListCategoriesCall) Do() (*Category, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *NotificationGetCall) IfNoneMatch(entityTag string) *NotificationGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *NotificationGetCall) Context(ctx context.Context) *NotificationGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *NotificationGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *NotificationGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["locale"]; ok {
-		params.Set("locale", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
-	urls := googleapi.ResolveRelative(c.s.BasePath, "onboarding/listCategories")
-	urls += "?" + params.Encode()
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "notification/get")
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.notification.get" call.
+// Exactly one of *Notification or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Notification.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *NotificationGetCall) Do(opts ...googleapi.CallOption) (*Notification, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -5772,8 +10003,163 @@ func (c *OnboardingListCategoriesCall) Do() (*Category, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Category
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Notification{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Returns notification details for a given notification id.",
+	//   "httpMethod": "GET",
+	//   "id": "books.notification.get",
+	//   "parameterOrder": [
+	//     "notification_id"
+	//   ],
+	//   "parameters": {
+	//     "locale": {
+	//       "description": "ISO-639-1 language and ISO-3166-1 country code. Ex: 'en_US'. Used for generating notification title and body.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "notification_id": {
+	//       "description": "String to identify the notification.",
+	//       "location": "query",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "source": {
+	//       "description": "String to identify the originator of this request.",
+	//       "location": "query",
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "notification/get",
+	//   "response": {
+	//     "$ref": "Notification"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/books"
+	//   ]
+	// }
+
+}
+
+// method id "books.onboarding.listCategories":
+
+type OnboardingListCategoriesCall struct {
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// ListCategories: List categories for onboarding experience.
+func (r *OnboardingService) ListCategories() *OnboardingListCategoriesCall {
+	c := &OnboardingListCategoriesCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	return c
+}
+
+// Locale sets the optional parameter "locale": ISO-639-1 language and
+// ISO-3166-1 country code. Default is en-US if unset.
+func (c *OnboardingListCategoriesCall) Locale(locale string) *OnboardingListCategoriesCall {
+	c.urlParams_.Set("locale", locale)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *OnboardingListCategoriesCall) Fields(s ...googleapi.Field) *OnboardingListCategoriesCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *OnboardingListCategoriesCall) IfNoneMatch(entityTag string) *OnboardingListCategoriesCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *OnboardingListCategoriesCall) Context(ctx context.Context) *OnboardingListCategoriesCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *OnboardingListCategoriesCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *OnboardingListCategoriesCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "onboarding/listCategories")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.onboarding.listCategories" call.
+// Exactly one of *Category or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Category.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *OnboardingListCategoriesCall) Do(opts ...googleapi.CallOption) (*Category, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Category{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -5802,28 +10188,31 @@ func (c *OnboardingListCategoriesCall) Do() (*Category, error) {
 // method id "books.onboarding.listCategoryVolumes":
 
 type OnboardingListCategoryVolumesCall struct {
-	s    *Service
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // ListCategoryVolumes: List available volumes under categories for
 // onboarding experience.
 func (r *OnboardingService) ListCategoryVolumes() *OnboardingListCategoryVolumesCall {
-	c := &OnboardingListCategoryVolumesCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &OnboardingListCategoryVolumesCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	return c
 }
 
 // CategoryId sets the optional parameter "categoryId": List of category
 // ids requested.
-func (c *OnboardingListCategoryVolumesCall) CategoryId(categoryId string) *OnboardingListCategoryVolumesCall {
-	c.opt_["categoryId"] = categoryId
+func (c *OnboardingListCategoryVolumesCall) CategoryId(categoryId ...string) *OnboardingListCategoryVolumesCall {
+	c.urlParams_.SetMulti("categoryId", append([]string{}, categoryId...))
 	return c
 }
 
 // Locale sets the optional parameter "locale": ISO-639-1 language and
 // ISO-3166-1 country code. Default is en-US if unset.
 func (c *OnboardingListCategoryVolumesCall) Locale(locale string) *OnboardingListCategoryVolumesCall {
-	c.opt_["locale"] = locale
+	c.urlParams_.Set("locale", locale)
 	return c
 }
 
@@ -5836,60 +10225,96 @@ func (c *OnboardingListCategoryVolumesCall) Locale(locale string) *OnboardingLis
 //   "mature" - Show books which are rated mature or lower.
 //   "not-mature" - Show books which are rated not mature.
 func (c *OnboardingListCategoryVolumesCall) MaxAllowedMaturityRating(maxAllowedMaturityRating string) *OnboardingListCategoryVolumesCall {
-	c.opt_["maxAllowedMaturityRating"] = maxAllowedMaturityRating
+	c.urlParams_.Set("maxAllowedMaturityRating", maxAllowedMaturityRating)
 	return c
 }
 
 // PageSize sets the optional parameter "pageSize": Number of maximum
 // results per page to be included in the response.
 func (c *OnboardingListCategoryVolumesCall) PageSize(pageSize int64) *OnboardingListCategoryVolumesCall {
-	c.opt_["pageSize"] = pageSize
+	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
 // PageToken sets the optional parameter "pageToken": The value of the
 // nextToken from the previous page.
 func (c *OnboardingListCategoryVolumesCall) PageToken(pageToken string) *OnboardingListCategoryVolumesCall {
-	c.opt_["pageToken"] = pageToken
+	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *OnboardingListCategoryVolumesCall) Fields(s ...googleapi.Field) *OnboardingListCategoryVolumesCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *OnboardingListCategoryVolumesCall) Do() (*Volume2, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *OnboardingListCategoryVolumesCall) IfNoneMatch(entityTag string) *OnboardingListCategoryVolumesCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *OnboardingListCategoryVolumesCall) Context(ctx context.Context) *OnboardingListCategoryVolumesCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *OnboardingListCategoryVolumesCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *OnboardingListCategoryVolumesCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["categoryId"]; ok {
-		params.Set("categoryId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["locale"]; ok {
-		params.Set("locale", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["maxAllowedMaturityRating"]; ok {
-		params.Set("maxAllowedMaturityRating", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["pageSize"]; ok {
-		params.Set("pageSize", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["pageToken"]; ok {
-		params.Set("pageToken", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "onboarding/listCategoryVolumes")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.onboarding.listCategoryVolumes" call.
+// Exactly one of *Volume2 or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Volume2.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *OnboardingListCategoryVolumesCall) Do(opts ...googleapi.CallOption) (*Volume2, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -5897,8 +10322,14 @@ func (c *OnboardingListCategoryVolumesCall) Do() (*Volume2, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Volume2
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Volume2{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -5954,114 +10385,310 @@ func (c *OnboardingListCategoryVolumesCall) Do() (*Volume2, error) {
 
 }
 
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *OnboardingListCategoryVolumesCall) Pages(ctx context.Context, f func(*Volume2) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
+// method id "books.personalizedstream.get":
+
+type PersonalizedstreamGetCall struct {
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// Get: Returns a stream of personalized book clusters
+func (r *PersonalizedstreamService) Get() *PersonalizedstreamGetCall {
+	c := &PersonalizedstreamGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	return c
+}
+
+// Locale sets the optional parameter "locale": ISO-639-1 language and
+// ISO-3166-1 country code. Ex: 'en_US'. Used for generating
+// recommendations.
+func (c *PersonalizedstreamGetCall) Locale(locale string) *PersonalizedstreamGetCall {
+	c.urlParams_.Set("locale", locale)
+	return c
+}
+
+// MaxAllowedMaturityRating sets the optional parameter
+// "maxAllowedMaturityRating": The maximum allowed maturity rating of
+// returned recommendations. Books with a higher maturity rating are
+// filtered out.
+//
+// Possible values:
+//   "mature" - Show books which are rated mature or lower.
+//   "not-mature" - Show books which are rated not mature.
+func (c *PersonalizedstreamGetCall) MaxAllowedMaturityRating(maxAllowedMaturityRating string) *PersonalizedstreamGetCall {
+	c.urlParams_.Set("maxAllowedMaturityRating", maxAllowedMaturityRating)
+	return c
+}
+
+// Source sets the optional parameter "source": String to identify the
+// originator of this request.
+func (c *PersonalizedstreamGetCall) Source(source string) *PersonalizedstreamGetCall {
+	c.urlParams_.Set("source", source)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *PersonalizedstreamGetCall) Fields(s ...googleapi.Field) *PersonalizedstreamGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *PersonalizedstreamGetCall) IfNoneMatch(entityTag string) *PersonalizedstreamGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *PersonalizedstreamGetCall) Context(ctx context.Context) *PersonalizedstreamGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *PersonalizedstreamGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *PersonalizedstreamGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "personalizedstream/get")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.personalizedstream.get" call.
+// Exactly one of *Discoveryclusters or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *Discoveryclusters.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *PersonalizedstreamGetCall) Do(opts ...googleapi.CallOption) (*Discoveryclusters, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Discoveryclusters{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Returns a stream of personalized book clusters",
+	//   "httpMethod": "GET",
+	//   "id": "books.personalizedstream.get",
+	//   "parameters": {
+	//     "locale": {
+	//       "description": "ISO-639-1 language and ISO-3166-1 country code. Ex: 'en_US'. Used for generating recommendations.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "maxAllowedMaturityRating": {
+	//       "description": "The maximum allowed maturity rating of returned recommendations. Books with a higher maturity rating are filtered out.",
+	//       "enum": [
+	//         "mature",
+	//         "not-mature"
+	//       ],
+	//       "enumDescriptions": [
+	//         "Show books which are rated mature or lower.",
+	//         "Show books which are rated not mature."
+	//       ],
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "source": {
+	//       "description": "String to identify the originator of this request.",
+	//       "location": "query",
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "personalizedstream/get",
+	//   "response": {
+	//     "$ref": "Discoveryclusters"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/books"
+	//   ]
+	// }
+
+}
+
 // method id "books.promooffer.accept":
 
 type PromoofferAcceptCall struct {
-	s    *Service
-	opt_ map[string]interface{}
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Accept:
 func (r *PromoofferService) Accept() *PromoofferAcceptCall {
-	c := &PromoofferAcceptCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &PromoofferAcceptCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	return c
 }
 
 // AndroidId sets the optional parameter "androidId": device android_id
 func (c *PromoofferAcceptCall) AndroidId(androidId string) *PromoofferAcceptCall {
-	c.opt_["androidId"] = androidId
+	c.urlParams_.Set("androidId", androidId)
 	return c
 }
 
 // Device sets the optional parameter "device": device device
 func (c *PromoofferAcceptCall) Device(device string) *PromoofferAcceptCall {
-	c.opt_["device"] = device
+	c.urlParams_.Set("device", device)
 	return c
 }
 
 // Manufacturer sets the optional parameter "manufacturer": device
 // manufacturer
 func (c *PromoofferAcceptCall) Manufacturer(manufacturer string) *PromoofferAcceptCall {
-	c.opt_["manufacturer"] = manufacturer
+	c.urlParams_.Set("manufacturer", manufacturer)
 	return c
 }
 
 // Model sets the optional parameter "model": device model
 func (c *PromoofferAcceptCall) Model(model string) *PromoofferAcceptCall {
-	c.opt_["model"] = model
+	c.urlParams_.Set("model", model)
 	return c
 }
 
 // OfferId sets the optional parameter "offerId":
 func (c *PromoofferAcceptCall) OfferId(offerId string) *PromoofferAcceptCall {
-	c.opt_["offerId"] = offerId
+	c.urlParams_.Set("offerId", offerId)
 	return c
 }
 
 // Product sets the optional parameter "product": device product
 func (c *PromoofferAcceptCall) Product(product string) *PromoofferAcceptCall {
-	c.opt_["product"] = product
+	c.urlParams_.Set("product", product)
 	return c
 }
 
 // Serial sets the optional parameter "serial": device serial
 func (c *PromoofferAcceptCall) Serial(serial string) *PromoofferAcceptCall {
-	c.opt_["serial"] = serial
+	c.urlParams_.Set("serial", serial)
 	return c
 }
 
 // VolumeId sets the optional parameter "volumeId": Volume id to
 // exercise the offer
 func (c *PromoofferAcceptCall) VolumeId(volumeId string) *PromoofferAcceptCall {
-	c.opt_["volumeId"] = volumeId
+	c.urlParams_.Set("volumeId", volumeId)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *PromoofferAcceptCall) Fields(s ...googleapi.Field) *PromoofferAcceptCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *PromoofferAcceptCall) Do() error {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *PromoofferAcceptCall) Context(ctx context.Context) *PromoofferAcceptCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *PromoofferAcceptCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *PromoofferAcceptCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["androidId"]; ok {
-		params.Set("androidId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["device"]; ok {
-		params.Set("device", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["manufacturer"]; ok {
-		params.Set("manufacturer", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["model"]; ok {
-		params.Set("model", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["offerId"]; ok {
-		params.Set("offerId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["product"]; ok {
-		params.Set("product", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["serial"]; ok {
-		params.Set("serial", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["volumeId"]; ok {
-		params.Set("volumeId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "promooffer/accept")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.promooffer.accept" call.
+func (c *PromoofferAcceptCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
 	if err != nil {
 		return err
 	}
@@ -6126,101 +10753,105 @@ func (c *PromoofferAcceptCall) Do() error {
 // method id "books.promooffer.dismiss":
 
 type PromoofferDismissCall struct {
-	s    *Service
-	opt_ map[string]interface{}
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Dismiss:
 func (r *PromoofferService) Dismiss() *PromoofferDismissCall {
-	c := &PromoofferDismissCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &PromoofferDismissCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	return c
 }
 
 // AndroidId sets the optional parameter "androidId": device android_id
 func (c *PromoofferDismissCall) AndroidId(androidId string) *PromoofferDismissCall {
-	c.opt_["androidId"] = androidId
+	c.urlParams_.Set("androidId", androidId)
 	return c
 }
 
 // Device sets the optional parameter "device": device device
 func (c *PromoofferDismissCall) Device(device string) *PromoofferDismissCall {
-	c.opt_["device"] = device
+	c.urlParams_.Set("device", device)
 	return c
 }
 
 // Manufacturer sets the optional parameter "manufacturer": device
 // manufacturer
 func (c *PromoofferDismissCall) Manufacturer(manufacturer string) *PromoofferDismissCall {
-	c.opt_["manufacturer"] = manufacturer
+	c.urlParams_.Set("manufacturer", manufacturer)
 	return c
 }
 
 // Model sets the optional parameter "model": device model
 func (c *PromoofferDismissCall) Model(model string) *PromoofferDismissCall {
-	c.opt_["model"] = model
+	c.urlParams_.Set("model", model)
 	return c
 }
 
 // OfferId sets the optional parameter "offerId": Offer to dimiss
 func (c *PromoofferDismissCall) OfferId(offerId string) *PromoofferDismissCall {
-	c.opt_["offerId"] = offerId
+	c.urlParams_.Set("offerId", offerId)
 	return c
 }
 
 // Product sets the optional parameter "product": device product
 func (c *PromoofferDismissCall) Product(product string) *PromoofferDismissCall {
-	c.opt_["product"] = product
+	c.urlParams_.Set("product", product)
 	return c
 }
 
 // Serial sets the optional parameter "serial": device serial
 func (c *PromoofferDismissCall) Serial(serial string) *PromoofferDismissCall {
-	c.opt_["serial"] = serial
+	c.urlParams_.Set("serial", serial)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *PromoofferDismissCall) Fields(s ...googleapi.Field) *PromoofferDismissCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *PromoofferDismissCall) Do() error {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *PromoofferDismissCall) Context(ctx context.Context) *PromoofferDismissCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *PromoofferDismissCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *PromoofferDismissCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["androidId"]; ok {
-		params.Set("androidId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["device"]; ok {
-		params.Set("device", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["manufacturer"]; ok {
-		params.Set("manufacturer", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["model"]; ok {
-		params.Set("model", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["offerId"]; ok {
-		params.Set("offerId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["product"]; ok {
-		params.Set("product", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["serial"]; ok {
-		params.Set("serial", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "promooffer/dismiss")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.promooffer.dismiss" call.
+func (c *PromoofferDismissCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
 	if err != nil {
 		return err
 	}
@@ -6281,92 +10912,128 @@ func (c *PromoofferDismissCall) Do() error {
 // method id "books.promooffer.get":
 
 type PromoofferGetCall struct {
-	s    *Service
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // Get: Returns a list of promo offers available to the user
 func (r *PromoofferService) Get() *PromoofferGetCall {
-	c := &PromoofferGetCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &PromoofferGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	return c
 }
 
 // AndroidId sets the optional parameter "androidId": device android_id
 func (c *PromoofferGetCall) AndroidId(androidId string) *PromoofferGetCall {
-	c.opt_["androidId"] = androidId
+	c.urlParams_.Set("androidId", androidId)
 	return c
 }
 
 // Device sets the optional parameter "device": device device
 func (c *PromoofferGetCall) Device(device string) *PromoofferGetCall {
-	c.opt_["device"] = device
+	c.urlParams_.Set("device", device)
 	return c
 }
 
 // Manufacturer sets the optional parameter "manufacturer": device
 // manufacturer
 func (c *PromoofferGetCall) Manufacturer(manufacturer string) *PromoofferGetCall {
-	c.opt_["manufacturer"] = manufacturer
+	c.urlParams_.Set("manufacturer", manufacturer)
 	return c
 }
 
 // Model sets the optional parameter "model": device model
 func (c *PromoofferGetCall) Model(model string) *PromoofferGetCall {
-	c.opt_["model"] = model
+	c.urlParams_.Set("model", model)
 	return c
 }
 
 // Product sets the optional parameter "product": device product
 func (c *PromoofferGetCall) Product(product string) *PromoofferGetCall {
-	c.opt_["product"] = product
+	c.urlParams_.Set("product", product)
 	return c
 }
 
 // Serial sets the optional parameter "serial": device serial
 func (c *PromoofferGetCall) Serial(serial string) *PromoofferGetCall {
-	c.opt_["serial"] = serial
+	c.urlParams_.Set("serial", serial)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *PromoofferGetCall) Fields(s ...googleapi.Field) *PromoofferGetCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *PromoofferGetCall) Do() (*Offers, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *PromoofferGetCall) IfNoneMatch(entityTag string) *PromoofferGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *PromoofferGetCall) Context(ctx context.Context) *PromoofferGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *PromoofferGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *PromoofferGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["androidId"]; ok {
-		params.Set("androidId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["device"]; ok {
-		params.Set("device", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["manufacturer"]; ok {
-		params.Set("manufacturer", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["model"]; ok {
-		params.Set("model", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["product"]; ok {
-		params.Set("product", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["serial"]; ok {
-		params.Set("serial", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "promooffer/get")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.promooffer.get" call.
+// Exactly one of *Offers or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Offers.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *PromoofferGetCall) Do(opts ...googleapi.CallOption) (*Offers, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -6374,8 +11041,14 @@ func (c *PromoofferGetCall) Do() (*Offers, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Offers
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Offers{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -6426,17 +11099,312 @@ func (c *PromoofferGetCall) Do() (*Offers, error) {
 
 }
 
+// method id "books.series.get":
+
+type SeriesGetCall struct {
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// Get: Returns Series metadata for the given series ids.
+func (r *SeriesService) Get(seriesId []string) *SeriesGetCall {
+	c := &SeriesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.SetMulti("series_id", append([]string{}, seriesId...))
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *SeriesGetCall) Fields(s ...googleapi.Field) *SeriesGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *SeriesGetCall) IfNoneMatch(entityTag string) *SeriesGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *SeriesGetCall) Context(ctx context.Context) *SeriesGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *SeriesGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *SeriesGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "series/get")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.series.get" call.
+// Exactly one of *Series or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Series.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *SeriesGetCall) Do(opts ...googleapi.CallOption) (*Series, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Series{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Returns Series metadata for the given series ids.",
+	//   "httpMethod": "GET",
+	//   "id": "books.series.get",
+	//   "parameterOrder": [
+	//     "series_id"
+	//   ],
+	//   "parameters": {
+	//     "series_id": {
+	//       "description": "String that identifies the series",
+	//       "location": "query",
+	//       "repeated": true,
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "series/get",
+	//   "response": {
+	//     "$ref": "Series"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/books"
+	//   ]
+	// }
+
+}
+
+// method id "books.series.membership.get":
+
+type SeriesMembershipGetCall struct {
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// Get: Returns Series membership data given the series id.
+func (r *SeriesMembershipService) Get(seriesId string) *SeriesMembershipGetCall {
+	c := &SeriesMembershipGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("series_id", seriesId)
+	return c
+}
+
+// PageSize sets the optional parameter "page_size": Number of maximum
+// results per page to be included in the response.
+func (c *SeriesMembershipGetCall) PageSize(pageSize int64) *SeriesMembershipGetCall {
+	c.urlParams_.Set("page_size", fmt.Sprint(pageSize))
+	return c
+}
+
+// PageToken sets the optional parameter "page_token": The value of the
+// nextToken from the previous page.
+func (c *SeriesMembershipGetCall) PageToken(pageToken string) *SeriesMembershipGetCall {
+	c.urlParams_.Set("page_token", pageToken)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *SeriesMembershipGetCall) Fields(s ...googleapi.Field) *SeriesMembershipGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *SeriesMembershipGetCall) IfNoneMatch(entityTag string) *SeriesMembershipGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *SeriesMembershipGetCall) Context(ctx context.Context) *SeriesMembershipGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *SeriesMembershipGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *SeriesMembershipGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "series/membership/get")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.series.membership.get" call.
+// Exactly one of *Seriesmembership or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *Seriesmembership.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *SeriesMembershipGetCall) Do(opts ...googleapi.CallOption) (*Seriesmembership, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Seriesmembership{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Returns Series membership data given the series id.",
+	//   "httpMethod": "GET",
+	//   "id": "books.series.membership.get",
+	//   "parameterOrder": [
+	//     "series_id"
+	//   ],
+	//   "parameters": {
+	//     "page_size": {
+	//       "description": "Number of maximum results per page to be included in the response.",
+	//       "format": "uint32",
+	//       "location": "query",
+	//       "type": "integer"
+	//     },
+	//     "page_token": {
+	//       "description": "The value of the nextToken from the previous page.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "series_id": {
+	//       "description": "String that identifies the series",
+	//       "location": "query",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "series/membership/get",
+	//   "response": {
+	//     "$ref": "Seriesmembership"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/books"
+	//   ]
+	// }
+
+}
+
 // method id "books.volumes.get":
 
 type VolumesGetCall struct {
-	s        *Service
-	volumeId string
-	opt_     map[string]interface{}
+	s            *Service
+	volumeId     string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // Get: Gets volume information for a single volume.
 func (r *VolumesService) Get(volumeId string) *VolumesGetCall {
-	c := &VolumesGetCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &VolumesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.volumeId = volumeId
 	return c
 }
@@ -6444,14 +11412,22 @@ func (r *VolumesService) Get(volumeId string) *VolumesGetCall {
 // Country sets the optional parameter "country": ISO-3166-1 code to
 // override the IP-based location.
 func (c *VolumesGetCall) Country(country string) *VolumesGetCall {
-	c.opt_["country"] = country
+	c.urlParams_.Set("country", country)
+	return c
+}
+
+// IncludeNonComicsSeries sets the optional parameter
+// "includeNonComicsSeries": Set to true to include non-comics series.
+// Defaults to false.
+func (c *VolumesGetCall) IncludeNonComicsSeries(includeNonComicsSeries bool) *VolumesGetCall {
+	c.urlParams_.Set("includeNonComicsSeries", fmt.Sprint(includeNonComicsSeries))
 	return c
 }
 
 // Partner sets the optional parameter "partner": Brand results for
 // partner ID.
 func (c *VolumesGetCall) Partner(partner string) *VolumesGetCall {
-	c.opt_["partner"] = partner
+	c.urlParams_.Set("partner", partner)
 	return c
 }
 
@@ -6462,62 +11438,99 @@ func (c *VolumesGetCall) Partner(partner string) *VolumesGetCall {
 //   "full" - Includes all volume data.
 //   "lite" - Includes a subset of fields in volumeInfo and accessInfo.
 func (c *VolumesGetCall) Projection(projection string) *VolumesGetCall {
-	c.opt_["projection"] = projection
+	c.urlParams_.Set("projection", projection)
 	return c
 }
 
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *VolumesGetCall) Source(source string) *VolumesGetCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
 // UserLibraryConsistentRead sets the optional parameter
 // "user_library_consistent_read":
 func (c *VolumesGetCall) UserLibraryConsistentRead(userLibraryConsistentRead bool) *VolumesGetCall {
-	c.opt_["user_library_consistent_read"] = userLibraryConsistentRead
+	c.urlParams_.Set("user_library_consistent_read", fmt.Sprint(userLibraryConsistentRead))
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *VolumesGetCall) Fields(s ...googleapi.Field) *VolumesGetCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *VolumesGetCall) Do() (*Volume, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *VolumesGetCall) IfNoneMatch(entityTag string) *VolumesGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *VolumesGetCall) Context(ctx context.Context) *VolumesGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *VolumesGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *VolumesGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["country"]; ok {
-		params.Set("country", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["partner"]; ok {
-		params.Set("partner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["projection"]; ok {
-		params.Set("projection", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["user_library_consistent_read"]; ok {
-		params.Set("user_library_consistent_read", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "volumes/{volumeId}")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"volumeId": c.volumeId,
 	})
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.volumes.get" call.
+// Exactly one of *Volume or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Volume.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *VolumesGetCall) Do(opts ...googleapi.CallOption) (*Volume, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -6525,8 +11538,14 @@ func (c *VolumesGetCall) Do() (*Volume, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Volume
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Volume{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -6542,6 +11561,11 @@ func (c *VolumesGetCall) Do() (*Volume, error) {
 	//       "description": "ISO-3166-1 code to override the IP-based location.",
 	//       "location": "query",
 	//       "type": "string"
+	//     },
+	//     "includeNonComicsSeries": {
+	//       "description": "Set to true to include non-comics series. Defaults to false.",
+	//       "location": "query",
+	//       "type": "boolean"
 	//     },
 	//     "partner": {
 	//       "description": "Brand results for partner ID.",
@@ -6591,15 +11615,17 @@ func (c *VolumesGetCall) Do() (*Volume, error) {
 // method id "books.volumes.list":
 
 type VolumesListCall struct {
-	s    *Service
-	q    string
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Performs a book search.
 func (r *VolumesService) List(q string) *VolumesListCall {
-	c := &VolumesListCall{s: r.s, opt_: make(map[string]interface{})}
-	c.q = q
+	c := &VolumesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("q", q)
 	return c
 }
 
@@ -6609,7 +11635,7 @@ func (r *VolumesService) List(q string) *VolumesListCall {
 // Possible values:
 //   "epub" - All volumes with epub.
 func (c *VolumesListCall) Download(download string) *VolumesListCall {
-	c.opt_["download"] = download
+	c.urlParams_.Set("download", download)
 	return c
 }
 
@@ -6622,14 +11648,14 @@ func (c *VolumesListCall) Download(download string) *VolumesListCall {
 //   "paid-ebooks" - Google eBook with a price.
 //   "partial" - Public able to see parts of text.
 func (c *VolumesListCall) Filter(filter string) *VolumesListCall {
-	c.opt_["filter"] = filter
+	c.urlParams_.Set("filter", filter)
 	return c
 }
 
 // LangRestrict sets the optional parameter "langRestrict": Restrict
 // results to books with this language code.
 func (c *VolumesListCall) LangRestrict(langRestrict string) *VolumesListCall {
-	c.opt_["langRestrict"] = langRestrict
+	c.urlParams_.Set("langRestrict", langRestrict)
 	return c
 }
 
@@ -6640,14 +11666,27 @@ func (c *VolumesListCall) LangRestrict(langRestrict string) *VolumesListCall {
 //   "my-library" - Restrict to the user's library, any shelf.
 //   "no-restrict" - Do not restrict based on user's library.
 func (c *VolumesListCall) LibraryRestrict(libraryRestrict string) *VolumesListCall {
-	c.opt_["libraryRestrict"] = libraryRestrict
+	c.urlParams_.Set("libraryRestrict", libraryRestrict)
+	return c
+}
+
+// MaxAllowedMaturityRating sets the optional parameter
+// "maxAllowedMaturityRating": The maximum allowed maturity rating of
+// returned recommendations. Books with a higher maturity rating are
+// filtered out.
+//
+// Possible values:
+//   "mature" - Show books which are rated mature or lower.
+//   "not-mature" - Show books which are rated not mature.
+func (c *VolumesListCall) MaxAllowedMaturityRating(maxAllowedMaturityRating string) *VolumesListCall {
+	c.urlParams_.Set("maxAllowedMaturityRating", maxAllowedMaturityRating)
 	return c
 }
 
 // MaxResults sets the optional parameter "maxResults": Maximum number
 // of results to return.
 func (c *VolumesListCall) MaxResults(maxResults int64) *VolumesListCall {
-	c.opt_["maxResults"] = maxResults
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
 	return c
 }
 
@@ -6657,14 +11696,14 @@ func (c *VolumesListCall) MaxResults(maxResults int64) *VolumesListCall {
 //   "newest" - Most recently published.
 //   "relevance" - Relevance to search terms.
 func (c *VolumesListCall) OrderBy(orderBy string) *VolumesListCall {
-	c.opt_["orderBy"] = orderBy
+	c.urlParams_.Set("orderBy", orderBy)
 	return c
 }
 
 // Partner sets the optional parameter "partner": Restrict and brand
 // results for partner ID.
 func (c *VolumesListCall) Partner(partner string) *VolumesListCall {
-	c.opt_["partner"] = partner
+	c.urlParams_.Set("partner", partner)
 	return c
 }
 
@@ -6676,7 +11715,7 @@ func (c *VolumesListCall) Partner(partner string) *VolumesListCall {
 //   "books" - Just books.
 //   "magazines" - Just magazines.
 func (c *VolumesListCall) PrintType(printType string) *VolumesListCall {
-	c.opt_["printType"] = printType
+	c.urlParams_.Set("printType", printType)
 	return c
 }
 
@@ -6687,89 +11726,103 @@ func (c *VolumesListCall) PrintType(printType string) *VolumesListCall {
 //   "full" - Includes all volume data.
 //   "lite" - Includes a subset of fields in volumeInfo and accessInfo.
 func (c *VolumesListCall) Projection(projection string) *VolumesListCall {
-	c.opt_["projection"] = projection
+	c.urlParams_.Set("projection", projection)
 	return c
 }
 
 // ShowPreorders sets the optional parameter "showPreorders": Set to
 // true to show books available for preorder. Defaults to false.
 func (c *VolumesListCall) ShowPreorders(showPreorders bool) *VolumesListCall {
-	c.opt_["showPreorders"] = showPreorders
+	c.urlParams_.Set("showPreorders", fmt.Sprint(showPreorders))
 	return c
 }
 
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *VolumesListCall) Source(source string) *VolumesListCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
 // StartIndex sets the optional parameter "startIndex": Index of the
 // first result to return (starts at 0)
 func (c *VolumesListCall) StartIndex(startIndex int64) *VolumesListCall {
-	c.opt_["startIndex"] = startIndex
+	c.urlParams_.Set("startIndex", fmt.Sprint(startIndex))
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *VolumesListCall) Fields(s ...googleapi.Field) *VolumesListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *VolumesListCall) Do() (*Volumes, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *VolumesListCall) IfNoneMatch(entityTag string) *VolumesListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *VolumesListCall) Context(ctx context.Context) *VolumesListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *VolumesListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *VolumesListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("q", fmt.Sprintf("%v", c.q))
-	if v, ok := c.opt_["download"]; ok {
-		params.Set("download", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["filter"]; ok {
-		params.Set("filter", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["langRestrict"]; ok {
-		params.Set("langRestrict", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["libraryRestrict"]; ok {
-		params.Set("libraryRestrict", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["maxResults"]; ok {
-		params.Set("maxResults", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["orderBy"]; ok {
-		params.Set("orderBy", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["partner"]; ok {
-		params.Set("partner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["printType"]; ok {
-		params.Set("printType", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["projection"]; ok {
-		params.Set("projection", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["showPreorders"]; ok {
-		params.Set("showPreorders", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["startIndex"]; ok {
-		params.Set("startIndex", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "volumes")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.volumes.list" call.
+// Exactly one of *Volumes or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Volumes.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *VolumesListCall) Do(opts ...googleapi.CallOption) (*Volumes, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -6777,8 +11830,14 @@ func (c *VolumesListCall) Do() (*Volumes, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Volumes
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Volumes{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -6834,6 +11893,19 @@ func (c *VolumesListCall) Do() (*Volumes, error) {
 	//       "enumDescriptions": [
 	//         "Restrict to the user's library, any shelf.",
 	//         "Do not restrict based on user's library."
+	//       ],
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "maxAllowedMaturityRating": {
+	//       "description": "The maximum allowed maturity rating of returned recommendations. Books with a higher maturity rating are filtered out.",
+	//       "enum": [
+	//         "mature",
+	//         "not-mature"
+	//       ],
+	//       "enumDescriptions": [
+	//         "Show books which are rated mature or lower.",
+	//         "Show books which are rated not mature."
 	//       ],
 	//       "location": "query",
 	//       "type": "string"
@@ -6930,14 +12002,17 @@ func (c *VolumesListCall) Do() (*Volumes, error) {
 // method id "books.volumes.associated.list":
 
 type VolumesAssociatedListCall struct {
-	s        *Service
-	volumeId string
-	opt_     map[string]interface{}
+	s            *Service
+	volumeId     string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Return a list of associated books.
 func (r *VolumesAssociatedService) List(volumeId string) *VolumesAssociatedListCall {
-	c := &VolumesAssociatedListCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &VolumesAssociatedListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.volumeId = volumeId
 	return c
 }
@@ -6950,7 +12025,7 @@ func (r *VolumesAssociatedService) List(volumeId string) *VolumesAssociatedListC
 //   "end-of-volume" - Recommendations for display end-of-volume.
 //   "related-for-play" - Related volumes for Play Store.
 func (c *VolumesAssociatedListCall) Association(association string) *VolumesAssociatedListCall {
-	c.opt_["association"] = association
+	c.urlParams_.Set("association", association)
 	return c
 }
 
@@ -6958,7 +12033,7 @@ func (c *VolumesAssociatedListCall) Association(association string) *VolumesAsso
 // ISO-3166-1 country code. Ex: 'en_US'. Used for generating
 // recommendations.
 func (c *VolumesAssociatedListCall) Locale(locale string) *VolumesAssociatedListCall {
-	c.opt_["locale"] = locale
+	c.urlParams_.Set("locale", locale)
 	return c
 }
 
@@ -6971,52 +12046,92 @@ func (c *VolumesAssociatedListCall) Locale(locale string) *VolumesAssociatedList
 //   "mature" - Show books which are rated mature or lower.
 //   "not-mature" - Show books which are rated not mature.
 func (c *VolumesAssociatedListCall) MaxAllowedMaturityRating(maxAllowedMaturityRating string) *VolumesAssociatedListCall {
-	c.opt_["maxAllowedMaturityRating"] = maxAllowedMaturityRating
+	c.urlParams_.Set("maxAllowedMaturityRating", maxAllowedMaturityRating)
 	return c
 }
 
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *VolumesAssociatedListCall) Source(source string) *VolumesAssociatedListCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *VolumesAssociatedListCall) Fields(s ...googleapi.Field) *VolumesAssociatedListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *VolumesAssociatedListCall) Do() (*Volumes, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *VolumesAssociatedListCall) IfNoneMatch(entityTag string) *VolumesAssociatedListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *VolumesAssociatedListCall) Context(ctx context.Context) *VolumesAssociatedListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *VolumesAssociatedListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *VolumesAssociatedListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["association"]; ok {
-		params.Set("association", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["locale"]; ok {
-		params.Set("locale", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["maxAllowedMaturityRating"]; ok {
-		params.Set("maxAllowedMaturityRating", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "volumes/{volumeId}/associated")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"volumeId": c.volumeId,
 	})
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.volumes.associated.list" call.
+// Exactly one of *Volumes or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Volumes.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *VolumesAssociatedListCall) Do(opts ...googleapi.CallOption) (*Volumes, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -7024,8 +12139,14 @@ func (c *VolumesAssociatedListCall) Do() (*Volumes, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Volumes
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Volumes{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -7096,20 +12217,24 @@ func (c *VolumesAssociatedListCall) Do() (*Volumes, error) {
 // method id "books.volumes.mybooks.list":
 
 type VolumesMybooksListCall struct {
-	s    *Service
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Return a list of books in My Library.
 func (r *VolumesMybooksService) List() *VolumesMybooksListCall {
-	c := &VolumesMybooksListCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &VolumesMybooksListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	return c
 }
 
 // AcquireMethod sets the optional parameter "acquireMethod": How the
-// book was aquired
+// book was acquired
 //
 // Possible values:
+//   "FAMILY_SHARED" - Books acquired via Family Sharing
 //   "PREORDERED" - Preordered books (not yet available)
 //   "PREVIOUSLY_RENTED" - User-rented books past their expiration time
 //   "PUBLIC_DOMAIN" - Public domain books
@@ -7117,8 +12242,15 @@ func (r *VolumesMybooksService) List() *VolumesMybooksListCall {
 //   "RENTED" - User-rented books
 //   "SAMPLE" - Sample books
 //   "UPLOADED" - User uploaded books
-func (c *VolumesMybooksListCall) AcquireMethod(acquireMethod string) *VolumesMybooksListCall {
-	c.opt_["acquireMethod"] = acquireMethod
+func (c *VolumesMybooksListCall) AcquireMethod(acquireMethod ...string) *VolumesMybooksListCall {
+	c.urlParams_.SetMulti("acquireMethod", append([]string{}, acquireMethod...))
+	return c
+}
+
+// Country sets the optional parameter "country": ISO-3166-1 code to
+// override the IP-based location.
+func (c *VolumesMybooksListCall) Country(country string) *VolumesMybooksListCall {
+	c.urlParams_.Set("country", country)
 	return c
 }
 
@@ -7126,14 +12258,14 @@ func (c *VolumesMybooksListCall) AcquireMethod(acquireMethod string) *VolumesMyb
 // ISO-3166-1 country code. Ex:'en_US'. Used for generating
 // recommendations.
 func (c *VolumesMybooksListCall) Locale(locale string) *VolumesMybooksListCall {
-	c.opt_["locale"] = locale
+	c.urlParams_.Set("locale", locale)
 	return c
 }
 
 // MaxResults sets the optional parameter "maxResults": Maximum number
 // of results to return.
 func (c *VolumesMybooksListCall) MaxResults(maxResults int64) *VolumesMybooksListCall {
-	c.opt_["maxResults"] = maxResults
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
 	return c
 }
 
@@ -7145,64 +12277,97 @@ func (c *VolumesMybooksListCall) MaxResults(maxResults int64) *VolumesMybooksLis
 //   "COMPLETED_FAILED" - The volume processing hase failed.
 //   "COMPLETED_SUCCESS" - The volume processing was completed.
 //   "RUNNING" - The volume processing is not completed.
-func (c *VolumesMybooksListCall) ProcessingState(processingState string) *VolumesMybooksListCall {
-	c.opt_["processingState"] = processingState
+func (c *VolumesMybooksListCall) ProcessingState(processingState ...string) *VolumesMybooksListCall {
+	c.urlParams_.SetMulti("processingState", append([]string{}, processingState...))
 	return c
 }
 
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *VolumesMybooksListCall) Source(source string) *VolumesMybooksListCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
 // StartIndex sets the optional parameter "startIndex": Index of the
 // first result to return (starts at 0)
 func (c *VolumesMybooksListCall) StartIndex(startIndex int64) *VolumesMybooksListCall {
-	c.opt_["startIndex"] = startIndex
+	c.urlParams_.Set("startIndex", fmt.Sprint(startIndex))
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *VolumesMybooksListCall) Fields(s ...googleapi.Field) *VolumesMybooksListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *VolumesMybooksListCall) Do() (*Volumes, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *VolumesMybooksListCall) IfNoneMatch(entityTag string) *VolumesMybooksListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *VolumesMybooksListCall) Context(ctx context.Context) *VolumesMybooksListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *VolumesMybooksListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *VolumesMybooksListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["acquireMethod"]; ok {
-		params.Set("acquireMethod", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["locale"]; ok {
-		params.Set("locale", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["maxResults"]; ok {
-		params.Set("maxResults", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["processingState"]; ok {
-		params.Set("processingState", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["startIndex"]; ok {
-		params.Set("startIndex", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "volumes/mybooks")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.volumes.mybooks.list" call.
+// Exactly one of *Volumes or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Volumes.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *VolumesMybooksListCall) Do(opts ...googleapi.CallOption) (*Volumes, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -7210,8 +12375,14 @@ func (c *VolumesMybooksListCall) Do() (*Volumes, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Volumes
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Volumes{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -7221,8 +12392,9 @@ func (c *VolumesMybooksListCall) Do() (*Volumes, error) {
 	//   "id": "books.volumes.mybooks.list",
 	//   "parameters": {
 	//     "acquireMethod": {
-	//       "description": "How the book was aquired",
+	//       "description": "How the book was acquired",
 	//       "enum": [
+	//         "FAMILY_SHARED",
 	//         "PREORDERED",
 	//         "PREVIOUSLY_RENTED",
 	//         "PUBLIC_DOMAIN",
@@ -7232,6 +12404,7 @@ func (c *VolumesMybooksListCall) Do() (*Volumes, error) {
 	//         "UPLOADED"
 	//       ],
 	//       "enumDescriptions": [
+	//         "Books acquired via Family Sharing",
 	//         "Preordered books (not yet available)",
 	//         "User-rented books past their expiration time",
 	//         "Public domain books",
@@ -7242,6 +12415,11 @@ func (c *VolumesMybooksListCall) Do() (*Volumes, error) {
 	//       ],
 	//       "location": "query",
 	//       "repeated": true,
+	//       "type": "string"
+	//     },
+	//     "country": {
+	//       "description": "ISO-3166-1 code to override the IP-based location.",
+	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "locale": {
@@ -7300,13 +12478,16 @@ func (c *VolumesMybooksListCall) Do() (*Volumes, error) {
 // method id "books.volumes.recommended.list":
 
 type VolumesRecommendedListCall struct {
-	s    *Service
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Return a list of recommended books for the current user.
 func (r *VolumesRecommendedService) List() *VolumesRecommendedListCall {
-	c := &VolumesRecommendedListCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &VolumesRecommendedListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	return c
 }
 
@@ -7314,7 +12495,7 @@ func (r *VolumesRecommendedService) List() *VolumesRecommendedListCall {
 // ISO-3166-1 country code. Ex: 'en_US'. Used for generating
 // recommendations.
 func (c *VolumesRecommendedListCall) Locale(locale string) *VolumesRecommendedListCall {
-	c.opt_["locale"] = locale
+	c.urlParams_.Set("locale", locale)
 	return c
 }
 
@@ -7327,47 +12508,89 @@ func (c *VolumesRecommendedListCall) Locale(locale string) *VolumesRecommendedLi
 //   "mature" - Show books which are rated mature or lower.
 //   "not-mature" - Show books which are rated not mature.
 func (c *VolumesRecommendedListCall) MaxAllowedMaturityRating(maxAllowedMaturityRating string) *VolumesRecommendedListCall {
-	c.opt_["maxAllowedMaturityRating"] = maxAllowedMaturityRating
+	c.urlParams_.Set("maxAllowedMaturityRating", maxAllowedMaturityRating)
 	return c
 }
 
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *VolumesRecommendedListCall) Source(source string) *VolumesRecommendedListCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *VolumesRecommendedListCall) Fields(s ...googleapi.Field) *VolumesRecommendedListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *VolumesRecommendedListCall) Do() (*Volumes, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *VolumesRecommendedListCall) IfNoneMatch(entityTag string) *VolumesRecommendedListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *VolumesRecommendedListCall) Context(ctx context.Context) *VolumesRecommendedListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *VolumesRecommendedListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *VolumesRecommendedListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["locale"]; ok {
-		params.Set("locale", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["maxAllowedMaturityRating"]; ok {
-		params.Set("maxAllowedMaturityRating", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "volumes/recommended")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.volumes.recommended.list" call.
+// Exactly one of *Volumes or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Volumes.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *VolumesRecommendedListCall) Do(opts ...googleapi.CallOption) (*Volumes, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -7375,8 +12598,14 @@ func (c *VolumesRecommendedListCall) Do() (*Volumes, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Volumes
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Volumes{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -7423,17 +12652,17 @@ func (c *VolumesRecommendedListCall) Do() (*Volumes, error) {
 // method id "books.volumes.recommended.rate":
 
 type VolumesRecommendedRateCall struct {
-	s        *Service
-	rating   string
-	volumeId string
-	opt_     map[string]interface{}
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Rate: Rate a recommended book for the current user.
 func (r *VolumesRecommendedService) Rate(rating string, volumeId string) *VolumesRecommendedRateCall {
-	c := &VolumesRecommendedRateCall{s: r.s, opt_: make(map[string]interface{})}
-	c.rating = rating
-	c.volumeId = volumeId
+	c := &VolumesRecommendedRateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("rating", rating)
+	c.urlParams_.Set("volumeId", volumeId)
 	return c
 }
 
@@ -7441,46 +12670,77 @@ func (r *VolumesRecommendedService) Rate(rating string, volumeId string) *Volume
 // ISO-3166-1 country code. Ex: 'en_US'. Used for generating
 // recommendations.
 func (c *VolumesRecommendedRateCall) Locale(locale string) *VolumesRecommendedRateCall {
-	c.opt_["locale"] = locale
+	c.urlParams_.Set("locale", locale)
 	return c
 }
 
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *VolumesRecommendedRateCall) Source(source string) *VolumesRecommendedRateCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *VolumesRecommendedRateCall) Fields(s ...googleapi.Field) *VolumesRecommendedRateCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *VolumesRecommendedRateCall) Do() (*BooksVolumesRecommendedRateResponse, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *VolumesRecommendedRateCall) Context(ctx context.Context) *VolumesRecommendedRateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *VolumesRecommendedRateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *VolumesRecommendedRateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("rating", fmt.Sprintf("%v", c.rating))
-	params.Set("volumeId", fmt.Sprintf("%v", c.volumeId))
-	if v, ok := c.opt_["locale"]; ok {
-		params.Set("locale", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "volumes/recommended/rate")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.volumes.recommended.rate" call.
+// Exactly one of *BooksVolumesRecommendedRateResponse or error will be
+// non-nil. Any non-2xx status code is an error. Response headers are in
+// either *BooksVolumesRecommendedRateResponse.ServerResponse.Header or
+// (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was
+// returned.
+func (c *VolumesRecommendedRateCall) Do(opts ...googleapi.CallOption) (*BooksVolumesRecommendedRateResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -7488,8 +12748,14 @@ func (c *VolumesRecommendedRateCall) Do() (*BooksVolumesRecommendedRateResponse,
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *BooksVolumesRecommendedRateResponse
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &BooksVolumesRecommendedRateResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -7547,13 +12813,16 @@ func (c *VolumesRecommendedRateCall) Do() (*BooksVolumesRecommendedRateResponse,
 // method id "books.volumes.useruploaded.list":
 
 type VolumesUseruploadedListCall struct {
-	s    *Service
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Return a list of books uploaded by the current user.
 func (r *VolumesUseruploadedService) List() *VolumesUseruploadedListCall {
-	c := &VolumesUseruploadedListCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &VolumesUseruploadedListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	return c
 }
 
@@ -7561,14 +12830,14 @@ func (r *VolumesUseruploadedService) List() *VolumesUseruploadedListCall {
 // ISO-3166-1 country code. Ex: 'en_US'. Used for generating
 // recommendations.
 func (c *VolumesUseruploadedListCall) Locale(locale string) *VolumesUseruploadedListCall {
-	c.opt_["locale"] = locale
+	c.urlParams_.Set("locale", locale)
 	return c
 }
 
 // MaxResults sets the optional parameter "maxResults": Maximum number
 // of results to return.
 func (c *VolumesUseruploadedListCall) MaxResults(maxResults int64) *VolumesUseruploadedListCall {
-	c.opt_["maxResults"] = maxResults
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
 	return c
 }
 
@@ -7579,72 +12848,105 @@ func (c *VolumesUseruploadedListCall) MaxResults(maxResults int64) *VolumesUseru
 //   "COMPLETED_FAILED" - The volume processing hase failed.
 //   "COMPLETED_SUCCESS" - The volume processing was completed.
 //   "RUNNING" - The volume processing is not completed.
-func (c *VolumesUseruploadedListCall) ProcessingState(processingState string) *VolumesUseruploadedListCall {
-	c.opt_["processingState"] = processingState
+func (c *VolumesUseruploadedListCall) ProcessingState(processingState ...string) *VolumesUseruploadedListCall {
+	c.urlParams_.SetMulti("processingState", append([]string{}, processingState...))
 	return c
 }
 
 // Source sets the optional parameter "source": String to identify the
 // originator of this request.
 func (c *VolumesUseruploadedListCall) Source(source string) *VolumesUseruploadedListCall {
-	c.opt_["source"] = source
+	c.urlParams_.Set("source", source)
 	return c
 }
 
 // StartIndex sets the optional parameter "startIndex": Index of the
 // first result to return (starts at 0)
 func (c *VolumesUseruploadedListCall) StartIndex(startIndex int64) *VolumesUseruploadedListCall {
-	c.opt_["startIndex"] = startIndex
+	c.urlParams_.Set("startIndex", fmt.Sprint(startIndex))
 	return c
 }
 
 // VolumeId sets the optional parameter "volumeId": The ids of the
 // volumes to be returned. If not specified all that match the
 // processingState are returned.
-func (c *VolumesUseruploadedListCall) VolumeId(volumeId string) *VolumesUseruploadedListCall {
-	c.opt_["volumeId"] = volumeId
+func (c *VolumesUseruploadedListCall) VolumeId(volumeId ...string) *VolumesUseruploadedListCall {
+	c.urlParams_.SetMulti("volumeId", append([]string{}, volumeId...))
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *VolumesUseruploadedListCall) Fields(s ...googleapi.Field) *VolumesUseruploadedListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *VolumesUseruploadedListCall) Do() (*Volumes, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *VolumesUseruploadedListCall) IfNoneMatch(entityTag string) *VolumesUseruploadedListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *VolumesUseruploadedListCall) Context(ctx context.Context) *VolumesUseruploadedListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *VolumesUseruploadedListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *VolumesUseruploadedListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["locale"]; ok {
-		params.Set("locale", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["maxResults"]; ok {
-		params.Set("maxResults", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["processingState"]; ok {
-		params.Set("processingState", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["source"]; ok {
-		params.Set("source", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["startIndex"]; ok {
-		params.Set("startIndex", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["volumeId"]; ok {
-		params.Set("volumeId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "volumes/useruploaded")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "books.volumes.useruploaded.list" call.
+// Exactly one of *Volumes or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Volumes.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *VolumesUseruploadedListCall) Do(opts ...googleapi.CallOption) (*Volumes, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -7652,8 +12954,14 @@ func (c *VolumesUseruploadedListCall) Do() (*Volumes, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Volumes
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Volumes{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil

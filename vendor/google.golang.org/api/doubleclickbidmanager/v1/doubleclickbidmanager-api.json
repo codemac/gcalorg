@@ -1,19 +1,19 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"ye6orv2F-1npMW3u9suM3a7C5Bo/NbuQQoeeWObMBMsRr-eLonWmHd8\"",
+ "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/fiMIPCbr-8OYnnFx-elRq37f8OU\"",
  "discoveryVersion": "v1",
  "id": "doubleclickbidmanager:v1",
  "name": "doubleclickbidmanager",
  "canonicalName": "DoubleClick Bid Manager",
  "version": "v1",
- "revision": "20150326",
+ "revision": "20170705",
  "title": "DoubleClick Bid Manager API",
  "description": "API for viewing and managing your reports in DoubleClick Bid Manager.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "icons": {
-  "x16": "http://www.google.com/images/icons/product/search-16.gif",
-  "x32": "http://www.google.com/images/icons/product/search-32.gif"
+  "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+  "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
  },
  "documentationLink": "https://developers.google.com/bid-manager/",
  "labels": [
@@ -24,7 +24,7 @@
  "basePath": "/doubleclickbidmanager/v1/",
  "rootUrl": "https://www.googleapis.com/",
  "servicePath": "doubleclickbidmanager/v1/",
- "batchPath": "batch",
+ "batchPath": "batch/doubleclickbidmanager/v1",
  "parameters": {
   "alt": {
    "type": "string",
@@ -70,12 +70,31 @@
    "location": "query"
   }
  },
+ "auth": {
+  "oauth2": {
+   "scopes": {
+    "https://www.googleapis.com/auth/doubleclickbidmanager": {
+     "description": "View and manage your reports in DoubleClick Bid Manager"
+    }
+   }
+  }
+ },
  "schemas": {
   "DownloadLineItemsRequest": {
    "id": "DownloadLineItemsRequest",
    "type": "object",
    "description": "Request to fetch stored line items.",
    "properties": {
+    "fileSpec": {
+     "type": "string",
+     "description": "File specification (column names, types, order) in which the line items will be returned. Default to EWF.",
+     "enum": [
+      "EWF"
+     ],
+     "enumDescriptions": [
+      ""
+     ]
+    },
     "filterIds": {
      "type": "array",
      "description": "Ids of the specified filter type used to filter line items to fetch. If omitted, all the line items will be returned.",
@@ -117,7 +136,82 @@
    "properties": {
     "lineItems": {
      "type": "string",
-     "description": "Retrieved line items in CSV format. Refer to  Entity Write File Format for more information on file format."
+     "description": "Retrieved line items in CSV format. For more information about file formats, see  Entity Write File Format."
+    }
+   }
+  },
+  "DownloadRequest": {
+   "id": "DownloadRequest",
+   "type": "object",
+   "description": "Request to fetch stored insertion orders, line items, TrueView ad groups and ads.",
+   "properties": {
+    "fileTypes": {
+     "type": "array",
+     "description": "File types that will be returned.",
+     "items": {
+      "type": "string",
+      "enum": [
+       "AD",
+       "AD_GROUP",
+       "INSERTION_ORDER",
+       "LINE_ITEM"
+      ],
+      "enumDescriptions": [
+       "",
+       "",
+       "",
+       ""
+      ]
+     }
+    },
+    "filterIds": {
+     "type": "array",
+     "description": "The IDs of the specified filter type. This is used to filter entities to fetch. At least one ID must be specified. Only one ID is allowed for the ADVERTISER_ID filter type. For INSERTION_ORDER_ID or LINE_ITEM_ID filter types, all IDs must be from the same Advertiser.",
+     "items": {
+      "type": "string",
+      "format": "int64"
+     }
+    },
+    "filterType": {
+     "type": "string",
+     "description": "Filter type used to filter line items to fetch.",
+     "enum": [
+      "ADVERTISER_ID",
+      "INSERTION_ORDER_ID",
+      "LINE_ITEM_ID"
+     ],
+     "enumDescriptions": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "version": {
+     "type": "string",
+     "description": "SDF Version (column names, types, order) in which the entities will be returned. Default to 3."
+    }
+   }
+  },
+  "DownloadResponse": {
+   "id": "DownloadResponse",
+   "type": "object",
+   "description": "Download response.",
+   "properties": {
+    "adGroups": {
+     "type": "string",
+     "description": "Retrieved ad groups in SDF format."
+    },
+    "ads": {
+     "type": "string",
+     "description": "Retrieved ads in SDF format."
+    },
+    "insertionOrders": {
+     "type": "string",
+     "description": "Retrieved insertion orders in SDF format."
+    },
+    "lineItems": {
+     "type": "string",
+     "description": "Retrieved line items in SDF format."
     }
    }
   },
@@ -139,18 +233,23 @@
       "FILTER_AGE",
       "FILTER_BRANDSAFE_CHANNEL_ID",
       "FILTER_BROWSER",
+      "FILTER_BUDGET_SEGMENT_DESCRIPTION",
       "FILTER_CAMPAIGN_DAILY_FREQUENCY",
       "FILTER_CARRIER",
       "FILTER_CHANNEL_ID",
       "FILTER_CITY",
+      "FILTER_COMPANION_CREATIVE_ID",
       "FILTER_CONVERSION_DELAY",
       "FILTER_COUNTRY",
+      "FILTER_CREATIVE_HEIGHT",
       "FILTER_CREATIVE_ID",
       "FILTER_CREATIVE_SIZE",
       "FILTER_CREATIVE_TYPE",
+      "FILTER_CREATIVE_WIDTH",
       "FILTER_DATA_PROVIDER",
       "FILTER_DATE",
       "FILTER_DAY_OF_WEEK",
+      "FILTER_DFP_ORDER_ID",
       "FILTER_DMA",
       "FILTER_EXCHANGE_ID",
       "FILTER_FLOODLIGHT_PIXEL_ID",
@@ -164,6 +263,7 @@
       "FILTER_LINE_ITEM_DAILY_FREQUENCY",
       "FILTER_LINE_ITEM_LIFETIME_FREQUENCY",
       "FILTER_LINE_ITEM_TYPE",
+      "FILTER_MEDIA_PLAN",
       "FILTER_MOBILE_DEVICE_MAKE",
       "FILTER_MOBILE_DEVICE_MAKE_MODEL",
       "FILTER_MOBILE_DEVICE_TYPE",
@@ -174,6 +274,7 @@
       "FILTER_NIELSEN_COUNTRY_CODE",
       "FILTER_NIELSEN_DEVICE_ID",
       "FILTER_NIELSEN_GENDER",
+      "FILTER_NOT_SUPPORTED",
       "FILTER_ORDER_ID",
       "FILTER_OS",
       "FILTER_PAGE_CATEGORY",
@@ -186,9 +287,41 @@
       "FILTER_REGULAR_CHANNEL_ID",
       "FILTER_SITE_ID",
       "FILTER_SITE_LANGUAGE",
+      "FILTER_SKIPPABLE_SUPPORT",
       "FILTER_TARGETED_USER_LIST",
       "FILTER_TIME_OF_DAY",
+      "FILTER_TRUEVIEW_AD_GROUP_AD_ID",
+      "FILTER_TRUEVIEW_AD_GROUP_ID",
+      "FILTER_TRUEVIEW_AGE",
+      "FILTER_TRUEVIEW_CATEGORY",
+      "FILTER_TRUEVIEW_CITY",
       "FILTER_TRUEVIEW_CONVERSION_TYPE",
+      "FILTER_TRUEVIEW_COUNTRY",
+      "FILTER_TRUEVIEW_CUSTOM_AFFINITY",
+      "FILTER_TRUEVIEW_DMA",
+      "FILTER_TRUEVIEW_GENDER",
+      "FILTER_TRUEVIEW_IAR_AGE",
+      "FILTER_TRUEVIEW_IAR_CATEGORY",
+      "FILTER_TRUEVIEW_IAR_CITY",
+      "FILTER_TRUEVIEW_IAR_COUNTRY",
+      "FILTER_TRUEVIEW_IAR_GENDER",
+      "FILTER_TRUEVIEW_IAR_INTEREST",
+      "FILTER_TRUEVIEW_IAR_LANGUAGE",
+      "FILTER_TRUEVIEW_IAR_PARENTAL_STATUS",
+      "FILTER_TRUEVIEW_IAR_REGION",
+      "FILTER_TRUEVIEW_IAR_REMARKETING_LIST",
+      "FILTER_TRUEVIEW_IAR_TIME_OF_DAY",
+      "FILTER_TRUEVIEW_IAR_YOUTUBE_CHANNEL",
+      "FILTER_TRUEVIEW_IAR_YOUTUBE_VIDEO",
+      "FILTER_TRUEVIEW_IAR_ZIPCODE",
+      "FILTER_TRUEVIEW_INTEREST",
+      "FILTER_TRUEVIEW_KEYWORD",
+      "FILTER_TRUEVIEW_PARENTAL_STATUS",
+      "FILTER_TRUEVIEW_PLACEMENT",
+      "FILTER_TRUEVIEW_REGION",
+      "FILTER_TRUEVIEW_REMARKETING_LIST",
+      "FILTER_TRUEVIEW_URL",
+      "FILTER_TRUEVIEW_ZIPCODE",
       "FILTER_UNKNOWN",
       "FILTER_USER_LIST",
       "FILTER_USER_LIST_FIRST_PARTY",
@@ -211,6 +344,45 @@
       "FILTER_ZIP_CODE"
      ],
      "enumDescriptions": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
       "",
       "",
       "",
@@ -363,18 +535,23 @@
        "FILTER_AGE",
        "FILTER_BRANDSAFE_CHANNEL_ID",
        "FILTER_BROWSER",
+       "FILTER_BUDGET_SEGMENT_DESCRIPTION",
        "FILTER_CAMPAIGN_DAILY_FREQUENCY",
        "FILTER_CARRIER",
        "FILTER_CHANNEL_ID",
        "FILTER_CITY",
+       "FILTER_COMPANION_CREATIVE_ID",
        "FILTER_CONVERSION_DELAY",
        "FILTER_COUNTRY",
+       "FILTER_CREATIVE_HEIGHT",
        "FILTER_CREATIVE_ID",
        "FILTER_CREATIVE_SIZE",
        "FILTER_CREATIVE_TYPE",
+       "FILTER_CREATIVE_WIDTH",
        "FILTER_DATA_PROVIDER",
        "FILTER_DATE",
        "FILTER_DAY_OF_WEEK",
+       "FILTER_DFP_ORDER_ID",
        "FILTER_DMA",
        "FILTER_EXCHANGE_ID",
        "FILTER_FLOODLIGHT_PIXEL_ID",
@@ -388,6 +565,7 @@
        "FILTER_LINE_ITEM_DAILY_FREQUENCY",
        "FILTER_LINE_ITEM_LIFETIME_FREQUENCY",
        "FILTER_LINE_ITEM_TYPE",
+       "FILTER_MEDIA_PLAN",
        "FILTER_MOBILE_DEVICE_MAKE",
        "FILTER_MOBILE_DEVICE_MAKE_MODEL",
        "FILTER_MOBILE_DEVICE_TYPE",
@@ -398,6 +576,7 @@
        "FILTER_NIELSEN_COUNTRY_CODE",
        "FILTER_NIELSEN_DEVICE_ID",
        "FILTER_NIELSEN_GENDER",
+       "FILTER_NOT_SUPPORTED",
        "FILTER_ORDER_ID",
        "FILTER_OS",
        "FILTER_PAGE_CATEGORY",
@@ -410,9 +589,41 @@
        "FILTER_REGULAR_CHANNEL_ID",
        "FILTER_SITE_ID",
        "FILTER_SITE_LANGUAGE",
+       "FILTER_SKIPPABLE_SUPPORT",
        "FILTER_TARGETED_USER_LIST",
        "FILTER_TIME_OF_DAY",
+       "FILTER_TRUEVIEW_AD_GROUP_AD_ID",
+       "FILTER_TRUEVIEW_AD_GROUP_ID",
+       "FILTER_TRUEVIEW_AGE",
+       "FILTER_TRUEVIEW_CATEGORY",
+       "FILTER_TRUEVIEW_CITY",
        "FILTER_TRUEVIEW_CONVERSION_TYPE",
+       "FILTER_TRUEVIEW_COUNTRY",
+       "FILTER_TRUEVIEW_CUSTOM_AFFINITY",
+       "FILTER_TRUEVIEW_DMA",
+       "FILTER_TRUEVIEW_GENDER",
+       "FILTER_TRUEVIEW_IAR_AGE",
+       "FILTER_TRUEVIEW_IAR_CATEGORY",
+       "FILTER_TRUEVIEW_IAR_CITY",
+       "FILTER_TRUEVIEW_IAR_COUNTRY",
+       "FILTER_TRUEVIEW_IAR_GENDER",
+       "FILTER_TRUEVIEW_IAR_INTEREST",
+       "FILTER_TRUEVIEW_IAR_LANGUAGE",
+       "FILTER_TRUEVIEW_IAR_PARENTAL_STATUS",
+       "FILTER_TRUEVIEW_IAR_REGION",
+       "FILTER_TRUEVIEW_IAR_REMARKETING_LIST",
+       "FILTER_TRUEVIEW_IAR_TIME_OF_DAY",
+       "FILTER_TRUEVIEW_IAR_YOUTUBE_CHANNEL",
+       "FILTER_TRUEVIEW_IAR_YOUTUBE_VIDEO",
+       "FILTER_TRUEVIEW_IAR_ZIPCODE",
+       "FILTER_TRUEVIEW_INTEREST",
+       "FILTER_TRUEVIEW_KEYWORD",
+       "FILTER_TRUEVIEW_PARENTAL_STATUS",
+       "FILTER_TRUEVIEW_PLACEMENT",
+       "FILTER_TRUEVIEW_REGION",
+       "FILTER_TRUEVIEW_REMARKETING_LIST",
+       "FILTER_TRUEVIEW_URL",
+       "FILTER_TRUEVIEW_ZIPCODE",
        "FILTER_UNKNOWN",
        "FILTER_USER_LIST",
        "FILTER_USER_LIST_FIRST_PARTY",
@@ -513,6 +724,45 @@
        "",
        "",
        "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
        ""
       ]
      }
@@ -527,6 +777,30 @@
      "items": {
       "type": "string",
       "enum": [
+       "METRIC_ACTIVE_VIEW_AUDIBLE_VISIBLE_ON_COMPLETE_IMPRESSIONS",
+       "METRIC_ACTIVE_VIEW_AVERAGE_VIEWABLE_TIME",
+       "METRIC_ACTIVE_VIEW_DISTRIBUTION_UNMEASURABLE",
+       "METRIC_ACTIVE_VIEW_DISTRIBUTION_UNVIEWABLE",
+       "METRIC_ACTIVE_VIEW_DISTRIBUTION_VIEWABLE",
+       "METRIC_ACTIVE_VIEW_ELIGIBLE_IMPRESSIONS",
+       "METRIC_ACTIVE_VIEW_MEASURABLE_IMPRESSIONS",
+       "METRIC_ACTIVE_VIEW_PCT_MEASURABLE_IMPRESSIONS",
+       "METRIC_ACTIVE_VIEW_PCT_VIEWABLE_IMPRESSIONS",
+       "METRIC_ACTIVE_VIEW_PERCENT_AUDIBLE_VISIBLE_AT_START",
+       "METRIC_ACTIVE_VIEW_PERCENT_AUDIBLE_VISIBLE_FIRST_QUAR",
+       "METRIC_ACTIVE_VIEW_PERCENT_AUDIBLE_VISIBLE_ON_COMPLETE",
+       "METRIC_ACTIVE_VIEW_PERCENT_AUDIBLE_VISIBLE_SECOND_QUAR",
+       "METRIC_ACTIVE_VIEW_PERCENT_AUDIBLE_VISIBLE_THIRD_QUAR",
+       "METRIC_ACTIVE_VIEW_PERCENT_VIEWABLE_FOR_TIME_THRESHOLD",
+       "METRIC_ACTIVE_VIEW_PERCENT_VISIBLE_AT_START",
+       "METRIC_ACTIVE_VIEW_PERCENT_VISIBLE_FIRST_QUAR",
+       "METRIC_ACTIVE_VIEW_PERCENT_VISIBLE_ON_COMPLETE",
+       "METRIC_ACTIVE_VIEW_PERCENT_VISIBLE_SECOND_QUAR",
+       "METRIC_ACTIVE_VIEW_PERCENT_VISIBLE_THIRD_QUAR",
+       "METRIC_ACTIVE_VIEW_UNMEASURABLE_IMPRESSIONS",
+       "METRIC_ACTIVE_VIEW_UNVIEWABLE_IMPRESSIONS",
+       "METRIC_ACTIVE_VIEW_VIEWABLE_FOR_TIME_THRESHOLD",
+       "METRIC_ACTIVE_VIEW_VIEWABLE_IMPRESSIONS",
        "METRIC_BID_REQUESTS",
        "METRIC_BILLABLE_COST_ADVERTISER",
        "METRIC_BILLABLE_COST_PARTNER",
@@ -594,6 +868,12 @@
        "METRIC_FEE20_ADVERTISER",
        "METRIC_FEE20_PARTNER",
        "METRIC_FEE20_USD",
+       "METRIC_FEE21_ADVERTISER",
+       "METRIC_FEE21_PARTNER",
+       "METRIC_FEE21_USD",
+       "METRIC_FEE22_ADVERTISER",
+       "METRIC_FEE22_PARTNER",
+       "METRIC_FEE22_USD",
        "METRIC_FEE2_ADVERTISER",
        "METRIC_FEE2_PARTNER",
        "METRIC_FEE2_USD",
@@ -643,6 +923,9 @@
        "METRIC_MEDIA_COST_ECPM_USD",
        "METRIC_MEDIA_COST_PARTNER",
        "METRIC_MEDIA_COST_USD",
+       "METRIC_MEDIA_COST_VIEWABLE_ECPM_ADVERTISER",
+       "METRIC_MEDIA_COST_VIEWABLE_ECPM_PARTNER",
+       "METRIC_MEDIA_COST_VIEWABLE_ECPM_USD",
        "METRIC_MEDIA_FEE1_ADVERTISER",
        "METRIC_MEDIA_FEE1_PARTNER",
        "METRIC_MEDIA_FEE1_USD",
@@ -683,6 +966,11 @@
        "METRIC_PROFIT_MARGIN",
        "METRIC_PROFIT_PARTNER",
        "METRIC_PROFIT_USD",
+       "METRIC_PROFIT_VIEWABLE_ECPM_ADVERTISER",
+       "METRIC_PROFIT_VIEWABLE_ECPM_PARTNER",
+       "METRIC_PROFIT_VIEWABLE_ECPM_USD",
+       "METRIC_REACH_COOKIE_FREQUENCY",
+       "METRIC_REACH_COOKIE_REACH",
        "METRIC_REVENUE_ADVERTISER",
        "METRIC_REVENUE_ECPAPC_ADVERTISER",
        "METRIC_REVENUE_ECPAPC_PARTNER",
@@ -699,11 +987,15 @@
        "METRIC_REVENUE_ECPC_ADVERTISER",
        "METRIC_REVENUE_ECPC_PARTNER",
        "METRIC_REVENUE_ECPC_USD",
+       "METRIC_REVENUE_ECPIAVC_ADVERTISER",
        "METRIC_REVENUE_ECPM_ADVERTISER",
        "METRIC_REVENUE_ECPM_PARTNER",
        "METRIC_REVENUE_ECPM_USD",
        "METRIC_REVENUE_PARTNER",
        "METRIC_REVENUE_USD",
+       "METRIC_REVENUE_VIEWABLE_ECPM_ADVERTISER",
+       "METRIC_REVENUE_VIEWABLE_ECPM_PARTNER",
+       "METRIC_REVENUE_VIEWABLE_ECPM_USD",
        "METRIC_RICH_MEDIA_VIDEO_COMPLETIONS",
        "METRIC_RICH_MEDIA_VIDEO_FIRST_QUARTILE_COMPLETES",
        "METRIC_RICH_MEDIA_VIDEO_FULL_SCREENS",
@@ -738,9 +1030,27 @@
        "METRIC_TOTAL_MEDIA_COST_ECPM_USD",
        "METRIC_TOTAL_MEDIA_COST_PARTNER",
        "METRIC_TOTAL_MEDIA_COST_USD",
+       "METRIC_TOTAL_MEDIA_COST_VIEWABLE_ECPM_ADVERTISER",
+       "METRIC_TOTAL_MEDIA_COST_VIEWABLE_ECPM_PARTNER",
+       "METRIC_TOTAL_MEDIA_COST_VIEWABLE_ECPM_USD",
+       "METRIC_TRUEVIEW_AVERAGE_CPE_ADVERTISER",
+       "METRIC_TRUEVIEW_AVERAGE_CPE_PARTNER",
+       "METRIC_TRUEVIEW_AVERAGE_CPE_USD",
+       "METRIC_TRUEVIEW_CONVERSION_COST_MANY_PER_VIEW_ADVERTISER",
+       "METRIC_TRUEVIEW_CONVERSION_COST_MANY_PER_VIEW_PARTNER",
+       "METRIC_TRUEVIEW_CONVERSION_COST_MANY_PER_VIEW_USD",
+       "METRIC_TRUEVIEW_CONVERSION_COST_ONE_PER_VIEW_ADVERTISER",
+       "METRIC_TRUEVIEW_CONVERSION_COST_ONE_PER_VIEW_PARTNER",
+       "METRIC_TRUEVIEW_CONVERSION_COST_ONE_PER_VIEW_USD",
        "METRIC_TRUEVIEW_CONVERSION_MANY_PER_VIEW",
        "METRIC_TRUEVIEW_CONVERSION_ONE_PER_VIEW",
        "METRIC_TRUEVIEW_CONVERSION_RATE_ONE_PER_VIEW",
+       "METRIC_TRUEVIEW_CONVERSION_VALUE_MANY_PER_VIEW_ADVERTISER",
+       "METRIC_TRUEVIEW_CONVERSION_VALUE_MANY_PER_VIEW_PARTNER",
+       "METRIC_TRUEVIEW_CONVERSION_VALUE_MANY_PER_VIEW_USD",
+       "METRIC_TRUEVIEW_CONVERSION_VALUE_ONE_PER_VIEW_ADVERTISER",
+       "METRIC_TRUEVIEW_CONVERSION_VALUE_ONE_PER_VIEW_PARTNER",
+       "METRIC_TRUEVIEW_CONVERSION_VALUE_ONE_PER_VIEW_USD",
        "METRIC_TRUEVIEW_COST_CONVERSION_MANY_PER_VIEW_RATIO",
        "METRIC_TRUEVIEW_COST_CONVERSION_ONE_PER_VIEW_RATIO",
        "METRIC_TRUEVIEW_CPV_ADVERTISER",
@@ -751,10 +1061,15 @@
        "METRIC_TRUEVIEW_EARNED_SHARES",
        "METRIC_TRUEVIEW_EARNED_SUBSCRIBERS",
        "METRIC_TRUEVIEW_EARNED_VIEWS",
+       "METRIC_TRUEVIEW_ENGAGEMENTS",
+       "METRIC_TRUEVIEW_ENGAGEMENT_RATE",
        "METRIC_TRUEVIEW_IMPRESSION_SHARE",
        "METRIC_TRUEVIEW_LOST_IS_BUDGET",
        "METRIC_TRUEVIEW_LOST_IS_RANK",
        "METRIC_TRUEVIEW_TOTAL_CONVERSION_VALUE",
+       "METRIC_TRUEVIEW_TOTAL_CONVERSION_VALUES_ADVERTISER",
+       "METRIC_TRUEVIEW_TOTAL_CONVERSION_VALUES_PARTNER",
+       "METRIC_TRUEVIEW_TOTAL_CONVERSION_VALUES_USD",
        "METRIC_TRUEVIEW_UNIQUE_VIEWERS",
        "METRIC_TRUEVIEW_VALUE_CONVERSION_MANY_PER_VIEW_RATIO",
        "METRIC_TRUEVIEW_VALUE_CONVERSION_ONE_PER_VIEW_RATIO",
@@ -768,6 +1083,71 @@
        "METRIC_VIDEO_COMPLETION_RATE"
       ],
       "enumDescriptions": [
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
        "",
        "",
        "",
@@ -1029,11 +1409,17 @@
       "TYPE_KEYWORD",
       "TYPE_NIELSEN_AUDIENCE_PROFILE",
       "TYPE_NIELSEN_DAILY_REACH_BUILD",
+      "TYPE_NIELSEN_ONLINE_GLOBAL_MARKET",
       "TYPE_NIELSEN_SITE",
+      "TYPE_NOT_SUPPORTED",
       "TYPE_ORDER_ID",
       "TYPE_PAGE_CATEGORY",
+      "TYPE_PETRA_NIELSEN_AUDIENCE_PROFILE",
+      "TYPE_PETRA_NIELSEN_DAILY_REACH_BUILD",
+      "TYPE_PETRA_NIELSEN_ONLINE_GLOBAL_MARKET",
       "TYPE_PIXEL_LOAD",
       "TYPE_REACH_AND_FREQUENCY",
+      "TYPE_REACH_AUDIENCE",
       "TYPE_THIRD_PARTY_DATA_PROVIDER",
       "TYPE_TRUEVIEW",
       "TYPE_TRUEVIEW_IAR",
@@ -1041,6 +1427,12 @@
       "TYPE_YOUTUBE_VERTICAL"
      ],
      "enumDescriptions": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
       "",
       "",
       "",
@@ -1138,10 +1530,12 @@
       "PREVIOUS_WEEK",
       "PREVIOUS_YEAR",
       "QUARTER_TO_DATE",
+      "TYPE_NOT_SUPPORTED",
       "WEEK_TO_DATE",
       "YEAR_TO_DATE"
      ],
      "enumDescriptions": [
+      "",
       "",
       "",
       "",
@@ -1477,10 +1871,12 @@
       "PREVIOUS_WEEK",
       "PREVIOUS_YEAR",
       "QUARTER_TO_DATE",
+      "TYPE_NOT_SUPPORTED",
       "WEEK_TO_DATE",
       "YEAR_TO_DATE"
      ],
      "enumDescriptions": [
+      "",
       "",
       "",
       "",
@@ -1588,7 +1984,10 @@
      },
      "response": {
       "$ref": "DownloadLineItemsResponse"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/doubleclickbidmanager"
+     ]
     },
     "uploadlineitems": {
      "id": "doubleclickbidmanager.lineitems.uploadlineitems",
@@ -1600,7 +1999,10 @@
      },
      "response": {
       "$ref": "UploadLineItemsResponse"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/doubleclickbidmanager"
+     ]
     }
    }
   },
@@ -1616,7 +2018,10 @@
      },
      "response": {
       "$ref": "Query"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/doubleclickbidmanager"
+     ]
     },
     "deletequery": {
      "id": "doubleclickbidmanager.queries.deletequery",
@@ -1634,6 +2039,9 @@
      },
      "parameterOrder": [
       "queryId"
+     ],
+     "scopes": [
+      "https://www.googleapis.com/auth/doubleclickbidmanager"
      ]
     },
     "getquery": {
@@ -1655,7 +2063,10 @@
      ],
      "response": {
       "$ref": "Query"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/doubleclickbidmanager"
+     ]
     },
     "listqueries": {
      "id": "doubleclickbidmanager.queries.listqueries",
@@ -1664,7 +2075,10 @@
      "description": "Retrieves stored queries.",
      "response": {
       "$ref": "ListQueriesResponse"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/doubleclickbidmanager"
+     ]
     },
     "runquery": {
      "id": "doubleclickbidmanager.queries.runquery",
@@ -1685,7 +2099,10 @@
      ],
      "request": {
       "$ref": "RunQueryRequest"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/doubleclickbidmanager"
+     ]
     }
    }
   },
@@ -1710,7 +2127,29 @@
      ],
      "response": {
       "$ref": "ListReportsResponse"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/doubleclickbidmanager"
+     ]
+    }
+   }
+  },
+  "sdf": {
+   "methods": {
+    "download": {
+     "id": "doubleclickbidmanager.sdf.download",
+     "path": "sdf/download",
+     "httpMethod": "POST",
+     "description": "Retrieves entities in SDF format.",
+     "request": {
+      "$ref": "DownloadRequest"
+     },
+     "response": {
+      "$ref": "DownloadResponse"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/doubleclickbidmanager"
+     ]
     }
    }
   }

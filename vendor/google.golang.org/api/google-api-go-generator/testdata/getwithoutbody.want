@@ -5,15 +5,17 @@
 //   import "google.golang.org/api/getwithoutbody/v1"
 //   ...
 //   getwithoutbodyService, err := getwithoutbody.New(oauthHttpClient)
-package getwithoutbody
+package getwithoutbody // import "google.golang.org/api/getwithoutbody/v1"
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"golang.org/x/net/context"
-	"google.golang.org/api/googleapi"
+	context "golang.org/x/net/context"
+	ctxhttp "golang.org/x/net/context/ctxhttp"
+	gensupport "google.golang.org/api/gensupport"
+	googleapi "google.golang.org/api/googleapi"
 	"io"
 	"net/http"
 	"net/url"
@@ -29,10 +31,12 @@ var _ = fmt.Sprintf
 var _ = json.NewDecoder
 var _ = io.Copy
 var _ = url.Parse
+var _ = gensupport.MarshalJSON
 var _ = googleapi.Version
 var _ = errors.New
 var _ = strings.Replace
-var _ = context.Background
+var _ = context.Canceled
+var _ = ctxhttp.Do
 
 const apiId = "getwithoutbody:v1"
 const apiName = "getwithoutbody"
@@ -72,12 +76,38 @@ type MetricDescriptorsService struct {
 	s *Service
 }
 
+// ListMetricRequest: The request of
+// getwithoutbody.metricDescriptors.list.
 type ListMetricRequest struct {
 	// Kind: Identifies what kind of resource this is. Value: the fixed
 	// string "getwithoutbody#listMetricRequest".
 	Kind string `json:"kind,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Kind") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Kind") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ListMetricRequest) MarshalJSON() ([]byte, error) {
+	type noMethod ListMetricRequest
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ListMetricResponse: The response of
+// getwithoutbody.metricDescriptors.list.
 type ListMetricResponse struct {
 	// Kind: Identifies what kind of resource this is. Value: the fixed
 	// string "getwithoutbody#listMetricResponse".
@@ -88,6 +118,32 @@ type ListMetricResponse struct {
 	// past the pagination limit, set this value to the pageToken query
 	// parameter.
 	NextPageToken string `json:"nextPageToken,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Kind") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Kind") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ListMetricResponse) MarshalJSON() ([]byte, error) {
+	type noMethod ListMetricResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // method id "getwithoutbody.metricDescriptors.list":
@@ -96,7 +152,10 @@ type MetricDescriptorsListCall struct {
 	s                 *Service
 	project           string
 	listmetricrequest *ListMetricRequest
-	opt_              map[string]interface{}
+	urlParams_        gensupport.URLParams
+	ifNoneMatch_      string
+	ctx_              context.Context
+	header_           http.Header
 }
 
 // List: List all of the available metric descriptors. Large number of
@@ -104,7 +163,7 @@ type MetricDescriptorsListCall struct {
 // in the response to request subsequent pages of results by setting the
 // pageToken query parameter to the value of the nextPageToken.
 func (r *MetricDescriptorsService) List(project string, listmetricrequest *ListMetricRequest) *MetricDescriptorsListCall {
-	c := &MetricDescriptorsListCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &MetricDescriptorsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
 	c.listmetricrequest = listmetricrequest
 	return c
@@ -114,7 +173,7 @@ func (r *MetricDescriptorsService) List(project string, listmetricrequest *ListM
 // descriptors per page. Used for pagination. If not specified, count =
 // 100.
 func (c *MetricDescriptorsListCall) Count(count int64) *MetricDescriptorsListCall {
-	c.opt_["count"] = count
+	c.urlParams_.Set("count", fmt.Sprint(count))
 	return c
 }
 
@@ -123,39 +182,85 @@ func (c *MetricDescriptorsListCall) Count(count int64) *MetricDescriptorsListCal
 // value to the value of the nextPageToken to retrieve the next page of
 // results.
 func (c *MetricDescriptorsListCall) PageToken(pageToken string) *MetricDescriptorsListCall {
-	c.opt_["pageToken"] = pageToken
+	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *MetricDescriptorsListCall) Fields(s ...googleapi.Field) *MetricDescriptorsListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *MetricDescriptorsListCall) Do() (*ListMetricResponse, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *MetricDescriptorsListCall) IfNoneMatch(entityTag string) *MetricDescriptorsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *MetricDescriptorsListCall) Context(ctx context.Context) *MetricDescriptorsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *MetricDescriptorsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *MetricDescriptorsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["count"]; ok {
-		params.Set("count", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["pageToken"]; ok {
-		params.Set("pageToken", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/metricDescriptors")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"project": c.project,
 	})
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "getwithoutbody.metricDescriptors.list" call.
+// Exactly one of *ListMetricResponse or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *ListMetricResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *MetricDescriptorsListCall) Do(opts ...googleapi.CallOption) (*ListMetricResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -163,8 +268,14 @@ func (c *MetricDescriptorsListCall) Do() (*ListMetricResponse, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *ListMetricResponse
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &ListMetricResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -209,4 +320,25 @@ func (c *MetricDescriptorsListCall) Do() (*ListMetricResponse, error) {
 	//   ]
 	// }
 
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *MetricDescriptorsListCall) Pages(ctx context.Context, f func(*ListMetricResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
 }

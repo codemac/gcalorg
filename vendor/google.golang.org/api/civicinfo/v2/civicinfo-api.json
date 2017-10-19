@@ -1,19 +1,19 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"l66ggWbucbkBw9Lpos72oziyefE/EeZdKz92LCL9J1uCQTeAts36EP0\"",
+ "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/sNrwy4GBJh0JDl02KcW1-1MdJOM\"",
  "discoveryVersion": "v1",
  "id": "civicinfo:v2",
  "name": "civicinfo",
  "canonicalName": "Civic Info",
  "version": "v2",
- "revision": "20141023",
+ "revision": "20161102",
  "title": "Google Civic Information API",
- "description": "An API for accessing civic information.",
+ "description": "Provides polling places, early vote locations, contest data, election officials, and government representatives for U.S. residential addresses.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "icons": {
-  "x16": "http://www.google.com/images/icons/product/search-16.gif",
-  "x32": "http://www.google.com/images/icons/product/search-32.gif"
+  "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+  "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
  },
  "documentationLink": "https://developers.google.com/civic-information",
  "protocol": "rest",
@@ -21,7 +21,7 @@
  "basePath": "/civicinfo/v2/",
  "rootUrl": "https://www.googleapis.com/",
  "servicePath": "civicinfo/v2/",
- "batchPath": "batch",
+ "batchPath": "batch/civicinfo/v2",
  "parameters": {
   "alt": {
    "type": "string",
@@ -107,6 +107,12 @@
      "type": "string",
      "description": "A URL provided by this administrative body for information on absentee voting."
     },
+    "addressLines": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
     "ballotInfoUrl": {
      "type": "string",
      "description": "A URL provided by this administrative body to give contest information to the voter."
@@ -185,7 +191,7 @@
     },
     "name": {
      "type": "string",
-     "description": "The candidate's name."
+     "description": "The candidate's name. If this is a joint ticket it will indicate the name of the candidate at the top of a ticket followed by a / and that name of candidate at the bottom of the ticket. e.g. \"Mitt Romney / Paul Ryan\""
     },
     "orderOnBallot": {
      "type": "string",
@@ -275,9 +281,40 @@
      "type": "string",
      "description": "If this is a partisan election, the name of the party it is for."
     },
+    "referendumBallotResponses": {
+     "type": "array",
+     "description": "The set of ballot responses for the referendum. A ballot response represents a line on the ballot. Common examples might include \"yes\" or \"no\" for referenda. This field is only populated for contests of type 'Referendum'.",
+     "items": {
+      "type": "string"
+     }
+    },
+    "referendumBrief": {
+     "type": "string",
+     "description": "Specifies a short summary of the referendum that is typically on the ballot below the title but above the text. This field is only populated for contests of type 'Referendum'."
+    },
+    "referendumConStatement": {
+     "type": "string",
+     "description": "A statement in opposition to the referendum. It does not necessarily appear on the ballot. This field is only populated for contests of type 'Referendum'."
+    },
+    "referendumEffectOfAbstain": {
+     "type": "string",
+     "description": "Specifies what effect abstaining (not voting) on the proposition will have (i.e. whether abstaining is considered a vote against it). This field is only populated for contests of type 'Referendum'."
+    },
+    "referendumPassageThreshold": {
+     "type": "string",
+     "description": "The threshold of votes that the referendum needs in order to pass, e.g. \"two-thirds\". This field is only populated for contests of type 'Referendum'."
+    },
+    "referendumProStatement": {
+     "type": "string",
+     "description": "A statement in favor of the referendum. It does not necessarily appear on the ballot. This field is only populated for contests of type 'Referendum'."
+    },
     "referendumSubtitle": {
      "type": "string",
      "description": "A brief description of the referendum. This field is only populated for contests of type 'Referendum'."
+    },
+    "referendumText": {
+     "type": "string",
+     "description": "The full text of the referendum. This field is only populated for contests of type 'Referendum'."
     },
     "referendumTitle": {
      "type": "string",
@@ -307,7 +344,36 @@
     },
     "type": {
      "type": "string",
-     "description": "The type of contest. Usually this will be 'General', 'Primary', or 'Run-off' for contests with candidates. For referenda this will be 'Referendum'."
+     "description": "The type of contest. Usually this will be 'General', 'Primary', or 'Run-off' for contests with candidates. For referenda this will be 'Referendum'. For Retention contests this will typically be 'Retention'."
+    }
+   }
+  },
+  "ContextParams": {
+   "id": "ContextParams",
+   "type": "object",
+   "properties": {
+    "clientProfile": {
+     "type": "string"
+    }
+   }
+  },
+  "DivisionRepresentativeInfoRequest": {
+   "id": "DivisionRepresentativeInfoRequest",
+   "type": "object",
+   "description": "A request to look up representative information for a single division.",
+   "properties": {
+    "contextParams": {
+     "$ref": "ContextParams"
+    }
+   }
+  },
+  "DivisionSearchRequest": {
+   "id": "DivisionSearchRequest",
+   "type": "object",
+   "description": "A search request for political geographies.",
+   "properties": {
+    "contextParams": {
+     "$ref": "ContextParams"
     }
    }
   },
@@ -368,6 +434,10 @@
     "name": {
      "type": "string",
      "description": "A displayable name for the election."
+    },
+    "ocdDivisionId": {
+     "type": "string",
+     "description": "The political division of the election. Represented as an OCD Division ID. Voters within these political jurisdictions are covered by this election. This is typically a state such as ocd-division/country:us/state:ca or for the midterms or general election the entire US (i.e. ocd-division/country:us)."
     }
    }
   },
@@ -398,6 +468,15 @@
     }
    }
   },
+  "ElectionsQueryRequest": {
+   "id": "ElectionsQueryRequest",
+   "type": "object",
+   "properties": {
+    "contextParams": {
+     "$ref": "ContextParams"
+    }
+   }
+  },
   "ElectionsQueryResponse": {
    "id": "ElectionsQueryResponse",
    "type": "object",
@@ -425,6 +504,9 @@
     "id": {
      "type": "string",
      "description": "An identifier for this district, relative to its scope. For example, the 34th State Senate district would have id \"34\" and a scope of stateUpper."
+    },
+    "kgForeignKey": {
+     "type": "string"
     },
     "name": {
      "type": "string",
@@ -606,6 +688,108 @@
     }
    }
   },
+  "PostalAddress": {
+   "id": "PostalAddress",
+   "type": "object",
+   "properties": {
+    "addressLines": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "administrativeAreaName": {
+     "type": "string"
+    },
+    "countryName": {
+     "type": "string"
+    },
+    "countryNameCode": {
+     "type": "string"
+    },
+    "dependentLocalityName": {
+     "type": "string"
+    },
+    "dependentThoroughfareLeadingType": {
+     "type": "string"
+    },
+    "dependentThoroughfareName": {
+     "type": "string"
+    },
+    "dependentThoroughfarePostDirection": {
+     "type": "string"
+    },
+    "dependentThoroughfarePreDirection": {
+     "type": "string"
+    },
+    "dependentThoroughfareTrailingType": {
+     "type": "string"
+    },
+    "dependentThoroughfaresConnector": {
+     "type": "string"
+    },
+    "dependentThoroughfaresIndicator": {
+     "type": "string"
+    },
+    "dependentThoroughfaresType": {
+     "type": "string"
+    },
+    "firmName": {
+     "type": "string"
+    },
+    "isDisputed": {
+     "type": "boolean"
+    },
+    "languageCode": {
+     "type": "string"
+    },
+    "localityName": {
+     "type": "string"
+    },
+    "postBoxNumber": {
+     "type": "string"
+    },
+    "postalCodeNumber": {
+     "type": "string"
+    },
+    "postalCodeNumberExtension": {
+     "type": "string"
+    },
+    "premiseName": {
+     "type": "string"
+    },
+    "recipientName": {
+     "type": "string"
+    },
+    "sortingCode": {
+     "type": "string"
+    },
+    "subAdministrativeAreaName": {
+     "type": "string"
+    },
+    "subPremiseName": {
+     "type": "string"
+    },
+    "thoroughfareLeadingType": {
+     "type": "string"
+    },
+    "thoroughfareName": {
+     "type": "string"
+    },
+    "thoroughfareNumber": {
+     "type": "string"
+    },
+    "thoroughfarePostDirection": {
+     "type": "string"
+    },
+    "thoroughfarePreDirection": {
+     "type": "string"
+    },
+    "thoroughfareTrailingType": {
+     "type": "string"
+    }
+   }
+  },
   "RepresentativeInfoData": {
    "id": "RepresentativeInfoData",
    "type": "object",
@@ -631,6 +815,16 @@
      "items": {
       "$ref": "Official"
      }
+    }
+   }
+  },
+  "RepresentativeInfoRequest": {
+   "id": "RepresentativeInfoRequest",
+   "type": "object",
+   "description": "A request for political geography and representative information for an address.",
+   "properties": {
+    "contextParams": {
+     "$ref": "ContextParams"
     }
    }
   },
@@ -722,6 +916,19 @@
     }
    }
   },
+  "VoterInfoRequest": {
+   "id": "VoterInfoRequest",
+   "type": "object",
+   "description": "A request for information about a voter.",
+   "properties": {
+    "contextParams": {
+     "$ref": "ContextParams"
+    },
+    "voterInfoSegmentResult": {
+     "$ref": "VoterInfoSegmentResult"
+    }
+   }
+  },
   "VoterInfoResponse": {
    "id": "VoterInfoResponse",
    "type": "object",
@@ -757,6 +964,10 @@
      "description": "Identifies what kind of resource this is. Value: the fixed string \"civicinfo#voterInfoResponse\".",
      "default": "civicinfo#voterInfoResponse"
     },
+    "mailOnly": {
+     "type": "boolean",
+     "description": "Specifies whether voters in the precinct vote only by mailing their ballots (with the possible option of dropping off their ballots as well)."
+    },
     "normalizedInput": {
      "$ref": "SimpleAddressType",
      "description": "The normalized version of the requested address"
@@ -786,6 +997,25 @@
      }
     }
    }
+  },
+  "VoterInfoSegmentResult": {
+   "id": "VoterInfoSegmentResult",
+   "type": "object",
+   "properties": {
+    "generatedMillis": {
+     "type": "string",
+     "format": "int64"
+    },
+    "postalAddress": {
+     "$ref": "PostalAddress"
+    },
+    "request": {
+     "$ref": "VoterInfoRequest"
+    },
+    "response": {
+     "$ref": "VoterInfoResponse"
+    }
+   }
   }
  },
  "resources": {
@@ -803,6 +1033,9 @@
        "location": "query"
       }
      },
+     "request": {
+      "$ref": "DivisionSearchRequest"
+     },
      "response": {
       "$ref": "DivisionSearchResponse"
      }
@@ -816,6 +1049,9 @@
      "path": "elections",
      "httpMethod": "GET",
      "description": "List of available elections to query.",
+     "request": {
+      "$ref": "ElectionsQueryRequest"
+     },
      "response": {
       "$ref": "ElectionsQueryResponse"
      }
@@ -844,11 +1080,20 @@
        "description": "If set to true, only data from official state sources will be returned.",
        "default": "false",
        "location": "query"
+      },
+      "returnAllAvailableData": {
+       "type": "boolean",
+       "description": "If set to true, the query will return the success codeand include any partial information when it is unable to determine a matching address or unable to determine the election for electionId=0 queries.",
+       "default": "false",
+       "location": "query"
       }
      },
      "parameterOrder": [
       "address"
      ],
+     "request": {
+      "$ref": "VoterInfoRequest"
+     },
      "response": {
       "$ref": "VoterInfoResponse"
      }
@@ -935,6 +1180,9 @@
        "location": "query"
       }
      },
+     "request": {
+      "$ref": "RepresentativeInfoRequest"
+     },
      "response": {
       "$ref": "RepresentativeInfoResponse"
      }
@@ -1020,6 +1268,9 @@
      "parameterOrder": [
       "ocdId"
      ],
+     "request": {
+      "$ref": "DivisionRepresentativeInfoRequest"
+     },
      "response": {
       "$ref": "RepresentativeInfoData"
      }

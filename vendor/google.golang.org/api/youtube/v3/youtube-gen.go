@@ -7,15 +7,17 @@
 //   import "google.golang.org/api/youtube/v3"
 //   ...
 //   youtubeService, err := youtube.New(oauthHttpClient)
-package youtube
+package youtube // import "google.golang.org/api/youtube/v3"
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"golang.org/x/net/context"
-	"google.golang.org/api/googleapi"
+	context "golang.org/x/net/context"
+	ctxhttp "golang.org/x/net/context/ctxhttp"
+	gensupport "google.golang.org/api/gensupport"
+	googleapi "google.golang.org/api/googleapi"
 	"io"
 	"net/http"
 	"net/url"
@@ -31,10 +33,12 @@ var _ = fmt.Sprintf
 var _ = json.NewDecoder
 var _ = io.Copy
 var _ = url.Parse
+var _ = gensupport.MarshalJSON
 var _ = googleapi.Version
 var _ = errors.New
 var _ = strings.Replace
-var _ = context.Background
+var _ = context.Canceled
+var _ = ctxhttp.Do
 
 const apiId = "youtube:v3"
 const apiName = "youtube"
@@ -75,15 +79,21 @@ func New(client *http.Client) (*Service, error) {
 	s.Channels = NewChannelsService(s)
 	s.CommentThreads = NewCommentThreadsService(s)
 	s.Comments = NewCommentsService(s)
+	s.FanFundingEvents = NewFanFundingEventsService(s)
 	s.GuideCategories = NewGuideCategoriesService(s)
 	s.I18nLanguages = NewI18nLanguagesService(s)
 	s.I18nRegions = NewI18nRegionsService(s)
 	s.LiveBroadcasts = NewLiveBroadcastsService(s)
+	s.LiveChatBans = NewLiveChatBansService(s)
+	s.LiveChatMessages = NewLiveChatMessagesService(s)
+	s.LiveChatModerators = NewLiveChatModeratorsService(s)
 	s.LiveStreams = NewLiveStreamsService(s)
 	s.PlaylistItems = NewPlaylistItemsService(s)
 	s.Playlists = NewPlaylistsService(s)
 	s.Search = NewSearchService(s)
+	s.Sponsors = NewSponsorsService(s)
 	s.Subscriptions = NewSubscriptionsService(s)
+	s.SuperChatEvents = NewSuperChatEventsService(s)
 	s.Thumbnails = NewThumbnailsService(s)
 	s.VideoAbuseReportReasons = NewVideoAbuseReportReasonsService(s)
 	s.VideoCategories = NewVideoCategoriesService(s)
@@ -111,6 +121,8 @@ type Service struct {
 
 	Comments *CommentsService
 
+	FanFundingEvents *FanFundingEventsService
+
 	GuideCategories *GuideCategoriesService
 
 	I18nLanguages *I18nLanguagesService
@@ -118,6 +130,12 @@ type Service struct {
 	I18nRegions *I18nRegionsService
 
 	LiveBroadcasts *LiveBroadcastsService
+
+	LiveChatBans *LiveChatBansService
+
+	LiveChatMessages *LiveChatMessagesService
+
+	LiveChatModerators *LiveChatModeratorsService
 
 	LiveStreams *LiveStreamsService
 
@@ -127,7 +145,11 @@ type Service struct {
 
 	Search *SearchService
 
+	Sponsors *SponsorsService
+
 	Subscriptions *SubscriptionsService
+
+	SuperChatEvents *SuperChatEventsService
 
 	Thumbnails *ThumbnailsService
 
@@ -210,6 +232,15 @@ type CommentsService struct {
 	s *Service
 }
 
+func NewFanFundingEventsService(s *Service) *FanFundingEventsService {
+	rs := &FanFundingEventsService{s: s}
+	return rs
+}
+
+type FanFundingEventsService struct {
+	s *Service
+}
+
 func NewGuideCategoriesService(s *Service) *GuideCategoriesService {
 	rs := &GuideCategoriesService{s: s}
 	return rs
@@ -243,6 +274,33 @@ func NewLiveBroadcastsService(s *Service) *LiveBroadcastsService {
 }
 
 type LiveBroadcastsService struct {
+	s *Service
+}
+
+func NewLiveChatBansService(s *Service) *LiveChatBansService {
+	rs := &LiveChatBansService{s: s}
+	return rs
+}
+
+type LiveChatBansService struct {
+	s *Service
+}
+
+func NewLiveChatMessagesService(s *Service) *LiveChatMessagesService {
+	rs := &LiveChatMessagesService{s: s}
+	return rs
+}
+
+type LiveChatMessagesService struct {
+	s *Service
+}
+
+func NewLiveChatModeratorsService(s *Service) *LiveChatModeratorsService {
+	rs := &LiveChatModeratorsService{s: s}
+	return rs
+}
+
+type LiveChatModeratorsService struct {
 	s *Service
 }
 
@@ -282,12 +340,30 @@ type SearchService struct {
 	s *Service
 }
 
+func NewSponsorsService(s *Service) *SponsorsService {
+	rs := &SponsorsService{s: s}
+	return rs
+}
+
+type SponsorsService struct {
+	s *Service
+}
+
 func NewSubscriptionsService(s *Service) *SubscriptionsService {
 	rs := &SubscriptionsService{s: s}
 	return rs
 }
 
 type SubscriptionsService struct {
+	s *Service
+}
+
+func NewSuperChatEventsService(s *Service) *SuperChatEventsService {
+	rs := &SuperChatEventsService{s: s}
+	return rs
+}
+
+type SuperChatEventsService struct {
 	s *Service
 }
 
@@ -336,6 +412,7 @@ type WatermarksService struct {
 	s *Service
 }
 
+// AccessPolicy: Rights management policy for YouTube resources.
 type AccessPolicy struct {
 	// Allowed: The value of allowed indicates whether the access to the
 	// policy is allowed or denied by default.
@@ -344,8 +421,38 @@ type AccessPolicy struct {
 	// Exception: A list of region codes that identify countries where the
 	// default policy do not apply.
 	Exception []string `json:"exception,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Allowed") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Allowed") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *AccessPolicy) MarshalJSON() ([]byte, error) {
+	type noMethod AccessPolicy
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// Activity: An activity resource contains information about an action
+// that a particular channel, or user, has taken on YouTube.The actions
+// reported in activity feeds include rating a video, sharing a video,
+// marking a video as a favorite, commenting on a video, uploading a
+// video, and so forth. Each activity resource identifies the type of
+// action, the channel associated with the action, and the resource(s)
+// associated with the action, such as the video that was rated or
+// uploaded.
 type Activity struct {
 	// ContentDetails: The contentDetails object contains information about
 	// the content associated with the activity. For example, if the
@@ -366,8 +473,37 @@ type Activity struct {
 	// Snippet: The snippet object contains basic details about the
 	// activity, including the activity's type and group ID.
 	Snippet *ActivitySnippet `json:"snippet,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "ContentDetails") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ContentDetails") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *Activity) MarshalJSON() ([]byte, error) {
+	type noMethod Activity
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ActivityContentDetails: Details about the content of an activity: the
+// video that was shared, the channel that was subscribed to, etc.
 type ActivityContentDetails struct {
 	// Bulletin: The bulletin object contains details about a channel
 	// bulletin post. This object is only present if the snippet.type is
@@ -421,38 +557,182 @@ type ActivityContentDetails struct {
 	// Upload: The upload object contains information about the uploaded
 	// video. This property is only present if the snippet.type is upload.
 	Upload *ActivityContentDetailsUpload `json:"upload,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Bulletin") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Bulletin") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ActivityContentDetails) MarshalJSON() ([]byte, error) {
+	type noMethod ActivityContentDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ActivityContentDetailsBulletin: Details about a channel bulletin
+// post.
 type ActivityContentDetailsBulletin struct {
 	// ResourceId: The resourceId object contains information that
 	// identifies the resource associated with a bulletin post.
 	ResourceId *ResourceId `json:"resourceId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ResourceId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ResourceId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ActivityContentDetailsBulletin) MarshalJSON() ([]byte, error) {
+	type noMethod ActivityContentDetailsBulletin
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ActivityContentDetailsChannelItem: Details about a resource which was
+// added to a channel.
 type ActivityContentDetailsChannelItem struct {
 	// ResourceId: The resourceId object contains information that
 	// identifies the resource that was added to the channel.
 	ResourceId *ResourceId `json:"resourceId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ResourceId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ResourceId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ActivityContentDetailsChannelItem) MarshalJSON() ([]byte, error) {
+	type noMethod ActivityContentDetailsChannelItem
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ActivityContentDetailsComment: Information about a resource that
+// received a comment.
 type ActivityContentDetailsComment struct {
 	// ResourceId: The resourceId object contains information that
 	// identifies the resource associated with the comment.
 	ResourceId *ResourceId `json:"resourceId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ResourceId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ResourceId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ActivityContentDetailsComment) MarshalJSON() ([]byte, error) {
+	type noMethod ActivityContentDetailsComment
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ActivityContentDetailsFavorite: Information about a video that was
+// marked as a favorite video.
 type ActivityContentDetailsFavorite struct {
 	// ResourceId: The resourceId object contains information that
 	// identifies the resource that was marked as a favorite.
 	ResourceId *ResourceId `json:"resourceId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ResourceId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ResourceId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ActivityContentDetailsFavorite) MarshalJSON() ([]byte, error) {
+	type noMethod ActivityContentDetailsFavorite
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ActivityContentDetailsLike: Information about a resource that
+// received a positive (like) rating.
 type ActivityContentDetailsLike struct {
 	// ResourceId: The resourceId object contains information that
 	// identifies the rated resource.
 	ResourceId *ResourceId `json:"resourceId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ResourceId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ResourceId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ActivityContentDetailsLike) MarshalJSON() ([]byte, error) {
+	type noMethod ActivityContentDetailsLike
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ActivityContentDetailsPlaylistItem: Information about a new playlist
+// item.
 type ActivityContentDetailsPlaylistItem struct {
 	// PlaylistId: The value that YouTube uses to uniquely identify the
 	// playlist.
@@ -464,8 +744,32 @@ type ActivityContentDetailsPlaylistItem struct {
 	// ResourceId: The resourceId object contains information about the
 	// resource that was added to the playlist.
 	ResourceId *ResourceId `json:"resourceId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "PlaylistId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "PlaylistId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ActivityContentDetailsPlaylistItem) MarshalJSON() ([]byte, error) {
+	type noMethod ActivityContentDetailsPlaylistItem
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ActivityContentDetailsPromotedItem: Details about a resource which is
+// being promoted.
 type ActivityContentDetailsPromotedItem struct {
 	// AdTag: The URL the client should fetch to request a promoted item.
 	AdTag string `json:"adTag,omitempty"`
@@ -510,8 +814,32 @@ type ActivityContentDetailsPromotedItem struct {
 	// VideoId: The ID that YouTube uses to uniquely identify the promoted
 	// video.
 	VideoId string `json:"videoId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "AdTag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AdTag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ActivityContentDetailsPromotedItem) MarshalJSON() ([]byte, error) {
+	type noMethod ActivityContentDetailsPromotedItem
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ActivityContentDetailsRecommendation: Information that identifies the
+// recommended resource.
 type ActivityContentDetailsRecommendation struct {
 	// Reason: The reason that the resource is recommended to the user.
 	//
@@ -529,8 +857,31 @@ type ActivityContentDetailsRecommendation struct {
 	// SeedResourceId: The seedResourceId object contains information about
 	// the resource that caused the recommendation.
 	SeedResourceId *ResourceId `json:"seedResourceId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Reason") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Reason") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ActivityContentDetailsRecommendation) MarshalJSON() ([]byte, error) {
+	type noMethod ActivityContentDetailsRecommendation
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ActivityContentDetailsSocial: Details about a social network post.
 type ActivityContentDetailsSocial struct {
 	// Author: The author of the social network post.
 	Author string `json:"author,omitempty"`
@@ -553,18 +904,87 @@ type ActivityContentDetailsSocial struct {
 	//   "twitter"
 	//   "unspecified"
 	Type string `json:"type,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Author") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Author") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ActivityContentDetailsSocial) MarshalJSON() ([]byte, error) {
+	type noMethod ActivityContentDetailsSocial
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ActivityContentDetailsSubscription: Information about a channel that
+// a user subscribed to.
 type ActivityContentDetailsSubscription struct {
 	// ResourceId: The resourceId object contains information that
 	// identifies the resource that the user subscribed to.
 	ResourceId *ResourceId `json:"resourceId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ResourceId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ResourceId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ActivityContentDetailsSubscription) MarshalJSON() ([]byte, error) {
+	type noMethod ActivityContentDetailsSubscription
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ActivityContentDetailsUpload: Information about the uploaded video.
 type ActivityContentDetailsUpload struct {
 	// VideoId: The ID that YouTube uses to uniquely identify the uploaded
 	// video.
 	VideoId string `json:"videoId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "VideoId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "VideoId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ActivityContentDetailsUpload) MarshalJSON() ([]byte, error) {
+	type noMethod ActivityContentDetailsUpload
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type ActivityListResponse struct {
@@ -597,8 +1017,36 @@ type ActivityListResponse struct {
 
 	// VisitorId: The visitorId identifies the visitor.
 	VisitorId string `json:"visitorId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ActivityListResponse) MarshalJSON() ([]byte, error) {
+	type noMethod ActivityListResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ActivitySnippet: Basic details about an activity, including title,
+// description, thumbnails, activity type and group.
 type ActivitySnippet struct {
 	// ChannelId: The ID that YouTube uses to uniquely identify the channel
 	// associated with the activity.
@@ -649,8 +1097,32 @@ type ActivitySnippet struct {
 	//   "subscription"
 	//   "upload"
 	Type string `json:"type,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ChannelId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ChannelId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ActivitySnippet) MarshalJSON() ([]byte, error) {
+	type noMethod ActivitySnippet
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// Caption: A caption resource represents a YouTube caption track. A
+// caption track is associated with exactly one YouTube video.
 type Caption struct {
 	// Etag: Etag of this resource.
 	Etag string `json:"etag,omitempty"`
@@ -664,6 +1136,32 @@ type Caption struct {
 
 	// Snippet: The snippet object contains basic details about the caption.
 	Snippet *CaptionSnippet `json:"snippet,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Caption) MarshalJSON() ([]byte, error) {
+	type noMethod Caption
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type CaptionListResponse struct {
@@ -683,8 +1181,36 @@ type CaptionListResponse struct {
 
 	// VisitorId: The visitorId identifies the visitor.
 	VisitorId string `json:"visitorId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *CaptionListResponse) MarshalJSON() ([]byte, error) {
+	type noMethod CaptionListResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// CaptionSnippet: Basic details about a caption track, such as its
+// language and name.
 type CaptionSnippet struct {
 	// AudioTrackType: The type of audio track associated with the caption
 	// track.
@@ -766,12 +1292,43 @@ type CaptionSnippet struct {
 	// VideoId: The ID that YouTube uses to uniquely identify the video
 	// associated with the caption track.
 	VideoId string `json:"videoId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "AudioTrackType") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AudioTrackType") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *CaptionSnippet) MarshalJSON() ([]byte, error) {
+	type noMethod CaptionSnippet
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// CdnSettings: Brief description of the live stream cdn settings.
 type CdnSettings struct {
 	// Format: The format of the video stream that you are sending to
 	// Youtube.
 	Format string `json:"format,omitempty"`
+
+	// FrameRate: The frame rate of the inbound video data.
+	//
+	// Possible values:
+	//   "30fps"
+	//   "60fps"
+	FrameRate string `json:"frameRate,omitempty"`
 
 	// IngestionInfo: The ingestionInfo object contains information that
 	// YouTube provides that you need to transmit your RTMP or HTTP stream
@@ -785,8 +1342,44 @@ type CdnSettings struct {
 	//   "dash"
 	//   "rtmp"
 	IngestionType string `json:"ingestionType,omitempty"`
+
+	// Resolution: The resolution of the inbound video data.
+	//
+	// Possible values:
+	//   "1080p"
+	//   "1440p"
+	//   "2160p"
+	//   "240p"
+	//   "360p"
+	//   "480p"
+	//   "720p"
+	Resolution string `json:"resolution,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Format") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Format") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *CdnSettings) MarshalJSON() ([]byte, error) {
+	type noMethod CdnSettings
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// Channel: A channel resource contains information about a YouTube
+// channel.
 type Channel struct {
 	// AuditDetails: The auditionDetails object encapsulates channel data
 	// that is relevant for YouTube Partners during the audition process.
@@ -841,8 +1434,36 @@ type Channel struct {
 	// TopicDetails: The topicDetails object encapsulates information about
 	// Freebase topics associated with the channel.
 	TopicDetails *ChannelTopicDetails `json:"topicDetails,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "AuditDetails") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AuditDetails") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *Channel) MarshalJSON() ([]byte, error) {
+	type noMethod Channel
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ChannelAuditDetails: The auditDetails object encapsulates channel
+// data that is relevant for YouTube Partners during the audit process.
 type ChannelAuditDetails struct {
 	// CommunityGuidelinesGoodStanding: Whether or not the channel respects
 	// the community guidelines.
@@ -863,8 +1484,34 @@ type ChannelAuditDetails struct {
 	// copyright strikes good standing and the content ID claims good
 	// standing, but this may change in the future.
 	OverallGoodStanding bool `json:"overallGoodStanding,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "CommunityGuidelinesGoodStanding") to unconditionally include in API
+	// requests. By default, fields with empty values are omitted from API
+	// requests. However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g.
+	// "CommunityGuidelinesGoodStanding") to include in API requests with
+	// the JSON null value. By default, fields with empty values are omitted
+	// from API requests. However, any field with an empty value appearing
+	// in NullFields will be sent to the server as null. It is an error if a
+	// field in this list has a non-empty value. This may be used to include
+	// null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ChannelAuditDetails) MarshalJSON() ([]byte, error) {
+	type noMethod ChannelAuditDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ChannelBannerResource: A channel banner returned as the response to a
+// channel_banner.insert call.
 type ChannelBannerResource struct {
 	// Etag: Etag of this resource.
 	Etag string `json:"etag,omitempty"`
@@ -875,8 +1522,35 @@ type ChannelBannerResource struct {
 
 	// Url: The URL of this banner image.
 	Url string `json:"url,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ChannelBannerResource) MarshalJSON() ([]byte, error) {
+	type noMethod ChannelBannerResource
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ChannelBrandingSettings: Branding properties of a YouTube channel.
 type ChannelBrandingSettings struct {
 	// Channel: Branding properties for the channel view.
 	Channel *ChannelSettings `json:"channel,omitempty"`
@@ -889,14 +1563,56 @@ type ChannelBrandingSettings struct {
 
 	// Watch: Branding properties for the watch page.
 	Watch *WatchSettings `json:"watch,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Channel") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Channel") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
-type ChannelContentDetails struct {
-	// GooglePlusUserId: The googlePlusUserId object identifies the Google+
-	// profile ID associated with this channel.
-	GooglePlusUserId string `json:"googlePlusUserId,omitempty"`
+func (s *ChannelBrandingSettings) MarshalJSON() ([]byte, error) {
+	type noMethod ChannelBrandingSettings
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
 
+// ChannelContentDetails: Details about the content of a channel.
+type ChannelContentDetails struct {
 	RelatedPlaylists *ChannelContentDetailsRelatedPlaylists `json:"relatedPlaylists,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "RelatedPlaylists") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "RelatedPlaylists") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ChannelContentDetails) MarshalJSON() ([]byte, error) {
+	type noMethod ChannelContentDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type ChannelContentDetailsRelatedPlaylists struct {
@@ -924,8 +1640,33 @@ type ChannelContentDetailsRelatedPlaylists struct {
 	// later playlist. Use the playlistItems.insert and
 	// playlistItems.delete to add or remove items from that list.
 	WatchLater string `json:"watchLater,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Favorites") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Favorites") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ChannelContentDetailsRelatedPlaylists) MarshalJSON() ([]byte, error) {
+	type noMethod ChannelContentDetailsRelatedPlaylists
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ChannelContentOwnerDetails: The contentOwnerDetails object
+// encapsulates channel data that is relevant for YouTube Partners
+// linked with the channel.
 type ChannelContentOwnerDetails struct {
 	// ContentOwner: The ID of the content owner linked to the channel.
 	ContentOwner string `json:"contentOwner,omitempty"`
@@ -934,8 +1675,33 @@ type ChannelContentOwnerDetails struct {
 	// content owner. The value is specified in ISO 8601
 	// (YYYY-MM-DDThh:mm:ss.sZ) format.
 	TimeLinked string `json:"timeLinked,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ContentOwner") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ContentOwner") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ChannelContentOwnerDetails) MarshalJSON() ([]byte, error) {
+	type noMethod ChannelContentOwnerDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ChannelConversionPing: Pings that the app shall fire (authenticated
+// by biscotti cookie). Each ping has a context, in which the app must
+// fire the ping, and a url identifying the ping.
 type ChannelConversionPing struct {
 	// Context: Defines the context of the ping.
 	//
@@ -954,17 +1720,60 @@ type ChannelConversionPing struct {
 	// append biscotti authentication (ms param in case of mobile, for
 	// example) to this ping.
 	ConversionUrl string `json:"conversionUrl,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Context") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Context") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ChannelConversionPing) MarshalJSON() ([]byte, error) {
+	type noMethod ChannelConversionPing
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ChannelConversionPings: The conversionPings object encapsulates
+// information about conversion pings that need to be respected by the
+// channel.
 type ChannelConversionPings struct {
 	// Pings: Pings that the app shall fire (authenticated by biscotti
 	// cookie). Each ping has a context, in which the app must fire the
 	// ping, and a url identifying the ping.
 	Pings []*ChannelConversionPing `json:"pings,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Pings") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Pings") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
-type ChannelId struct {
-	Value string `json:"value,omitempty"`
+func (s *ChannelConversionPings) MarshalJSON() ([]byte, error) {
+	type noMethod ChannelConversionPings
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type ChannelListResponse struct {
@@ -996,14 +1805,99 @@ type ChannelListResponse struct {
 
 	// VisitorId: The visitorId identifies the visitor.
 	VisitorId string `json:"visitorId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ChannelListResponse) MarshalJSON() ([]byte, error) {
+	type noMethod ChannelListResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ChannelLocalization: Channel localization setting
 type ChannelLocalization struct {
 	// Description: The localized strings for channel's description.
 	Description string `json:"description,omitempty"`
 
 	// Title: The localized strings for channel's title.
 	Title string `json:"title,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Description") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Description") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ChannelLocalization) MarshalJSON() ([]byte, error) {
+	type noMethod ChannelLocalization
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type ChannelProfileDetails struct {
+	// ChannelId: The YouTube channel ID.
+	ChannelId string `json:"channelId,omitempty"`
+
+	// ChannelUrl: The channel's URL.
+	ChannelUrl string `json:"channelUrl,omitempty"`
+
+	// DisplayName: The channel's display name.
+	DisplayName string `json:"displayName,omitempty"`
+
+	// ProfileImageUrl: The channels's avatar URL.
+	ProfileImageUrl string `json:"profileImageUrl,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ChannelId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ChannelId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ChannelProfileDetails) MarshalJSON() ([]byte, error) {
+	type noMethod ChannelProfileDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type ChannelSection struct {
@@ -1033,8 +1927,37 @@ type ChannelSection struct {
 	// Targeting: The targeting object contains basic targeting settings
 	// about the channel section.
 	Targeting *ChannelSectionTargeting `json:"targeting,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "ContentDetails") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ContentDetails") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ChannelSection) MarshalJSON() ([]byte, error) {
+	type noMethod ChannelSection
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ChannelSectionContentDetails: Details about a channelsection,
+// including playlists and channels.
 type ChannelSectionContentDetails struct {
 	// Channels: The channel ids for type multiple_channels.
 	Channels []string `json:"channels,omitempty"`
@@ -1043,6 +1966,28 @@ type ChannelSectionContentDetails struct {
 	// multiple_playlists. For singlePlaylist, only one playlistId is
 	// allowed.
 	Playlists []string `json:"playlists,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Channels") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Channels") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ChannelSectionContentDetails) MarshalJSON() ([]byte, error) {
+	type noMethod ChannelSectionContentDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type ChannelSectionListResponse struct {
@@ -1062,13 +2007,64 @@ type ChannelSectionListResponse struct {
 
 	// VisitorId: The visitorId identifies the visitor.
 	VisitorId string `json:"visitorId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ChannelSectionListResponse) MarshalJSON() ([]byte, error) {
+	type noMethod ChannelSectionListResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ChannelSectionLocalization: ChannelSection localization setting
 type ChannelSectionLocalization struct {
 	// Title: The localized strings for channel section's title.
 	Title string `json:"title,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Title") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Title") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ChannelSectionLocalization) MarshalJSON() ([]byte, error) {
+	type noMethod ChannelSectionLocalization
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ChannelSectionSnippet: Basic details about a channel section,
+// including title, style and position.
 type ChannelSectionSnippet struct {
 	// ChannelId: The ID that YouTube uses to uniquely identify the channel
 	// that published the channel section.
@@ -1082,7 +2078,7 @@ type ChannelSectionSnippet struct {
 	Localized *ChannelSectionLocalization `json:"localized,omitempty"`
 
 	// Position: The position of the channel section in the channel.
-	Position int64 `json:"position,omitempty"`
+	Position *int64 `json:"position,omitempty"`
 
 	// Style: The style of the channel section.
 	//
@@ -1117,8 +2113,31 @@ type ChannelSectionSnippet struct {
 	//   "subscriptions"
 	//   "upcomingEvents"
 	Type string `json:"type,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ChannelId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ChannelId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ChannelSectionSnippet) MarshalJSON() ([]byte, error) {
+	type noMethod ChannelSectionSnippet
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ChannelSectionTargeting: ChannelSection targeting setting.
 type ChannelSectionTargeting struct {
 	// Countries: The country the channel section is targeting.
 	Countries []string `json:"countries,omitempty"`
@@ -1128,8 +2147,31 @@ type ChannelSectionTargeting struct {
 
 	// Regions: The region the channel section is targeting.
 	Regions []string `json:"regions,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Countries") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Countries") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ChannelSectionTargeting) MarshalJSON() ([]byte, error) {
+	type noMethod ChannelSectionTargeting
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ChannelSettings: Branding properties for the channel view.
 type ChannelSettings struct {
 	// Country: The country of the channel.
 	Country string `json:"country,omitempty"`
@@ -1178,11 +2220,38 @@ type ChannelSettings struct {
 	// UnsubscribedTrailer: The trailer of the channel, for users that are
 	// not subscribers.
 	UnsubscribedTrailer string `json:"unsubscribedTrailer,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Country") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Country") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ChannelSettings) MarshalJSON() ([]byte, error) {
+	type noMethod ChannelSettings
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ChannelSnippet: Basic details about a channel, including title,
+// description and thumbnails. Next available id: 15.
 type ChannelSnippet struct {
 	// Country: The country of the channel.
 	Country string `json:"country,omitempty"`
+
+	// CustomUrl: The custom url of the channel.
+	CustomUrl string `json:"customUrl,omitempty"`
 
 	// DefaultLanguage: The language of the channel's default title and
 	// description.
@@ -1206,8 +2275,32 @@ type ChannelSnippet struct {
 
 	// Title: The channel's title.
 	Title string `json:"title,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Country") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Country") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ChannelSnippet) MarshalJSON() ([]byte, error) {
+	type noMethod ChannelSnippet
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ChannelStatistics: Statistics about a channel: number of subscribers,
+// number of videos in the channel, etc.
 type ChannelStatistics struct {
 	// CommentCount: The number of comments for the channel.
 	CommentCount uint64 `json:"commentCount,omitempty,string"`
@@ -1224,8 +2317,31 @@ type ChannelStatistics struct {
 
 	// ViewCount: The number of times the channel has been viewed.
 	ViewCount uint64 `json:"viewCount,omitempty,string"`
+
+	// ForceSendFields is a list of field names (e.g. "CommentCount") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CommentCount") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ChannelStatistics) MarshalJSON() ([]byte, error) {
+	type noMethod ChannelStatistics
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ChannelStatus: JSON template for the status part of a channel.
 type ChannelStatus struct {
 	// IsLinked: If true, then the user is linked to either a YouTube
 	// username or G+ account. Otherwise, the user doesn't have a public
@@ -1248,15 +2364,67 @@ type ChannelStatus struct {
 	//   "public"
 	//   "unlisted"
 	PrivacyStatus string `json:"privacyStatus,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "IsLinked") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "IsLinked") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ChannelStatus) MarshalJSON() ([]byte, error) {
+	type noMethod ChannelStatus
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ChannelTopicDetails: Freebase topic information related to the
+// channel.
 type ChannelTopicDetails struct {
+	// TopicCategories: A list of Wikipedia URLs that describe the channel's
+	// content.
+	TopicCategories []string `json:"topicCategories,omitempty"`
+
 	// TopicIds: A list of Freebase topic IDs associated with the channel.
 	// You can retrieve information about each topic using the Freebase
 	// Topic API.
 	TopicIds []string `json:"topicIds,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "TopicCategories") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "TopicCategories") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ChannelTopicDetails) MarshalJSON() ([]byte, error) {
+	type noMethod ChannelTopicDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// Comment: A comment represents a single YouTube comment.
 type Comment struct {
 	// Etag: Etag of this resource.
 	Etag string `json:"etag,omitempty"`
@@ -1270,6 +2438,32 @@ type Comment struct {
 
 	// Snippet: The snippet object contains basic details about the comment.
 	Snippet *CommentSnippet `json:"snippet,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Comment) MarshalJSON() ([]byte, error) {
+	type noMethod Comment
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type CommentListResponse struct {
@@ -1297,21 +2491,45 @@ type CommentListResponse struct {
 
 	// VisitorId: The visitorId identifies the visitor.
 	VisitorId string `json:"visitorId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *CommentListResponse) MarshalJSON() ([]byte, error) {
+	type noMethod CommentListResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// CommentSnippet: Basic details about a comment, such as its author and
+// text.
 type CommentSnippet struct {
 	// AuthorChannelId: The id of the author's YouTube channel, if any.
-	AuthorChannelId *ChannelId `json:"authorChannelId,omitempty"`
+	AuthorChannelId interface{} `json:"authorChannelId,omitempty"`
 
 	// AuthorChannelUrl: Link to the author's YouTube channel, if any.
 	AuthorChannelUrl string `json:"authorChannelUrl,omitempty"`
 
 	// AuthorDisplayName: The name of the user who posted the comment.
 	AuthorDisplayName string `json:"authorDisplayName,omitempty"`
-
-	// AuthorGoogleplusProfileUrl: Link to the author's Google+ profile, if
-	// any.
-	AuthorGoogleplusProfileUrl string `json:"authorGoogleplusProfileUrl,omitempty"`
 
 	// AuthorProfileImageUrl: The URL for the avatar of the user who posted
 	// the comment.
@@ -1375,8 +2593,34 @@ type CommentSnippet struct {
 	//   "none"
 	//   "unspecified"
 	ViewerRating string `json:"viewerRating,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "AuthorChannelId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AuthorChannelId") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *CommentSnippet) MarshalJSON() ([]byte, error) {
+	type noMethod CommentSnippet
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// CommentThread: A comment thread represents information that applies
+// to a top level comment and all its replies. It can also include the
+// top level comment itself and some of the replies.
 type CommentThread struct {
 	// Etag: Etag of this resource.
 	Etag string `json:"etag,omitempty"`
@@ -1395,6 +2639,32 @@ type CommentThread struct {
 	// Snippet: The snippet object contains basic details about the comment
 	// thread and also the top level comment.
 	Snippet *CommentThreadSnippet `json:"snippet,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *CommentThread) MarshalJSON() ([]byte, error) {
+	type noMethod CommentThread
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type CommentThreadListResponse struct {
@@ -1422,15 +2692,66 @@ type CommentThreadListResponse struct {
 
 	// VisitorId: The visitorId identifies the visitor.
 	VisitorId string `json:"visitorId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *CommentThreadListResponse) MarshalJSON() ([]byte, error) {
+	type noMethod CommentThreadListResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// CommentThreadReplies: Comments written in (direct or indirect) reply
+// to the top level comment.
 type CommentThreadReplies struct {
 	// Comments: A limited number of replies. Unless the number of replies
 	// returned equals total_reply_count in the snippet the returned replies
 	// are only a subset of the total number of replies.
 	Comments []*Comment `json:"comments,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Comments") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Comments") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *CommentThreadReplies) MarshalJSON() ([]byte, error) {
+	type noMethod CommentThreadReplies
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// CommentThreadSnippet: Basic details about a comment thread.
 type CommentThreadSnippet struct {
 	// CanReply: Whether the current viewer of the thread can reply to it.
 	// This is viewer specific - other viewers may see a different value for
@@ -1456,11 +2777,36 @@ type CommentThreadSnippet struct {
 	// VideoId: The ID of the video the comments refer to, if any. No
 	// video_id implies a channel discussion comment.
 	VideoId string `json:"videoId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "CanReply") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CanReply") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *CommentThreadSnippet) MarshalJSON() ([]byte, error) {
+	type noMethod CommentThreadSnippet
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ContentRating: Ratings schemes. The country-specific ratings are
+// mostly for movies and shows. NEXT_ID: 71
 type ContentRating struct {
-	// AcbRating: Rating system in Australia - Australian Classification
-	// Board
+	// AcbRating: The video's Australian Classification Board (ACB) or
+	// Australian Communications and Media Authority (ACMA) rating. ACMA
+	// ratings are used to classify children's television programming.
 	//
 	// Possible values:
 	//   "acbC"
@@ -1474,8 +2820,8 @@ type ContentRating struct {
 	//   "acbUnrated"
 	AcbRating string `json:"acbRating,omitempty"`
 
-	// AgcomRating: Rating system for Italy - Autorit� per le Garanzie
-	// nelle Comunicazioni
+	// AgcomRating: The video's rating from Italy's Autorità per le
+	// Garanzie nelle Comunicazioni (AGCOM).
 	//
 	// Possible values:
 	//   "agcomT"
@@ -1484,8 +2830,8 @@ type ContentRating struct {
 	//   "agcomVm18"
 	AgcomRating string `json:"agcomRating,omitempty"`
 
-	// AnatelRating: Rating system for Chile - Asociaci�n Nacional de
-	// Televisi�n
+	// AnatelRating: The video's Anatel (Asociación Nacional de
+	// Televisión) rating for Chilean television.
 	//
 	// Possible values:
 	//   "anatelA"
@@ -1498,7 +2844,8 @@ type ContentRating struct {
 	//   "anatelUnrated"
 	AnatelRating string `json:"anatelRating,omitempty"`
 
-	// BbfcRating: British Board of Film Classification
+	// BbfcRating: The video's British Board of Film Classification (BBFC)
+	// rating.
 	//
 	// Possible values:
 	//   "bbfc12"
@@ -1511,8 +2858,8 @@ type ContentRating struct {
 	//   "bbfcUnrated"
 	BbfcRating string `json:"bbfcRating,omitempty"`
 
-	// BfvcRating: Rating system for Thailand - Board of Filmand Video
-	// Censors
+	// BfvcRating: The video's rating from Thailand's Board of Film and
+	// Video Censors.
 	//
 	// Possible values:
 	//   "bfvc13"
@@ -1525,8 +2872,8 @@ type ContentRating struct {
 	//   "bfvcUnrated"
 	BfvcRating string `json:"bfvcRating,omitempty"`
 
-	// BmukkRating: Rating system for Austria - Bundesministerium f�r
-	// Unterricht, Kunst und Kultur
+	// BmukkRating: The video's rating from the Austrian Board of Media
+	// Classification (Bundesministerium für Unterricht, Kunst und Kultur).
 	//
 	// Possible values:
 	//   "bmukk10"
@@ -1540,7 +2887,10 @@ type ContentRating struct {
 	BmukkRating string `json:"bmukkRating,omitempty"`
 
 	// CatvRating: Rating system for Canadian TV - Canadian TV
-	// Classification System
+	// Classification System The video's rating from the Canadian
+	// Radio-Television and Telecommunications Commission (CRTC) for
+	// Canadian English-language broadcasts. For more information, see the
+	// Canadian Broadcast Standards Council website.
 	//
 	// Possible values:
 	//   "catv14plus"
@@ -1552,7 +2902,10 @@ type ContentRating struct {
 	//   "catvUnrated"
 	CatvRating string `json:"catvRating,omitempty"`
 
-	// CatvfrRating: Rating system for French Canadian TV - Regie du cinema
+	// CatvfrRating: The video's rating from the Canadian Radio-Television
+	// and Telecommunications Commission (CRTC) for Canadian French-language
+	// broadcasts. For more information, see the Canadian Broadcast
+	// Standards Council website.
 	//
 	// Possible values:
 	//   "catvfr13plus"
@@ -1563,8 +2916,8 @@ type ContentRating struct {
 	//   "catvfrUnrated"
 	CatvfrRating string `json:"catvfrRating,omitempty"`
 
-	// CbfcRating: Rating system in India - Central Board of Film
-	// Certification
+	// CbfcRating: The video's Central Board of Film Certification (CBFC -
+	// India) rating.
 	//
 	// Possible values:
 	//   "cbfcA"
@@ -1574,8 +2927,8 @@ type ContentRating struct {
 	//   "cbfcUnrated"
 	CbfcRating string `json:"cbfcRating,omitempty"`
 
-	// CccRating: Rating system for Chile - Consejo de Calificaci�n
-	// Cinematogr�fica
+	// CccRating: The video's Consejo de Calificación Cinematográfica
+	// (Chile) rating.
 	//
 	// Possible values:
 	//   "ccc14"
@@ -1587,11 +2940,12 @@ type ContentRating struct {
 	//   "cccUnrated"
 	CccRating string `json:"cccRating,omitempty"`
 
-	// CceRating: Rating system for Portugal - Comiss�o de
-	// Classifica��o de Espect�culos
+	// CceRating: The video's rating from Portugal's Comissão de
+	// Classificação de Espect´culos.
 	//
 	// Possible values:
 	//   "cceM12"
+	//   "cceM14"
 	//   "cceM16"
 	//   "cceM18"
 	//   "cceM4"
@@ -1599,8 +2953,7 @@ type ContentRating struct {
 	//   "cceUnrated"
 	CceRating string `json:"cceRating,omitempty"`
 
-	// ChfilmRating: Rating system for Switzerland - Switzerland Rating
-	// System
+	// ChfilmRating: The video's rating in Switzerland.
 	//
 	// Possible values:
 	//   "chfilm0"
@@ -1611,7 +2964,8 @@ type ContentRating struct {
 	//   "chfilmUnrated"
 	ChfilmRating string `json:"chfilmRating,omitempty"`
 
-	// ChvrsRating: Canadian Home Video Rating System
+	// ChvrsRating: The video's Canadian Home Video Rating System (CHVRS)
+	// rating.
 	//
 	// Possible values:
 	//   "chvrs14a"
@@ -1623,7 +2977,8 @@ type ContentRating struct {
 	//   "chvrsUnrated"
 	ChvrsRating string `json:"chvrsRating,omitempty"`
 
-	// CicfRating: Rating system for Belgium - Belgium Rating System
+	// CicfRating: The video's rating from the Commission de Contrôle des
+	// Films (Belgium).
 	//
 	// Possible values:
 	//   "cicfE"
@@ -1632,8 +2987,8 @@ type ContentRating struct {
 	//   "cicfUnrated"
 	CicfRating string `json:"cicfRating,omitempty"`
 
-	// CnaRating: Rating system for Romania - CONSILIUL NATIONAL AL
-	// AUDIOVIZUALULUI - CNA
+	// CnaRating: The video's rating from Romania's CONSILIUL NATIONAL AL
+	// AUDIOVIZUALULUI (CNA).
 	//
 	// Possible values:
 	//   "cna12"
@@ -1644,8 +2999,21 @@ type ContentRating struct {
 	//   "cnaUnrated"
 	CnaRating string `json:"cnaRating,omitempty"`
 
-	// CsaRating: Rating system for France - Conseil sup�rieur de
-	// l?audiovisuel
+	// CncRating: Rating system in France - Commission de classification
+	// cinematographique
+	//
+	// Possible values:
+	//   "cnc10"
+	//   "cnc12"
+	//   "cnc16"
+	//   "cnc18"
+	//   "cncE"
+	//   "cncT"
+	//   "cncUnrated"
+	CncRating string `json:"cncRating,omitempty"`
+
+	// CsaRating: The video's rating from France's Conseil supérieur de
+	// l?audiovisuel, which rates broadcast content.
 	//
 	// Possible values:
 	//   "csa10"
@@ -1653,11 +3021,12 @@ type ContentRating struct {
 	//   "csa16"
 	//   "csa18"
 	//   "csaInterdiction"
+	//   "csaT"
 	//   "csaUnrated"
 	CsaRating string `json:"csaRating,omitempty"`
 
-	// CscfRating: Rating system for Luxembourg - Commission de surveillance
-	// de la classification des films
+	// CscfRating: The video's rating from Luxembourg's Commission de
+	// surveillance de la classification des films (CSCF).
 	//
 	// Possible values:
 	//   "cscf12"
@@ -1670,8 +3039,7 @@ type ContentRating struct {
 	//   "cscfUnrated"
 	CscfRating string `json:"cscfRating,omitempty"`
 
-	// CzfilmRating: Rating system for Czech republic - Czech republic
-	// Rating System
+	// CzfilmRating: The video's rating in the Czech Republic.
 	//
 	// Possible values:
 	//   "czfilm12"
@@ -1681,8 +3049,8 @@ type ContentRating struct {
 	//   "czfilmUnrated"
 	CzfilmRating string `json:"czfilmRating,omitempty"`
 
-	// DjctqRating: Rating system in Brazil - Department of Justice, Rating,
-	// Titles and Qualification
+	// DjctqRating: The video's Departamento de Justiça, Classificação,
+	// Qualificação e Títulos (DJCQT - Brazil) rating.
 	//
 	// Possible values:
 	//   "djctq10"
@@ -1694,9 +3062,40 @@ type ContentRating struct {
 	//   "djctqUnrated"
 	DjctqRating string `json:"djctqRating,omitempty"`
 
+	// DjctqRatingReasons: Reasons that explain why the video received its
+	// DJCQT (Brazil) rating.
+	//
+	// Possible values:
+	//   "djctqCriminalActs"
+	//   "djctqDrugs"
+	//   "djctqExplicitSex"
+	//   "djctqExtremeViolence"
+	//   "djctqIllegalDrugs"
+	//   "djctqImpactingContent"
+	//   "djctqInappropriateLanguage"
+	//   "djctqLegalDrugs"
+	//   "djctqNudity"
+	//   "djctqSex"
+	//   "djctqSexualContent"
+	//   "djctqViolence"
 	DjctqRatingReasons []string `json:"djctqRatingReasons,omitempty"`
 
-	// EefilmRating: Rating system for Estonia - Estonia Rating System
+	// EcbmctRating: Rating system in Turkey - Evaluation and Classification
+	// Board of the Ministry of Culture and Tourism
+	//
+	// Possible values:
+	//   "ecbmct13a"
+	//   "ecbmct13plus"
+	//   "ecbmct15a"
+	//   "ecbmct15plus"
+	//   "ecbmct18plus"
+	//   "ecbmct7a"
+	//   "ecbmct7plus"
+	//   "ecbmctG"
+	//   "ecbmctUnrated"
+	EcbmctRating string `json:"ecbmctRating,omitempty"`
+
+	// EefilmRating: The video's rating in Estonia.
 	//
 	// Possible values:
 	//   "eefilmK12"
@@ -1710,7 +3109,7 @@ type ContentRating struct {
 	//   "eefilmUnrated"
 	EefilmRating string `json:"eefilmRating,omitempty"`
 
-	// EgfilmRating: Rating system for Egypt - Egypt Rating System
+	// EgfilmRating: The video's rating in Egypt.
 	//
 	// Possible values:
 	//   "egfilm18"
@@ -1719,7 +3118,8 @@ type ContentRating struct {
 	//   "egfilmUnrated"
 	EgfilmRating string `json:"egfilmRating,omitempty"`
 
-	// EirinRating: Rating system in Japan - Eiga Rinri Kanri Iinkai
+	// EirinRating: The video's Eirin (映倫) rating. Eirin is the Japanese
+	// rating system.
 	//
 	// Possible values:
 	//   "eirinG"
@@ -1729,8 +3129,7 @@ type ContentRating struct {
 	//   "eirinUnrated"
 	EirinRating string `json:"eirinRating,omitempty"`
 
-	// FcbmRating: Rating system for Malaysia - Film Censorship Board of
-	// Malaysia
+	// FcbmRating: The video's rating from Malaysia's Film Censorship Board.
 	//
 	// Possible values:
 	//   "fcbm18"
@@ -1744,18 +3143,20 @@ type ContentRating struct {
 	//   "fcbmUnrated"
 	FcbmRating string `json:"fcbmRating,omitempty"`
 
-	// FcoRating: Rating system for Hong kong - Office for Film, Newspaper
-	// and Article Administration
+	// FcoRating: The video's rating from Hong Kong's Office for Film,
+	// Newspaper and Article Administration.
 	//
 	// Possible values:
 	//   "fcoI"
+	//   "fcoIi"
 	//   "fcoIia"
 	//   "fcoIib"
 	//   "fcoIii"
 	//   "fcoUnrated"
 	FcoRating string `json:"fcoRating,omitempty"`
 
-	// FmocRating: Rating system in France - French Minister of Culture
+	// FmocRating: This property has been deprecated. Use the
+	// contentDetails.contentRating.cncRating instead.
 	//
 	// Possible values:
 	//   "fmoc10"
@@ -1767,9 +3168,11 @@ type ContentRating struct {
 	//   "fmocUnrated"
 	FmocRating string `json:"fmocRating,omitempty"`
 
-	// FpbRating: Rating system for South africa - Film & Publication Board
+	// FpbRating: The video's rating from South Africa's Film and
+	// Publication Board.
 	//
 	// Possible values:
+	//   "fpb10"
 	//   "fpb1012Pg"
 	//   "fpb13"
 	//   "fpb16"
@@ -1782,8 +3185,25 @@ type ContentRating struct {
 	//   "fpbXx"
 	FpbRating string `json:"fpbRating,omitempty"`
 
-	// FskRating: Rating system in Germany - Voluntary Self Regulation of
-	// the Movie Industry
+	// FpbRatingReasons: Reasons that explain why the video received its FPB
+	// (South Africa) rating.
+	//
+	// Possible values:
+	//   "fpbBlasphemy"
+	//   "fpbCriminalTechniques"
+	//   "fpbDrugs"
+	//   "fpbHorror"
+	//   "fpbImitativeActsTechniques"
+	//   "fpbLanguage"
+	//   "fpbNudity"
+	//   "fpbPrejudice"
+	//   "fpbSex"
+	//   "fpbSexualViolence"
+	//   "fpbViolence"
+	FpbRatingReasons []string `json:"fpbRatingReasons,omitempty"`
+
+	// FskRating: The video's Freiwillige Selbstkontrolle der Filmwirtschaft
+	// (FSK - Germany) rating.
 	//
 	// Possible values:
 	//   "fsk0"
@@ -1794,18 +3214,21 @@ type ContentRating struct {
 	//   "fskUnrated"
 	FskRating string `json:"fskRating,omitempty"`
 
-	// GrfilmRating: Rating system for Greece - Greece Rating System
+	// GrfilmRating: The video's rating in Greece.
 	//
 	// Possible values:
 	//   "grfilmE"
 	//   "grfilmK"
+	//   "grfilmK12"
 	//   "grfilmK13"
+	//   "grfilmK15"
 	//   "grfilmK17"
+	//   "grfilmK18"
 	//   "grfilmUnrated"
 	GrfilmRating string `json:"grfilmRating,omitempty"`
 
-	// IcaaRating: Rating system in Spain - Instituto de Cinematografia y de
-	// las Artes Audiovisuales
+	// IcaaRating: The video's Instituto de la Cinematografía y de las
+	// Artes Audiovisuales (ICAA - Spain) rating.
 	//
 	// Possible values:
 	//   "icaa12"
@@ -1818,8 +3241,8 @@ type ContentRating struct {
 	//   "icaaX"
 	IcaaRating string `json:"icaaRating,omitempty"`
 
-	// IfcoRating: Rating system in Ireland - Irish Film Classification
-	// Office
+	// IfcoRating: The video's Irish Film Classification Office (IFCO -
+	// Ireland) rating. See the IFCO website for more information.
 	//
 	// Possible values:
 	//   "ifco12"
@@ -1833,7 +3256,7 @@ type ContentRating struct {
 	//   "ifcoUnrated"
 	IfcoRating string `json:"ifcoRating,omitempty"`
 
-	// IlfilmRating: Rating system for Israel - Israel Rating System
+	// IlfilmRating: The video's rating in Israel.
 	//
 	// Possible values:
 	//   "ilfilm12"
@@ -1843,8 +3266,8 @@ type ContentRating struct {
 	//   "ilfilmUnrated"
 	IlfilmRating string `json:"ilfilmRating,omitempty"`
 
-	// IncaaRating: Rating system for Argentina - Instituto Nacional de Cine
-	// y Artes Audiovisuales
+	// IncaaRating: The video's INCAA (Instituto Nacional de Cine y Artes
+	// Audiovisuales - Argentina) rating.
 	//
 	// Possible values:
 	//   "incaaAtp"
@@ -1855,7 +3278,8 @@ type ContentRating struct {
 	//   "incaaUnrated"
 	IncaaRating string `json:"incaaRating,omitempty"`
 
-	// KfcbRating: Rating system for Kenya - Kenya Film Classification Board
+	// KfcbRating: The video's rating from the Kenya Film Classification
+	// Board.
 	//
 	// Possible values:
 	//   "kfcb16plus"
@@ -1865,8 +3289,8 @@ type ContentRating struct {
 	//   "kfcbUnrated"
 	KfcbRating string `json:"kfcbRating,omitempty"`
 
-	// KijkwijzerRating: Rating system for Netherlands - Nederlands
-	// Instituut voor de Classificatie van Audiovisuele Media
+	// KijkwijzerRating: voor de Classificatie van Audiovisuele Media
+	// (Netherlands).
 	//
 	// Possible values:
 	//   "kijkwijzer12"
@@ -1878,7 +3302,9 @@ type ContentRating struct {
 	//   "kijkwijzerUnrated"
 	KijkwijzerRating string `json:"kijkwijzerRating,omitempty"`
 
-	// KmrbRating: Rating system in South Korea - Korea Media Rating Board
+	// KmrbRating: The video's Korea Media Rating Board
+	// (영상물등급위원회) rating. The KMRB rates videos in South
+	// Korea.
 	//
 	// Possible values:
 	//   "kmrb12plus"
@@ -1889,9 +3315,12 @@ type ContentRating struct {
 	//   "kmrbUnrated"
 	KmrbRating string `json:"kmrbRating,omitempty"`
 
-	// LsfRating: Rating system for Indonesia - Lembaga Sensor Film
+	// LsfRating: The video's rating from Indonesia's Lembaga Sensor Film.
 	//
 	// Possible values:
+	//   "lsf13"
+	//   "lsf17"
+	//   "lsf21"
 	//   "lsfA"
 	//   "lsfBo"
 	//   "lsfD"
@@ -1900,7 +3329,8 @@ type ContentRating struct {
 	//   "lsfUnrated"
 	LsfRating string `json:"lsfRating,omitempty"`
 
-	// MccaaRating: Rating system for Malta - Film Age-Classification Board
+	// MccaaRating: The video's rating from Malta's Film Age-Classification
+	// Board.
 	//
 	// Possible values:
 	//   "mccaa12"
@@ -1914,8 +3344,8 @@ type ContentRating struct {
 	//   "mccaaUnrated"
 	MccaaRating string `json:"mccaaRating,omitempty"`
 
-	// MccypRating: Rating system for Denmark - The Media Council for
-	// Children and Young People
+	// MccypRating: The video's rating from the Danish Film Institute's (Det
+	// Danske Filminstitut) Media Council for Children and Young People.
 	//
 	// Possible values:
 	//   "mccyp11"
@@ -1925,7 +3355,21 @@ type ContentRating struct {
 	//   "mccypUnrated"
 	MccypRating string `json:"mccypRating,omitempty"`
 
-	// MdaRating: Rating system for Singapore - Media Development Authority
+	// McstRating: The video's rating system for Vietnam - MCST
+	//
+	// Possible values:
+	//   "mcst0"
+	//   "mcst16plus"
+	//   "mcstC13"
+	//   "mcstC16"
+	//   "mcstC18"
+	//   "mcstGPg"
+	//   "mcstP"
+	//   "mcstUnrated"
+	McstRating string `json:"mcstRating,omitempty"`
+
+	// MdaRating: The video's rating from Singapore's Media Development
+	// Authority (MDA) and, specifically, it's Board of Film Censors (BFC).
 	//
 	// Possible values:
 	//   "mdaG"
@@ -1937,19 +3381,23 @@ type ContentRating struct {
 	//   "mdaUnrated"
 	MdaRating string `json:"mdaRating,omitempty"`
 
-	// MedietilsynetRating: Rating system for Norway - Medietilsynet
+	// MedietilsynetRating: The video's rating from Medietilsynet, the
+	// Norwegian Media Authority.
 	//
 	// Possible values:
 	//   "medietilsynet11"
+	//   "medietilsynet12"
 	//   "medietilsynet15"
 	//   "medietilsynet18"
+	//   "medietilsynet6"
 	//   "medietilsynet7"
+	//   "medietilsynet9"
 	//   "medietilsynetA"
 	//   "medietilsynetUnrated"
 	MedietilsynetRating string `json:"medietilsynetRating,omitempty"`
 
-	// MekuRating: Rating system for Finland - Finnish Centre for Media
-	// Education and Audiovisual Media
+	// MekuRating: The video's rating from Finland's Kansallinen
+	// Audiovisuaalinen Instituutti (National Audiovisual Institute).
 	//
 	// Possible values:
 	//   "meku12"
@@ -1960,8 +3408,19 @@ type ContentRating struct {
 	//   "mekuUnrated"
 	MekuRating string `json:"mekuRating,omitempty"`
 
-	// MibacRating: Rating system in Italy - Ministero dei Beni e delle
-	// Attivita Culturali e del Turismo
+	// MenaMpaaRating: The rating system for MENA countries, a clone of
+	// MPAA. It is needed to
+	//
+	// Possible values:
+	//   "menaMpaaG"
+	//   "menaMpaaPg"
+	//   "menaMpaaPg13"
+	//   "menaMpaaR"
+	//   "menaMpaaUnrated"
+	MenaMpaaRating string `json:"menaMpaaRating,omitempty"`
+
+	// MibacRating: The video's rating from the Ministero dei Beni e delle
+	// Attività Culturali e del Turismo (Italy).
 	//
 	// Possible values:
 	//   "mibacT"
@@ -1972,7 +3431,7 @@ type ContentRating struct {
 	//   "mibacVm18"
 	MibacRating string `json:"mibacRating,omitempty"`
 
-	// MocRating: Rating system for Colombia - MoC
+	// MocRating: The video's Ministerio de Cultura (Colombia) rating.
 	//
 	// Possible values:
 	//   "moc12"
@@ -1986,18 +3445,21 @@ type ContentRating struct {
 	//   "mocX"
 	MocRating string `json:"mocRating,omitempty"`
 
-	// MoctwRating: Rating system for Taiwan - Ministry of Culture - Tawan
+	// MoctwRating: The video's rating from Taiwan's Ministry of Culture
+	// (文化部).
 	//
 	// Possible values:
 	//   "moctwG"
 	//   "moctwP"
 	//   "moctwPg"
 	//   "moctwR"
+	//   "moctwR12"
+	//   "moctwR15"
 	//   "moctwUnrated"
 	MoctwRating string `json:"moctwRating,omitempty"`
 
-	// MpaaRating: Motion Picture Association of America rating for the
-	// content.
+	// MpaaRating: The video's Motion Picture Association of America (MPAA)
+	// rating.
 	//
 	// Possible values:
 	//   "mpaaG"
@@ -2008,8 +3470,16 @@ type ContentRating struct {
 	//   "mpaaUnrated"
 	MpaaRating string `json:"mpaaRating,omitempty"`
 
-	// MtrcbRating: Rating system for Philippines - MOVIE AND TELEVISION
-	// REVIEW AND CLASSIFICATION BOARD
+	// MpaatRating: The rating system for trailer, DVD, and Ad in the US.
+	// See http://movielabs.com/md/ratings/v2.3/html/US_MPAAT_Ratings.html.
+	//
+	// Possible values:
+	//   "mpaatGb"
+	//   "mpaatRb"
+	MpaatRating string `json:"mpaatRating,omitempty"`
+
+	// MtrcbRating: The video's rating from the Movie and Television Review
+	// and Classification Board (Philippines).
 	//
 	// Possible values:
 	//   "mtrcbG"
@@ -2021,8 +3491,8 @@ type ContentRating struct {
 	//   "mtrcbX"
 	MtrcbRating string `json:"mtrcbRating,omitempty"`
 
-	// NbcRating: Rating system for Maldives - National Bureau of
-	// Classification
+	// NbcRating: The video's rating from the Maldives National Bureau of
+	// Classification.
 	//
 	// Possible values:
 	//   "nbc12plus"
@@ -2035,7 +3505,7 @@ type ContentRating struct {
 	//   "nbcUnrated"
 	NbcRating string `json:"nbcRating,omitempty"`
 
-	// NbcplRating: Rating system for Poland - National Broadcasting Council
+	// NbcplRating: The video's rating in Poland.
 	//
 	// Possible values:
 	//   "nbcpl18plus"
@@ -2046,7 +3516,8 @@ type ContentRating struct {
 	//   "nbcplUnrated"
 	NbcplRating string `json:"nbcplRating,omitempty"`
 
-	// NfrcRating: Rating system for Bulgaria - National Film Centre
+	// NfrcRating: The video's rating from the Bulgarian National Film
+	// Center.
 	//
 	// Possible values:
 	//   "nfrcA"
@@ -2057,8 +3528,8 @@ type ContentRating struct {
 	//   "nfrcX"
 	NfrcRating string `json:"nfrcRating,omitempty"`
 
-	// NfvcbRating: Rating system for Nigeria - National Film and Video
-	// Censors Board
+	// NfvcbRating: The video's rating from Nigeria's National Film and
+	// Video Censors Board.
 	//
 	// Possible values:
 	//   "nfvcb12"
@@ -2071,8 +3542,8 @@ type ContentRating struct {
 	//   "nfvcbUnrated"
 	NfvcbRating string `json:"nfvcbRating,omitempty"`
 
-	// NkclvRating: Rating system for Latvia - National Film Center of
-	// Latvia
+	// NkclvRating: The video's rating from the Nacionãlais Kino centrs
+	// (National Film Centre of Latvia).
 	//
 	// Possible values:
 	//   "nkclv12plus"
@@ -2082,8 +3553,8 @@ type ContentRating struct {
 	//   "nkclvUnrated"
 	NkclvRating string `json:"nkclvRating,omitempty"`
 
-	// OflcRating: Rating system in New Zealand - Office of Film and
-	// Literature Classification
+	// OflcRating: The video's Office of Film and Literature Classification
+	// (OFLC - New Zealand) rating.
 	//
 	// Possible values:
 	//   "oflcG"
@@ -2098,7 +3569,7 @@ type ContentRating struct {
 	//   "oflcUnrated"
 	OflcRating string `json:"oflcRating,omitempty"`
 
-	// PefilmRating: Rating system for Peru - Peru Rating System
+	// PefilmRating: The video's rating in Peru.
 	//
 	// Possible values:
 	//   "pefilm14"
@@ -2108,8 +3579,8 @@ type ContentRating struct {
 	//   "pefilmUnrated"
 	PefilmRating string `json:"pefilmRating,omitempty"`
 
-	// RcnofRating: Rating system for Hungary - Rating Committee of the
-	// National Office of Film
+	// RcnofRating: The video's rating from the Hungarian Nemzeti Filmiroda,
+	// the Rating Committee of the National Office of Film.
 	//
 	// Possible values:
 	//   "rcnofI"
@@ -2121,7 +3592,7 @@ type ContentRating struct {
 	//   "rcnofVi"
 	RcnofRating string `json:"rcnofRating,omitempty"`
 
-	// ResorteviolenciaRating: Rating system for Venezuela - SiBCI
+	// ResorteviolenciaRating: The video's rating in Venezuela.
 	//
 	// Possible values:
 	//   "resorteviolenciaA"
@@ -2132,8 +3603,8 @@ type ContentRating struct {
 	//   "resorteviolenciaUnrated"
 	ResorteviolenciaRating string `json:"resorteviolenciaRating,omitempty"`
 
-	// RtcRating: Rating system in Mexico - General Directorate of Radio,
-	// Television and Cinematography
+	// RtcRating: The video's General Directorate of Radio, Television and
+	// Cinematography (Mexico) rating.
 	//
 	// Possible values:
 	//   "rtcA"
@@ -2145,7 +3616,8 @@ type ContentRating struct {
 	//   "rtcUnrated"
 	RtcRating string `json:"rtcRating,omitempty"`
 
-	// RteRating: Rating system for Ireland - Raidi� Teilif�s �ireann
+	// RteRating: The video's rating from Ireland's Raidió Teilifís
+	// Éireann.
 	//
 	// Possible values:
 	//   "rteCh"
@@ -2155,7 +3627,8 @@ type ContentRating struct {
 	//   "rteUnrated"
 	RteRating string `json:"rteRating,omitempty"`
 
-	// RussiaRating: Rating system in Russia
+	// RussiaRating: The video's National Film Registry of the Russian
+	// Federation (MKRF - Russia) rating.
 	//
 	// Possible values:
 	//   "russia0"
@@ -2166,7 +3639,7 @@ type ContentRating struct {
 	//   "russiaUnrated"
 	RussiaRating string `json:"russiaRating,omitempty"`
 
-	// SkfilmRating: Rating system for Slovakia - Slovakia Rating System
+	// SkfilmRating: The video's rating in Slovakia.
 	//
 	// Possible values:
 	//   "skfilmG"
@@ -2176,7 +3649,7 @@ type ContentRating struct {
 	//   "skfilmUnrated"
 	SkfilmRating string `json:"skfilmRating,omitempty"`
 
-	// SmaisRating: Rating system for Iceland - SMAIS
+	// SmaisRating: The video's rating in Iceland.
 	//
 	// Possible values:
 	//   "smais12"
@@ -2188,8 +3661,8 @@ type ContentRating struct {
 	//   "smaisUnrated"
 	SmaisRating string `json:"smaisRating,omitempty"`
 
-	// SmsaRating: Rating system for Sweden - Statens medier�d (National
-	// Media Council)
+	// SmsaRating: The video's rating from Statens medieråd (Sweden's
+	// National Media Council).
 	//
 	// Possible values:
 	//   "smsa11"
@@ -2199,7 +3672,7 @@ type ContentRating struct {
 	//   "smsaUnrated"
 	SmsaRating string `json:"smsaRating,omitempty"`
 
-	// TvpgRating: TV Parental Guidelines rating of the content.
+	// TvpgRating: The video's TV Parental Guidelines (TVPG) rating.
 	//
 	// Possible values:
 	//   "pg14"
@@ -2212,13 +3685,182 @@ type ContentRating struct {
 	//   "tvpgY7Fv"
 	TvpgRating string `json:"tvpgRating,omitempty"`
 
-	// YtRating: Internal YouTube rating.
+	// YtRating: A rating that YouTube uses to identify age-restricted
+	// content.
 	//
 	// Possible values:
 	//   "ytAgeRestricted"
 	YtRating string `json:"ytRating,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "AcbRating") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AcbRating") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ContentRating) MarshalJSON() ([]byte, error) {
+	type noMethod ContentRating
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// FanFundingEvent: A fanFundingEvent resource represents a fan funding
+// event on a YouTube channel. Fan funding events occur when a user
+// gives one-time monetary support to the channel owner.
+type FanFundingEvent struct {
+	// Etag: Etag of this resource.
+	Etag string `json:"etag,omitempty"`
+
+	// Id: The ID that YouTube assigns to uniquely identify the fan funding
+	// event.
+	Id string `json:"id,omitempty"`
+
+	// Kind: Identifies what kind of resource this is. Value: the fixed
+	// string "youtube#fanFundingEvent".
+	Kind string `json:"kind,omitempty"`
+
+	// Snippet: The snippet object contains basic details about the fan
+	// funding event.
+	Snippet *FanFundingEventSnippet `json:"snippet,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *FanFundingEvent) MarshalJSON() ([]byte, error) {
+	type noMethod FanFundingEvent
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type FanFundingEventListResponse struct {
+	// Etag: Etag of this resource.
+	Etag string `json:"etag,omitempty"`
+
+	// EventId: Serialized EventId of the request which produced this
+	// response.
+	EventId string `json:"eventId,omitempty"`
+
+	// Items: A list of fan funding events that match the request criteria.
+	Items []*FanFundingEvent `json:"items,omitempty"`
+
+	// Kind: Identifies what kind of resource this is. Value: the fixed
+	// string "youtube#fanFundingEventListResponse".
+	Kind string `json:"kind,omitempty"`
+
+	// NextPageToken: The token that can be used as the value of the
+	// pageToken parameter to retrieve the next page in the result set.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+
+	PageInfo *PageInfo `json:"pageInfo,omitempty"`
+
+	TokenPagination *TokenPagination `json:"tokenPagination,omitempty"`
+
+	// VisitorId: The visitorId identifies the visitor.
+	VisitorId string `json:"visitorId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *FanFundingEventListResponse) MarshalJSON() ([]byte, error) {
+	type noMethod FanFundingEventListResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type FanFundingEventSnippet struct {
+	// AmountMicros: The amount of funding in micros of fund_currency. e.g.,
+	// 1 is represented
+	AmountMicros uint64 `json:"amountMicros,omitempty,string"`
+
+	// ChannelId: Channel id where the funding event occurred.
+	ChannelId string `json:"channelId,omitempty"`
+
+	// CommentText: The text contents of the comment left by the user.
+	CommentText string `json:"commentText,omitempty"`
+
+	// CreatedAt: The date and time when the funding occurred. The value is
+	// specified in ISO 8601 (YYYY-MM-DDThh:mm:ss.sZ) format.
+	CreatedAt string `json:"createdAt,omitempty"`
+
+	// Currency: The currency in which the fund was made. ISO 4217.
+	Currency string `json:"currency,omitempty"`
+
+	// DisplayString: A rendered string that displays the fund amount and
+	// currency (e.g., "$1.00"). The string is rendered for the given
+	// language.
+	DisplayString string `json:"displayString,omitempty"`
+
+	// SupporterDetails: Details about the supporter. Only filled if the
+	// event was made public by the user.
+	SupporterDetails *ChannelProfileDetails `json:"supporterDetails,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "AmountMicros") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AmountMicros") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *FanFundingEventSnippet) MarshalJSON() ([]byte, error) {
+	type noMethod FanFundingEventSnippet
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// GeoPoint: Geographical coordinates of a point, in WGS84.
 type GeoPoint struct {
 	// Altitude: Altitude above the reference ellipsoid, in meters.
 	Altitude float64 `json:"altitude,omitempty"`
@@ -2228,8 +3870,54 @@ type GeoPoint struct {
 
 	// Longitude: Longitude in degrees.
 	Longitude float64 `json:"longitude,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Altitude") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Altitude") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *GeoPoint) MarshalJSON() ([]byte, error) {
+	type noMethod GeoPoint
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *GeoPoint) UnmarshalJSON(data []byte) error {
+	type noMethod GeoPoint
+	var s1 struct {
+		Altitude  gensupport.JSONFloat64 `json:"altitude"`
+		Latitude  gensupport.JSONFloat64 `json:"latitude"`
+		Longitude gensupport.JSONFloat64 `json:"longitude"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Altitude = float64(s1.Altitude)
+	s.Latitude = float64(s1.Latitude)
+	s.Longitude = float64(s1.Longitude)
+	return nil
+}
+
+// GuideCategory: A guideCategory resource identifies a category that
+// YouTube algorithmically assigns based on a channel's content or other
+// indicators, such as the channel's popularity. The list is similar to
+// video categories, with the difference being that a video's uploader
+// can assign a video category but only YouTube can assign a channel
+// category.
 type GuideCategory struct {
 	// Etag: Etag of this resource.
 	Etag string `json:"etag,omitempty"`
@@ -2244,6 +3932,28 @@ type GuideCategory struct {
 	// Snippet: The snippet object contains basic details about the
 	// category, such as its title.
 	Snippet *GuideCategorySnippet `json:"snippet,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *GuideCategory) MarshalJSON() ([]byte, error) {
+	type noMethod GuideCategory
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type GuideCategoryListResponse struct {
@@ -2277,15 +3987,66 @@ type GuideCategoryListResponse struct {
 
 	// VisitorId: The visitorId identifies the visitor.
 	VisitorId string `json:"visitorId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *GuideCategoryListResponse) MarshalJSON() ([]byte, error) {
+	type noMethod GuideCategoryListResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// GuideCategorySnippet: Basic details about a guide category.
 type GuideCategorySnippet struct {
 	ChannelId string `json:"channelId,omitempty"`
 
 	// Title: Description of the guide category.
 	Title string `json:"title,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ChannelId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ChannelId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *GuideCategorySnippet) MarshalJSON() ([]byte, error) {
+	type noMethod GuideCategorySnippet
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// I18nLanguage: An i18nLanguage resource identifies a UI language
+// currently supported by YouTube.
 type I18nLanguage struct {
 	// Etag: Etag of this resource.
 	Etag string `json:"etag,omitempty"`
@@ -2300,6 +4061,28 @@ type I18nLanguage struct {
 	// Snippet: The snippet object contains basic details about the i18n
 	// language, such as language code and human-readable name.
 	Snippet *I18nLanguageSnippet `json:"snippet,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *I18nLanguage) MarshalJSON() ([]byte, error) {
+	type noMethod I18nLanguage
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type I18nLanguageListResponse struct {
@@ -2321,16 +4104,68 @@ type I18nLanguageListResponse struct {
 
 	// VisitorId: The visitorId identifies the visitor.
 	VisitorId string `json:"visitorId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *I18nLanguageListResponse) MarshalJSON() ([]byte, error) {
+	type noMethod I18nLanguageListResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// I18nLanguageSnippet: Basic details about an i18n language, such as
+// language code and human-readable name.
 type I18nLanguageSnippet struct {
 	// Hl: A short BCP-47 code that uniquely identifies a language.
 	Hl string `json:"hl,omitempty"`
 
 	// Name: The human-readable name of the language in the language itself.
 	Name string `json:"name,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Hl") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Hl") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *I18nLanguageSnippet) MarshalJSON() ([]byte, error) {
+	type noMethod I18nLanguageSnippet
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// I18nRegion: A i18nRegion resource identifies a region where YouTube
+// is available.
 type I18nRegion struct {
 	// Etag: Etag of this resource.
 	Etag string `json:"etag,omitempty"`
@@ -2345,6 +4180,28 @@ type I18nRegion struct {
 	// Snippet: The snippet object contains basic details about the i18n
 	// region, such as region code and human-readable name.
 	Snippet *I18nRegionSnippet `json:"snippet,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *I18nRegion) MarshalJSON() ([]byte, error) {
+	type noMethod I18nRegion
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type I18nRegionListResponse struct {
@@ -2366,16 +4223,68 @@ type I18nRegionListResponse struct {
 
 	// VisitorId: The visitorId identifies the visitor.
 	VisitorId string `json:"visitorId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *I18nRegionListResponse) MarshalJSON() ([]byte, error) {
+	type noMethod I18nRegionListResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// I18nRegionSnippet: Basic details about an i18n region, such as region
+// code and human-readable name.
 type I18nRegionSnippet struct {
 	// Gl: The region code as a 2-letter ISO country code.
 	Gl string `json:"gl,omitempty"`
 
 	// Name: The human-readable name of the region.
 	Name string `json:"name,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Gl") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Gl") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *I18nRegionSnippet) MarshalJSON() ([]byte, error) {
+	type noMethod I18nRegionSnippet
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ImageSettings: Branding properties for images associated with the
+// channel.
 type ImageSettings struct {
 	// BackgroundImageUrl: The URL for the background image shown on the
 	// video watch page. The image should be 1200px by 615px, with a maximum
@@ -2464,8 +4373,33 @@ type ImageSettings struct {
 	// top-left corner of the video player. This is a 25-pixel-high image
 	// with a flexible width that cannot exceed 170 pixels.
 	WatchIconImageUrl string `json:"watchIconImageUrl,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "BackgroundImageUrl")
+	// to unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BackgroundImageUrl") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ImageSettings) MarshalJSON() ([]byte, error) {
+	type noMethod ImageSettings
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// IngestionInfo: Describes information necessary for ingesting an RTMP
+// or an HTTP stream.
 type IngestionInfo struct {
 	// BackupIngestionAddress: The backup ingestion URL that you should use
 	// to stream video to YouTube. You have the option of simultaneously
@@ -2488,6 +4422,30 @@ type IngestionInfo struct {
 	// StreamName: The HTTP or RTMP stream name that YouTube assigns to the
 	// video stream.
 	StreamName string `json:"streamName,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "BackupIngestionAddress") to unconditionally include in API requests.
+	// By default, fields with empty values are omitted from API requests.
+	// However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BackupIngestionAddress")
+	// to include in API requests with the JSON null value. By default,
+	// fields with empty values are omitted from API requests. However, any
+	// field with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *IngestionInfo) MarshalJSON() ([]byte, error) {
+	type noMethod IngestionInfo
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type InvideoBranding struct {
@@ -2500,8 +4458,33 @@ type InvideoBranding struct {
 	TargetChannelId string `json:"targetChannelId,omitempty"`
 
 	Timing *InvideoTiming `json:"timing,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ImageBytes") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ImageBytes") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *InvideoBranding) MarshalJSON() ([]byte, error) {
+	type noMethod InvideoBranding
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// InvideoPosition: Describes the spatial position of a visual widget
+// inside a video. It is a union of various position types, out of which
+// only will be set one.
 type InvideoPosition struct {
 	// CornerPosition: Describes in which corner of the video the visual
 	// widget will appear.
@@ -2518,8 +4501,34 @@ type InvideoPosition struct {
 	// Possible values:
 	//   "corner"
 	Type string `json:"type,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "CornerPosition") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CornerPosition") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *InvideoPosition) MarshalJSON() ([]byte, error) {
+	type noMethod InvideoPosition
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// InvideoPromotion: Describes an invideo promotion campaign consisting
+// of multiple promoted items. A campaign belongs to a single
+// channel_id.
 type InvideoPromotion struct {
 	// DefaultTiming: The default temporal position within the video where
 	// the promoted item will be displayed. Can be overriden by more
@@ -2539,8 +4548,32 @@ type InvideoPromotion struct {
 	// likely to disrupt the viewing experience. This feature also picks up
 	// a single promotion to show on each video.
 	UseSmartTiming bool `json:"useSmartTiming,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "DefaultTiming") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DefaultTiming") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *InvideoPromotion) MarshalJSON() ([]byte, error) {
+	type noMethod InvideoPromotion
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// InvideoTiming: Describes a temporal position of a visual widget
+// inside a video.
 type InvideoTiming struct {
 	// DurationMs: Defines the duration in milliseconds for which the
 	// promotion should be displayed. If missing, the client should use the
@@ -2562,12 +4595,58 @@ type InvideoTiming struct {
 	//   "offsetFromEnd"
 	//   "offsetFromStart"
 	Type string `json:"type,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "DurationMs") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DurationMs") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *InvideoTiming) MarshalJSON() ([]byte, error) {
+	type noMethod InvideoTiming
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type LanguageTag struct {
 	Value string `json:"value,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Value") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Value") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *LanguageTag) MarshalJSON() ([]byte, error) {
+	type noMethod LanguageTag
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// LiveBroadcast: A liveBroadcast resource represents an event that will
+// be streamed, via live video, on YouTube.
 type LiveBroadcast struct {
 	// ContentDetails: The contentDetails object contains information about
 	// the event's video content, such as whether the content can be shown
@@ -2599,17 +4678,56 @@ type LiveBroadcast struct {
 	// status.
 	Status *LiveBroadcastStatus `json:"status,omitempty"`
 
-	TopicDetails *LiveBroadcastTopicDetails `json:"topicDetails,omitempty"`
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "ContentDetails") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ContentDetails") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *LiveBroadcast) MarshalJSON() ([]byte, error) {
+	type noMethod LiveBroadcast
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// LiveBroadcastContentDetails: Detailed settings of a broadcast.
 type LiveBroadcastContentDetails struct {
 	// BoundStreamId: This value uniquely identifies the live stream bound
 	// to the broadcast.
 	BoundStreamId string `json:"boundStreamId,omitempty"`
 
-	// EnableClosedCaptions: This setting indicates whether closed
+	// BoundStreamLastUpdateTimeMs: The date and time that the live stream
+	// referenced by boundStreamId was last updated.
+	BoundStreamLastUpdateTimeMs string `json:"boundStreamLastUpdateTimeMs,omitempty"`
+
+	// Possible values:
+	//   "closedCaptionsDisabled"
+	//   "closedCaptionsEmbedded"
+	//   "closedCaptionsHttpPost"
+	ClosedCaptionsType string `json:"closedCaptionsType,omitempty"`
+
+	// EnableClosedCaptions: This setting indicates whether HTTP POST closed
 	// captioning is enabled for this broadcast. The ingestion URL of the
-	// closed captions is returned through the liveStreams API.
+	// closed captions is returned through the liveStreams API. This is
+	// mutually exclusive with using the closed_captions_type property, and
+	// is equivalent to setting closed_captions_type to
+	// CLOSED_CAPTIONS_HTTP_POST.
 	EnableClosedCaptions bool `json:"enableClosedCaptions,omitempty"`
 
 	// EnableContentEncryption: This setting indicates whether YouTube
@@ -2635,12 +4753,36 @@ type LiveBroadcastContentDetails struct {
 	// the archived video.
 	EnableEmbed bool `json:"enableEmbed,omitempty"`
 
+	// EnableLowLatency: Indicates whether this broadcast has low latency
+	// enabled.
 	EnableLowLatency bool `json:"enableLowLatency,omitempty"`
+
+	// LatencyPreference: If both this and enable_low_latency are set, they
+	// must match. LATENCY_NORMAL should match enable_low_latency=false
+	// LATENCY_LOW should match enable_low_latency=true LATENCY_ULTRA_LOW
+	// should have enable_low_latency omitted.
+	//
+	// Possible values:
+	//   "low"
+	//   "normal"
+	//   "ultraLow"
+	LatencyPreference string `json:"latencyPreference,omitempty"`
+
+	Mesh string `json:"mesh,omitempty"`
 
 	// MonitorStream: The monitorStream object contains information about
 	// the monitor stream, which the broadcaster can use to review the event
 	// content before the broadcast stream is shown publicly.
 	MonitorStream *MonitorStreamInfo `json:"monitorStream,omitempty"`
+
+	// Projection: The projection format of this broadcast. This defaults to
+	// rectangular.
+	//
+	// Possible values:
+	//   "360"
+	//   "mesh"
+	//   "rectangular"
+	Projection string `json:"projection,omitempty"`
 
 	// RecordFromStart: Automatically start recording after the event goes
 	// live. The default value for this property is true.
@@ -2662,6 +4804,28 @@ type LiveBroadcastContentDetails struct {
 	// eventState to end to remove the in-stream slate and make your
 	// broadcast stream visible to viewers.
 	StartWithSlate bool `json:"startWithSlate,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "BoundStreamId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BoundStreamId") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LiveBroadcastContentDetails) MarshalJSON() ([]byte, error) {
+	type noMethod LiveBroadcastContentDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type LiveBroadcastListResponse struct {
@@ -2693,6 +4857,32 @@ type LiveBroadcastListResponse struct {
 
 	// VisitorId: The visitorId identifies the visitor.
 	VisitorId string `json:"visitorId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LiveBroadcastListResponse) MarshalJSON() ([]byte, error) {
+	type noMethod LiveBroadcastListResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type LiveBroadcastSnippet struct {
@@ -2718,6 +4908,9 @@ type LiveBroadcastSnippet struct {
 	Description string `json:"description,omitempty"`
 
 	IsDefaultBroadcast bool `json:"isDefaultBroadcast,omitempty"`
+
+	// LiveChatId: The id of the live chat for this broadcast.
+	LiveChatId string `json:"liveChatId,omitempty"`
 
 	// PublishedAt: The date and time that the broadcast was added to
 	// YouTube's live broadcast schedule. The value is specified in ISO 8601
@@ -2745,8 +4938,33 @@ type LiveBroadcastSnippet struct {
 	// broadcast resource or by setting the title field of the corresponding
 	// video resource.
 	Title string `json:"title,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ActualEndTime") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ActualEndTime") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *LiveBroadcastSnippet) MarshalJSON() ([]byte, error) {
+	type noMethod LiveBroadcastSnippet
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// LiveBroadcastStatistics: Statistics about the live broadcast. These
+// represent a snapshot of the values at the time of the request.
+// Statistics are only returned for live broadcasts.
 type LiveBroadcastStatistics struct {
 	// ConcurrentViewers: The number of viewers currently watching the
 	// broadcast. The property and its value will be present if the
@@ -2764,6 +4982,29 @@ type LiveBroadcastStatistics struct {
 	// broadcast ends. So this property would not identify the number of
 	// chat messages for an archived video of a completed live broadcast.
 	TotalChatCount uint64 `json:"totalChatCount,omitempty,string"`
+
+	// ForceSendFields is a list of field names (e.g. "ConcurrentViewers")
+	// to unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ConcurrentViewers") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LiveBroadcastStatistics) MarshalJSON() ([]byte, error) {
+	type noMethod LiveBroadcastStatistics
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type LiveBroadcastStatus struct {
@@ -2812,36 +5053,850 @@ type LiveBroadcastStatus struct {
 	//   "recorded"
 	//   "recording"
 	RecordingStatus string `json:"recordingStatus,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "LifeCycleStatus") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "LifeCycleStatus") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
-type LiveBroadcastTopic struct {
-	// Snippet: Information about the topic matched.
-	Snippet *LiveBroadcastTopicSnippet `json:"snippet,omitempty"`
+func (s *LiveBroadcastStatus) MarshalJSON() ([]byte, error) {
+	type noMethod LiveBroadcastStatus
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
 
-	// Type: The type of the topic.
+// LiveChatBan: A liveChatBan resource represents a ban for a YouTube
+// live chat.
+type LiveChatBan struct {
+	// Etag: Etag of this resource.
+	Etag string `json:"etag,omitempty"`
+
+	// Id: The ID that YouTube assigns to uniquely identify the ban.
+	Id string `json:"id,omitempty"`
+
+	// Kind: Identifies what kind of resource this is. Value: the fixed
+	// string "youtube#liveChatBan".
+	Kind string `json:"kind,omitempty"`
+
+	// Snippet: The snippet object contains basic details about the ban.
+	Snippet *LiveChatBanSnippet `json:"snippet,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LiveChatBan) MarshalJSON() ([]byte, error) {
+	type noMethod LiveChatBan
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type LiveChatBanSnippet struct {
+	// BanDurationSeconds: The duration of a ban, only filled if the ban has
+	// type TEMPORARY.
+	BanDurationSeconds uint64 `json:"banDurationSeconds,omitempty,string"`
+
+	BannedUserDetails *ChannelProfileDetails `json:"bannedUserDetails,omitempty"`
+
+	// LiveChatId: The chat this ban is pertinent to.
+	LiveChatId string `json:"liveChatId,omitempty"`
+
+	// Type: The type of ban.
 	//
 	// Possible values:
-	//   "videoGame"
+	//   "permanent"
+	//   "temporary"
 	Type string `json:"type,omitempty"`
 
-	// Unmatched: If this flag is set it means that we have not been able to
-	// match the topic title and type provided to a known entity.
-	Unmatched bool `json:"unmatched,omitempty"`
+	// ForceSendFields is a list of field names (e.g. "BanDurationSeconds")
+	// to unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BanDurationSeconds") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
-type LiveBroadcastTopicDetails struct {
-	Topics []*LiveBroadcastTopic `json:"topics,omitempty"`
+func (s *LiveChatBanSnippet) MarshalJSON() ([]byte, error) {
+	type noMethod LiveChatBanSnippet
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-type LiveBroadcastTopicSnippet struct {
-	// Name: The name of the topic.
-	Name string `json:"name,omitempty"`
+type LiveChatFanFundingEventDetails struct {
+	// AmountDisplayString: A rendered string that displays the fund amount
+	// and currency to the user.
+	AmountDisplayString string `json:"amountDisplayString,omitempty"`
 
-	// ReleaseDate: The date at which the topic was released. Filled for
-	// types: videoGame
-	ReleaseDate string `json:"releaseDate,omitempty"`
+	// AmountMicros: The amount of the fund.
+	AmountMicros uint64 `json:"amountMicros,omitempty,string"`
+
+	// Currency: The currency in which the fund was made.
+	Currency string `json:"currency,omitempty"`
+
+	// UserComment: The comment added by the user to this fan funding event.
+	UserComment string `json:"userComment,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "AmountDisplayString")
+	// to unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AmountDisplayString") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *LiveChatFanFundingEventDetails) MarshalJSON() ([]byte, error) {
+	type noMethod LiveChatFanFundingEventDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// LiveChatMessage: A liveChatMessage resource represents a chat message
+// in a YouTube Live Chat.
+type LiveChatMessage struct {
+	// AuthorDetails: The authorDetails object contains basic details about
+	// the user that posted this message.
+	AuthorDetails *LiveChatMessageAuthorDetails `json:"authorDetails,omitempty"`
+
+	// Etag: Etag of this resource.
+	Etag string `json:"etag,omitempty"`
+
+	// Id: The ID that YouTube assigns to uniquely identify the message.
+	Id string `json:"id,omitempty"`
+
+	// Kind: Identifies what kind of resource this is. Value: the fixed
+	// string "youtube#liveChatMessage".
+	Kind string `json:"kind,omitempty"`
+
+	// Snippet: The snippet object contains basic details about the message.
+	Snippet *LiveChatMessageSnippet `json:"snippet,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "AuthorDetails") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AuthorDetails") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LiveChatMessage) MarshalJSON() ([]byte, error) {
+	type noMethod LiveChatMessage
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type LiveChatMessageAuthorDetails struct {
+	// ChannelId: The YouTube channel ID.
+	ChannelId string `json:"channelId,omitempty"`
+
+	// ChannelUrl: The channel's URL.
+	ChannelUrl string `json:"channelUrl,omitempty"`
+
+	// DisplayName: The channel's display name.
+	DisplayName string `json:"displayName,omitempty"`
+
+	// IsChatModerator: Whether the author is a moderator of the live chat.
+	IsChatModerator bool `json:"isChatModerator,omitempty"`
+
+	// IsChatOwner: Whether the author is the owner of the live chat.
+	IsChatOwner bool `json:"isChatOwner,omitempty"`
+
+	// IsChatSponsor: Whether the author is a sponsor of the live chat.
+	IsChatSponsor bool `json:"isChatSponsor,omitempty"`
+
+	// IsVerified: Whether the author's identity has been verified by
+	// YouTube.
+	IsVerified bool `json:"isVerified,omitempty"`
+
+	// ProfileImageUrl: The channels's avatar URL.
+	ProfileImageUrl string `json:"profileImageUrl,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ChannelId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ChannelId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LiveChatMessageAuthorDetails) MarshalJSON() ([]byte, error) {
+	type noMethod LiveChatMessageAuthorDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type LiveChatMessageDeletedDetails struct {
+	DeletedMessageId string `json:"deletedMessageId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "DeletedMessageId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DeletedMessageId") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LiveChatMessageDeletedDetails) MarshalJSON() ([]byte, error) {
+	type noMethod LiveChatMessageDeletedDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type LiveChatMessageListResponse struct {
+	// Etag: Etag of this resource.
+	Etag string `json:"etag,omitempty"`
+
+	// EventId: Serialized EventId of the request which produced this
+	// response.
+	EventId string `json:"eventId,omitempty"`
+
+	// Items: A list of live chat messages.
+	Items []*LiveChatMessage `json:"items,omitempty"`
+
+	// Kind: Identifies what kind of resource this is. Value: the fixed
+	// string "youtube#liveChatMessageListResponse".
+	Kind string `json:"kind,omitempty"`
+
+	// NextPageToken: The token that can be used as the value of the
+	// pageToken parameter to retrieve the next page in the result set.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+
+	// OfflineAt: The date and time when the underlying stream went offline.
+	// The value is specified in ISO 8601 (YYYY-MM-DDThh:mm:ss.sZ) format.
+	OfflineAt string `json:"offlineAt,omitempty"`
+
+	PageInfo *PageInfo `json:"pageInfo,omitempty"`
+
+	// PollingIntervalMillis: The amount of time the client should wait
+	// before polling again.
+	PollingIntervalMillis int64 `json:"pollingIntervalMillis,omitempty"`
+
+	TokenPagination *TokenPagination `json:"tokenPagination,omitempty"`
+
+	// VisitorId: The visitorId identifies the visitor.
+	VisitorId string `json:"visitorId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LiveChatMessageListResponse) MarshalJSON() ([]byte, error) {
+	type noMethod LiveChatMessageListResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type LiveChatMessageRetractedDetails struct {
+	RetractedMessageId string `json:"retractedMessageId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "RetractedMessageId")
+	// to unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "RetractedMessageId") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LiveChatMessageRetractedDetails) MarshalJSON() ([]byte, error) {
+	type noMethod LiveChatMessageRetractedDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type LiveChatMessageSnippet struct {
+	// AuthorChannelId: The ID of the user that authored this message, this
+	// field is not always filled. textMessageEvent - the user that wrote
+	// the message fanFundingEvent - the user that funded the broadcast
+	// newSponsorEvent - the user that just became a sponsor
+	// messageDeletedEvent - the moderator that took the action
+	// messageRetractedEvent - the author that retracted their message
+	// userBannedEvent - the moderator that took the action superChatEvent -
+	// the user that made the purchase
+	AuthorChannelId string `json:"authorChannelId,omitempty"`
+
+	// DisplayMessage: Contains a string that can be displayed to the user.
+	// If this field is not present the message is silent, at the moment
+	// only messages of type TOMBSTONE and CHAT_ENDED_EVENT are silent.
+	DisplayMessage string `json:"displayMessage,omitempty"`
+
+	// FanFundingEventDetails: Details about the funding event, this is only
+	// set if the type is 'fanFundingEvent'.
+	FanFundingEventDetails *LiveChatFanFundingEventDetails `json:"fanFundingEventDetails,omitempty"`
+
+	// HasDisplayContent: Whether the message has display content that
+	// should be displayed to users.
+	HasDisplayContent bool `json:"hasDisplayContent,omitempty"`
+
+	LiveChatId string `json:"liveChatId,omitempty"`
+
+	MessageDeletedDetails *LiveChatMessageDeletedDetails `json:"messageDeletedDetails,omitempty"`
+
+	MessageRetractedDetails *LiveChatMessageRetractedDetails `json:"messageRetractedDetails,omitempty"`
+
+	PollClosedDetails *LiveChatPollClosedDetails `json:"pollClosedDetails,omitempty"`
+
+	PollEditedDetails *LiveChatPollEditedDetails `json:"pollEditedDetails,omitempty"`
+
+	PollOpenedDetails *LiveChatPollOpenedDetails `json:"pollOpenedDetails,omitempty"`
+
+	PollVotedDetails *LiveChatPollVotedDetails `json:"pollVotedDetails,omitempty"`
+
+	// PublishedAt: The date and time when the message was orignally
+	// published. The value is specified in ISO 8601
+	// (YYYY-MM-DDThh:mm:ss.sZ) format.
+	PublishedAt string `json:"publishedAt,omitempty"`
+
+	// SuperChatDetails: Details about the Super Chat event, this is only
+	// set if the type is 'superChatEvent'.
+	SuperChatDetails *LiveChatSuperChatDetails `json:"superChatDetails,omitempty"`
+
+	// TextMessageDetails: Details about the text message, this is only set
+	// if the type is 'textMessageEvent'.
+	TextMessageDetails *LiveChatTextMessageDetails `json:"textMessageDetails,omitempty"`
+
+	// Type: The type of message, this will always be present, it determines
+	// the contents of the message as well as which fields will be present.
+	//
+	// Possible values:
+	//   "chatEndedEvent"
+	//   "fanFundingEvent"
+	//   "messageDeletedEvent"
+	//   "messageRetractedEvent"
+	//   "newSponsorEvent"
+	//   "pollClosedEvent"
+	//   "pollEditedEvent"
+	//   "pollOpenedEvent"
+	//   "pollVotedEvent"
+	//   "sponsorOnlyModeEndedEvent"
+	//   "sponsorOnlyModeStartedEvent"
+	//   "superChatEvent"
+	//   "textMessageEvent"
+	//   "tombstone"
+	//   "userBannedEvent"
+	Type string `json:"type,omitempty"`
+
+	UserBannedDetails *LiveChatUserBannedMessageDetails `json:"userBannedDetails,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "AuthorChannelId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AuthorChannelId") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LiveChatMessageSnippet) MarshalJSON() ([]byte, error) {
+	type noMethod LiveChatMessageSnippet
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// LiveChatModerator: A liveChatModerator resource represents a
+// moderator for a YouTube live chat. A chat moderator has the ability
+// to ban/unban users from a chat, remove message, etc.
+type LiveChatModerator struct {
+	// Etag: Etag of this resource.
+	Etag string `json:"etag,omitempty"`
+
+	// Id: The ID that YouTube assigns to uniquely identify the moderator.
+	Id string `json:"id,omitempty"`
+
+	// Kind: Identifies what kind of resource this is. Value: the fixed
+	// string "youtube#liveChatModerator".
+	Kind string `json:"kind,omitempty"`
+
+	// Snippet: The snippet object contains basic details about the
+	// moderator.
+	Snippet *LiveChatModeratorSnippet `json:"snippet,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LiveChatModerator) MarshalJSON() ([]byte, error) {
+	type noMethod LiveChatModerator
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type LiveChatModeratorListResponse struct {
+	// Etag: Etag of this resource.
+	Etag string `json:"etag,omitempty"`
+
+	// EventId: Serialized EventId of the request which produced this
+	// response.
+	EventId string `json:"eventId,omitempty"`
+
+	// Items: A list of moderators that match the request criteria.
+	Items []*LiveChatModerator `json:"items,omitempty"`
+
+	// Kind: Identifies what kind of resource this is. Value: the fixed
+	// string "youtube#liveChatModeratorListResponse".
+	Kind string `json:"kind,omitempty"`
+
+	// NextPageToken: The token that can be used as the value of the
+	// pageToken parameter to retrieve the next page in the result set.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+
+	PageInfo *PageInfo `json:"pageInfo,omitempty"`
+
+	// PrevPageToken: The token that can be used as the value of the
+	// pageToken parameter to retrieve the previous page in the result set.
+	PrevPageToken string `json:"prevPageToken,omitempty"`
+
+	TokenPagination *TokenPagination `json:"tokenPagination,omitempty"`
+
+	// VisitorId: The visitorId identifies the visitor.
+	VisitorId string `json:"visitorId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LiveChatModeratorListResponse) MarshalJSON() ([]byte, error) {
+	type noMethod LiveChatModeratorListResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type LiveChatModeratorSnippet struct {
+	// LiveChatId: The ID of the live chat this moderator can act on.
+	LiveChatId string `json:"liveChatId,omitempty"`
+
+	// ModeratorDetails: Details about the moderator.
+	ModeratorDetails *ChannelProfileDetails `json:"moderatorDetails,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "LiveChatId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "LiveChatId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LiveChatModeratorSnippet) MarshalJSON() ([]byte, error) {
+	type noMethod LiveChatModeratorSnippet
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type LiveChatPollClosedDetails struct {
+	// PollId: The id of the poll that was closed.
+	PollId string `json:"pollId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "PollId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "PollId") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LiveChatPollClosedDetails) MarshalJSON() ([]byte, error) {
+	type noMethod LiveChatPollClosedDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type LiveChatPollEditedDetails struct {
+	Id string `json:"id,omitempty"`
+
+	Items []*LiveChatPollItem `json:"items,omitempty"`
+
+	Prompt string `json:"prompt,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Id") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Id") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LiveChatPollEditedDetails) MarshalJSON() ([]byte, error) {
+	type noMethod LiveChatPollEditedDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type LiveChatPollItem struct {
+	// Description: Plain text description of the item.
+	Description string `json:"description,omitempty"`
+
+	ItemId string `json:"itemId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Description") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Description") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LiveChatPollItem) MarshalJSON() ([]byte, error) {
+	type noMethod LiveChatPollItem
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type LiveChatPollOpenedDetails struct {
+	Id string `json:"id,omitempty"`
+
+	Items []*LiveChatPollItem `json:"items,omitempty"`
+
+	Prompt string `json:"prompt,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Id") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Id") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LiveChatPollOpenedDetails) MarshalJSON() ([]byte, error) {
+	type noMethod LiveChatPollOpenedDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type LiveChatPollVotedDetails struct {
+	// ItemId: The poll item the user chose.
+	ItemId string `json:"itemId,omitempty"`
+
+	// PollId: The poll the user voted on.
+	PollId string `json:"pollId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ItemId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ItemId") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LiveChatPollVotedDetails) MarshalJSON() ([]byte, error) {
+	type noMethod LiveChatPollVotedDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type LiveChatSuperChatDetails struct {
+	// AmountDisplayString: A rendered string that displays the fund amount
+	// and currency to the user.
+	AmountDisplayString string `json:"amountDisplayString,omitempty"`
+
+	// AmountMicros: The amount purchased by the user, in micros (1,750,000
+	// micros = 1.75).
+	AmountMicros uint64 `json:"amountMicros,omitempty,string"`
+
+	// Currency: The currency in which the purchase was made.
+	Currency string `json:"currency,omitempty"`
+
+	// Tier: The tier in which the amount belongs to. Lower amounts belong
+	// to lower tiers. Starts at 1.
+	Tier int64 `json:"tier,omitempty"`
+
+	// UserComment: The comment added by the user to this Super Chat event.
+	UserComment string `json:"userComment,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "AmountDisplayString")
+	// to unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AmountDisplayString") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LiveChatSuperChatDetails) MarshalJSON() ([]byte, error) {
+	type noMethod LiveChatSuperChatDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type LiveChatTextMessageDetails struct {
+	// MessageText: The user's message.
+	MessageText string `json:"messageText,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "MessageText") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "MessageText") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LiveChatTextMessageDetails) MarshalJSON() ([]byte, error) {
+	type noMethod LiveChatTextMessageDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type LiveChatUserBannedMessageDetails struct {
+	// BanDurationSeconds: The duration of the ban. This property is only
+	// present if the banType is temporary.
+	BanDurationSeconds uint64 `json:"banDurationSeconds,omitempty,string"`
+
+	// BanType: The type of ban.
+	//
+	// Possible values:
+	//   "permanent"
+	//   "temporary"
+	BanType string `json:"banType,omitempty"`
+
+	// BannedUserDetails: The details of the user that was banned.
+	BannedUserDetails *ChannelProfileDetails `json:"bannedUserDetails,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "BanDurationSeconds")
+	// to unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BanDurationSeconds") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LiveChatUserBannedMessageDetails) MarshalJSON() ([]byte, error) {
+	type noMethod LiveChatUserBannedMessageDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// LiveStream: A live stream describes a live ingestion point.
 type LiveStream struct {
 	// Cdn: The cdn object defines the live stream's content delivery
 	// network (CDN) settings. These settings provide details about the
@@ -2869,6 +5924,32 @@ type LiveStream struct {
 	// Status: The status object contains information about live stream's
 	// status.
 	Status *LiveStreamStatus `json:"status,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Cdn") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Cdn") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LiveStream) MarshalJSON() ([]byte, error) {
+	type noMethod LiveStream
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type LiveStreamConfigurationIssue struct {
@@ -2890,25 +5971,25 @@ type LiveStreamConfigurationIssue struct {
 	// Type: The kind of error happening.
 	//
 	// Possible values:
-	//   "audioBitrate"
 	//   "audioBitrateHigh"
 	//   "audioBitrateLow"
+	//   "audioBitrateMismatch"
 	//   "audioCodec"
 	//   "audioCodecMismatch"
 	//   "audioSampleRate"
 	//   "audioSampleRateMismatch"
 	//   "audioStereoMismatch"
-	//   "audioTooManyChannel"
+	//   "audioTooManyChannels"
 	//   "badContainer"
 	//   "bitrateHigh"
 	//   "bitrateLow"
-	//   "framerateHigh"
+	//   "frameRateHigh"
 	//   "framerateMismatch"
 	//   "gopMismatch"
 	//   "gopSizeLong"
 	//   "gopSizeOver"
 	//   "gopSizeShort"
-	//   "interlaceVideo"
+	//   "interlacedVideo"
 	//   "multipleAudioStreams"
 	//   "multipleVideoStreams"
 	//   "noAudioStream"
@@ -2924,8 +6005,31 @@ type LiveStreamConfigurationIssue struct {
 	//   "videoResolutionSuboptimal"
 	//   "videoResolutionUnsupported"
 	Type string `json:"type,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Description") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Description") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *LiveStreamConfigurationIssue) MarshalJSON() ([]byte, error) {
+	type noMethod LiveStreamConfigurationIssue
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// LiveStreamContentDetails: Detailed settings of a stream.
 type LiveStreamContentDetails struct {
 	// ClosedCaptionsIngestionUrl: The ingestion URL where the closed
 	// captions of this stream are sent.
@@ -2947,14 +6051,39 @@ type LiveStreamContentDetails struct {
 	// to use that method to retrieve the resource for a non-reusable stream
 	// is to use the id parameter to identify the stream.
 	IsReusable bool `json:"isReusable,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "ClosedCaptionsIngestionUrl") to unconditionally include in API
+	// requests. By default, fields with empty values are omitted from API
+	// requests. However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g.
+	// "ClosedCaptionsIngestionUrl") to include in API requests with the
+	// JSON null value. By default, fields with empty values are omitted
+	// from API requests. However, any field with an empty value appearing
+	// in NullFields will be sent to the server as null. It is an error if a
+	// field in this list has a non-empty value. This may be used to include
+	// null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LiveStreamContentDetails) MarshalJSON() ([]byte, error) {
+	type noMethod LiveStreamContentDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type LiveStreamHealthStatus struct {
 	// ConfigurationIssues: The configurations issues on this stream
 	ConfigurationIssues []*LiveStreamConfigurationIssue `json:"configurationIssues,omitempty"`
 
-	// LastUpdateTimeS: The last time this status was updated (in seconds)
-	LastUpdateTimeS uint64 `json:"lastUpdateTimeS,omitempty,string"`
+	// LastUpdateTimeSeconds: The last time this status was updated (in
+	// seconds)
+	LastUpdateTimeSeconds uint64 `json:"lastUpdateTimeSeconds,omitempty,string"`
 
 	// Status: The status code of this stream
 	//
@@ -2965,6 +6094,29 @@ type LiveStreamHealthStatus struct {
 	//   "ok"
 	//   "revoked"
 	Status string `json:"status,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ConfigurationIssues")
+	// to unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ConfigurationIssues") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LiveStreamHealthStatus) MarshalJSON() ([]byte, error) {
+	type noMethod LiveStreamHealthStatus
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type LiveStreamListResponse struct {
@@ -2996,6 +6148,32 @@ type LiveStreamListResponse struct {
 
 	// VisitorId: The visitorId identifies the visitor.
 	VisitorId string `json:"visitorId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LiveStreamListResponse) MarshalJSON() ([]byte, error) {
+	type noMethod LiveStreamListResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type LiveStreamSnippet struct {
@@ -3016,8 +6194,31 @@ type LiveStreamSnippet struct {
 	// Title: The stream's title. The value must be between 1 and 128
 	// characters long.
 	Title string `json:"title,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ChannelId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ChannelId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *LiveStreamSnippet) MarshalJSON() ([]byte, error) {
+	type noMethod LiveStreamSnippet
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// LiveStreamStatus: Brief description of the live stream status.
 type LiveStreamStatus struct {
 	// HealthStatus: The health status of the stream.
 	HealthStatus *LiveStreamHealthStatus `json:"healthStatus,omitempty"`
@@ -3029,6 +6230,28 @@ type LiveStreamStatus struct {
 	//   "inactive"
 	//   "ready"
 	StreamStatus string `json:"streamStatus,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "HealthStatus") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "HealthStatus") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LiveStreamStatus) MarshalJSON() ([]byte, error) {
+	type noMethod LiveStreamStatus
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type LocalizedProperty struct {
@@ -3038,14 +6261,59 @@ type LocalizedProperty struct {
 	DefaultLanguage *LanguageTag `json:"defaultLanguage,omitempty"`
 
 	Localized []*LocalizedString `json:"localized,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Default") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Default") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *LocalizedProperty) MarshalJSON() ([]byte, error) {
+	type noMethod LocalizedProperty
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type LocalizedString struct {
 	Language string `json:"language,omitempty"`
 
 	Value string `json:"value,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Language") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Language") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *LocalizedString) MarshalJSON() ([]byte, error) {
+	type noMethod LocalizedString
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// MonitorStreamInfo: Settings and Info of the monitor stream
 type MonitorStreamInfo struct {
 	// BroadcastStreamDelayMs: If you have set the enableMonitorStream
 	// property to true, then this property determines the length of the
@@ -3069,16 +6337,89 @@ type MonitorStreamInfo struct {
 	// Note: This property cannot be updated once the broadcast is in the
 	// testing or live state.
 	EnableMonitorStream bool `json:"enableMonitorStream,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "BroadcastStreamDelayMs") to unconditionally include in API requests.
+	// By default, fields with empty values are omitted from API requests.
+	// However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BroadcastStreamDelayMs")
+	// to include in API requests with the JSON null value. By default,
+	// fields with empty values are omitted from API requests. However, any
+	// field with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *MonitorStreamInfo) MarshalJSON() ([]byte, error) {
+	type noMethod MonitorStreamInfo
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// PageInfo: Paging details for lists of resources, including total
+// number of items available and number of resources returned in a
+// single page.
 type PageInfo struct {
 	// ResultsPerPage: The number of results included in the API response.
 	ResultsPerPage int64 `json:"resultsPerPage,omitempty"`
 
 	// TotalResults: The total number of results in the result set.
 	TotalResults int64 `json:"totalResults,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ResultsPerPage") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ResultsPerPage") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *PageInfo) MarshalJSON() ([]byte, error) {
+	type noMethod PageInfo
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// Playlist: A playlist resource represents a YouTube playlist. A
+// playlist is a collection of videos that can be viewed sequentially
+// and shared with other users. A playlist can contain up to 200 videos,
+// and YouTube does not limit the number of playlists that each user
+// creates. By default, playlists are publicly visible to other users,
+// but playlists can be public or private.
+//
+// YouTube also uses playlists to identify special collections of videos
+// for a channel, such as:
+// - uploaded videos
+// - favorite videos
+// - positively rated (liked) videos
+// - watch history
+// - watch later  To be more specific, these lists are associated with a
+// channel, which is a collection of a person, group, or company's
+// videos, playlists, and other YouTube information. You can retrieve
+// the playlist IDs for each of these lists from the  channel resource
+// for a given channel.
+//
+// You can then use the   playlistItems.list method to retrieve any of
+// those lists. You can also add or remove items from those lists by
+// calling the   playlistItems.insert and   playlistItems.delete
+// methods.
 type Playlist struct {
 	// ContentDetails: The contentDetails object contains information like
 	// video count.
@@ -3108,13 +6449,85 @@ type Playlist struct {
 	// Status: The status object contains status information for the
 	// playlist.
 	Status *PlaylistStatus `json:"status,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "ContentDetails") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ContentDetails") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Playlist) MarshalJSON() ([]byte, error) {
+	type noMethod Playlist
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type PlaylistContentDetails struct {
 	// ItemCount: The number of videos in the playlist.
 	ItemCount int64 `json:"itemCount,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ItemCount") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ItemCount") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *PlaylistContentDetails) MarshalJSON() ([]byte, error) {
+	type noMethod PlaylistContentDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// PlaylistItem: A playlistItem resource identifies another resource,
+// such as a video, that is included in a playlist. In addition, the
+// playlistItem  resource contains details about the included resource
+// that pertain specifically to how that resource is used in that
+// playlist.
+//
+// YouTube uses playlists to identify special collections of videos for
+// a channel, such as:
+// - uploaded videos
+// - favorite videos
+// - positively rated (liked) videos
+// - watch history
+// - watch later  To be more specific, these lists are associated with a
+// channel, which is a collection of a person, group, or company's
+// videos, playlists, and other YouTube information.
+//
+// You can retrieve the playlist IDs for each of these lists from the
+// channel resource  for a given channel. You can then use the
+// playlistItems.list method to retrieve any of those lists. You can
+// also add or remove items from those lists by calling the
+// playlistItems.insert and   playlistItems.delete methods. For example,
+// if a user gives a positive rating to a video, you would insert that
+// video into the liked videos playlist for that user's channel.
 type PlaylistItem struct {
 	// ContentDetails: The contentDetails object is included in the resource
 	// if the included item is a YouTube video. The object contains
@@ -3138,6 +6551,33 @@ type PlaylistItem struct {
 	// Status: The status object contains information about the playlist
 	// item's privacy status.
 	Status *PlaylistItemStatus `json:"status,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "ContentDetails") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ContentDetails") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *PlaylistItem) MarshalJSON() ([]byte, error) {
+	type noMethod PlaylistItem
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type PlaylistItemContentDetails struct {
@@ -3161,6 +6601,33 @@ type PlaylistItemContentDetails struct {
 	// retrieve the video resource, set the id query parameter to this value
 	// in your API request.
 	VideoId string `json:"videoId,omitempty"`
+
+	// VideoPublishedAt: The date and time that the video was published to
+	// YouTube. The value is specified in ISO 8601 (YYYY-MM-DDThh:mm:ss.sZ)
+	// format.
+	VideoPublishedAt string `json:"videoPublishedAt,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "EndAt") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "EndAt") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *PlaylistItemContentDetails) MarshalJSON() ([]byte, error) {
+	type noMethod PlaylistItemContentDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type PlaylistItemListResponse struct {
@@ -3192,8 +6659,36 @@ type PlaylistItemListResponse struct {
 
 	// VisitorId: The visitorId identifies the visitor.
 	VisitorId string `json:"visitorId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *PlaylistItemListResponse) MarshalJSON() ([]byte, error) {
+	type noMethod PlaylistItemListResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// PlaylistItemSnippet: Basic details about a playlist, including title,
+// description and thumbnails.
 type PlaylistItemSnippet struct {
 	// ChannelId: The ID that YouTube uses to uniquely identify the user
 	// that added the item to the playlist.
@@ -3233,8 +6728,32 @@ type PlaylistItemSnippet struct {
 
 	// Title: The item's title.
 	Title string `json:"title,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ChannelId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ChannelId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *PlaylistItemSnippet) MarshalJSON() ([]byte, error) {
+	type noMethod PlaylistItemSnippet
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// PlaylistItemStatus: Information about the playlist item's privacy
+// status.
 type PlaylistItemStatus struct {
 	// PrivacyStatus: This resource's privacy status.
 	//
@@ -3243,6 +6762,28 @@ type PlaylistItemStatus struct {
 	//   "public"
 	//   "unlisted"
 	PrivacyStatus string `json:"privacyStatus,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "PrivacyStatus") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "PrivacyStatus") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *PlaylistItemStatus) MarshalJSON() ([]byte, error) {
+	type noMethod PlaylistItemStatus
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type PlaylistListResponse struct {
@@ -3274,22 +6815,95 @@ type PlaylistListResponse struct {
 
 	// VisitorId: The visitorId identifies the visitor.
 	VisitorId string `json:"visitorId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *PlaylistListResponse) MarshalJSON() ([]byte, error) {
+	type noMethod PlaylistListResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// PlaylistLocalization: Playlist localization setting
 type PlaylistLocalization struct {
 	// Description: The localized strings for playlist's description.
 	Description string `json:"description,omitempty"`
 
 	// Title: The localized strings for playlist's title.
 	Title string `json:"title,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Description") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Description") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *PlaylistLocalization) MarshalJSON() ([]byte, error) {
+	type noMethod PlaylistLocalization
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type PlaylistPlayer struct {
 	// EmbedHtml: An <iframe> tag that embeds a player that will play the
 	// playlist.
 	EmbedHtml string `json:"embedHtml,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "EmbedHtml") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "EmbedHtml") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *PlaylistPlayer) MarshalJSON() ([]byte, error) {
+	type noMethod PlaylistPlayer
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// PlaylistSnippet: Basic details about a playlist, including title,
+// description and thumbnails.
 type PlaylistSnippet struct {
 	// ChannelId: The ID that YouTube uses to uniquely identify the channel
 	// that published the playlist.
@@ -3324,6 +6938,28 @@ type PlaylistSnippet struct {
 
 	// Title: The playlist's title.
 	Title string `json:"title,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ChannelId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ChannelId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *PlaylistSnippet) MarshalJSON() ([]byte, error) {
+	type noMethod PlaylistSnippet
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type PlaylistStatus struct {
@@ -3334,8 +6970,31 @@ type PlaylistStatus struct {
 	//   "public"
 	//   "unlisted"
 	PrivacyStatus string `json:"privacyStatus,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "PrivacyStatus") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "PrivacyStatus") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *PlaylistStatus) MarshalJSON() ([]byte, error) {
+	type noMethod PlaylistStatus
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// PromotedItem: Describes a single promoted item.
 type PromotedItem struct {
 	// CustomMessage: A custom message to display for this promotion. This
 	// field is currently ignored unless the promoted item is a website.
@@ -3352,8 +7011,32 @@ type PromotedItem struct {
 	// Timing: The temporal position within the video where the promoted
 	// item will be displayed. If present, it overrides the default timing.
 	Timing *InvideoTiming `json:"timing,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "CustomMessage") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CustomMessage") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *PromotedItem) MarshalJSON() ([]byte, error) {
+	type noMethod PromotedItem
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// PromotedItemId: Describes a single promoted item id. It is a union of
+// various possible types.
 type PromotedItemId struct {
 	// RecentlyUploadedBy: If type is recentUpload, this field identifies
 	// the channel from which to take the recent upload. If missing, the
@@ -3378,16 +7061,64 @@ type PromotedItemId struct {
 	// represents the url pointing to the website. This field will be
 	// present only if type has the value website.
 	WebsiteUrl string `json:"websiteUrl,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "RecentlyUploadedBy")
+	// to unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "RecentlyUploadedBy") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *PromotedItemId) MarshalJSON() ([]byte, error) {
+	type noMethod PromotedItemId
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// PropertyValue: A pair Property / Value.
 type PropertyValue struct {
 	// Property: A property.
 	Property string `json:"property,omitempty"`
 
 	// Value: The property's value.
 	Value string `json:"value,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Property") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Property") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *PropertyValue) MarshalJSON() ([]byte, error) {
+	type noMethod PropertyValue
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ResourceId: A resource id is a generic reference that points to
+// another YouTube resource.
 type ResourceId struct {
 	// ChannelId: The ID that YouTube uses to uniquely identify the referred
 	// resource, if that resource is a channel. This property is only
@@ -3406,6 +7137,28 @@ type ResourceId struct {
 	// resource, if that resource is a video. This property is only present
 	// if the resourceId.kind value is youtube#video.
 	VideoId string `json:"videoId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ChannelId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ChannelId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ResourceId) MarshalJSON() ([]byte, error) {
+	type noMethod ResourceId
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type SearchListResponse struct {
@@ -3433,12 +7186,45 @@ type SearchListResponse struct {
 	// pageToken parameter to retrieve the previous page in the result set.
 	PrevPageToken string `json:"prevPageToken,omitempty"`
 
+	RegionCode string `json:"regionCode,omitempty"`
+
 	TokenPagination *TokenPagination `json:"tokenPagination,omitempty"`
 
 	// VisitorId: The visitorId identifies the visitor.
 	VisitorId string `json:"visitorId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *SearchListResponse) MarshalJSON() ([]byte, error) {
+	type noMethod SearchListResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// SearchResult: A search result contains information about a YouTube
+// video, channel, or playlist that matches the search parameters
+// specified in an API request. While a search result points to a
+// uniquely identifiable resource, like a video, it does not have its
+// own persistent data.
 type SearchResult struct {
 	// Etag: Etag of this resource.
 	Etag string `json:"etag,omitempty"`
@@ -3456,8 +7242,33 @@ type SearchResult struct {
 	// result is a video, then the title will be the video's title and the
 	// description will be the video's description.
 	Snippet *SearchResultSnippet `json:"snippet,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *SearchResult) MarshalJSON() ([]byte, error) {
+	type noMethod SearchResult
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// SearchResultSnippet: Basic details about a search result, including
+// title, description and thumbnails of the item referenced by the
+// search result.
 type SearchResultSnippet struct {
 	// ChannelId: The value that YouTube uses to uniquely identify the
 	// channel that published the resource that the search result
@@ -3494,8 +7305,162 @@ type SearchResultSnippet struct {
 
 	// Title: The title of the search result.
 	Title string `json:"title,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ChannelId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ChannelId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *SearchResultSnippet) MarshalJSON() ([]byte, error) {
+	type noMethod SearchResultSnippet
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// Sponsor: A sponsor resource represents a sponsor for a YouTube
+// channel. A sponsor provides recurring monetary support to a creator
+// and receives special benefits.
+type Sponsor struct {
+	// Etag: Etag of this resource.
+	Etag string `json:"etag,omitempty"`
+
+	// Id: The ID that YouTube assigns to uniquely identify the sponsor.
+	Id string `json:"id,omitempty"`
+
+	// Kind: Identifies what kind of resource this is. Value: the fixed
+	// string "youtube#sponsor".
+	Kind string `json:"kind,omitempty"`
+
+	// Snippet: The snippet object contains basic details about the sponsor.
+	Snippet *SponsorSnippet `json:"snippet,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Sponsor) MarshalJSON() ([]byte, error) {
+	type noMethod Sponsor
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type SponsorListResponse struct {
+	// Etag: Etag of this resource.
+	Etag string `json:"etag,omitempty"`
+
+	// EventId: Serialized EventId of the request which produced this
+	// response.
+	EventId string `json:"eventId,omitempty"`
+
+	// Items: A list of sponsors that match the request criteria.
+	Items []*Sponsor `json:"items,omitempty"`
+
+	// Kind: Identifies what kind of resource this is. Value: the fixed
+	// string "youtube#sponsorListResponse".
+	Kind string `json:"kind,omitempty"`
+
+	// NextPageToken: The token that can be used as the value of the
+	// pageToken parameter to retrieve the next page in the result set.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+
+	PageInfo *PageInfo `json:"pageInfo,omitempty"`
+
+	TokenPagination *TokenPagination `json:"tokenPagination,omitempty"`
+
+	// VisitorId: The visitorId identifies the visitor.
+	VisitorId string `json:"visitorId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *SponsorListResponse) MarshalJSON() ([]byte, error) {
+	type noMethod SponsorListResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type SponsorSnippet struct {
+	// ChannelId: The id of the channel being sponsored.
+	ChannelId string `json:"channelId,omitempty"`
+
+	// SponsorDetails: Details about the sponsor.
+	SponsorDetails *ChannelProfileDetails `json:"sponsorDetails,omitempty"`
+
+	// SponsorSince: The date and time when the user became a sponsor. The
+	// value is specified in ISO 8601 (YYYY-MM-DDThh:mm:ss.sZ) format.
+	SponsorSince string `json:"sponsorSince,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ChannelId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ChannelId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *SponsorSnippet) MarshalJSON() ([]byte, error) {
+	type noMethod SponsorSnippet
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// Subscription: A subscription resource contains information about a
+// YouTube user subscription. A subscription notifies a user when new
+// videos are added to a channel or when another user takes one of
+// several actions on YouTube, such as uploading a video, rating a
+// video, or commenting on a video.
 type Subscription struct {
 	// ContentDetails: The contentDetails object contains basic statistics
 	// about the subscription.
@@ -3519,8 +7484,37 @@ type Subscription struct {
 	// SubscriberSnippet: The subscriberSnippet object contains basic
 	// details about the sbuscriber.
 	SubscriberSnippet *SubscriptionSubscriberSnippet `json:"subscriberSnippet,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "ContentDetails") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ContentDetails") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *Subscription) MarshalJSON() ([]byte, error) {
+	type noMethod Subscription
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// SubscriptionContentDetails: Details about the content to witch a
+// subscription refers.
 type SubscriptionContentDetails struct {
 	// ActivityType: The type of activity this subscription is for (only
 	// uploads, everything).
@@ -3537,6 +7531,28 @@ type SubscriptionContentDetails struct {
 	// TotalItemCount: The approximate number of items that the subscription
 	// points to.
 	TotalItemCount int64 `json:"totalItemCount,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ActivityType") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ActivityType") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *SubscriptionContentDetails) MarshalJSON() ([]byte, error) {
+	type noMethod SubscriptionContentDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type SubscriptionListResponse struct {
@@ -3568,8 +7584,36 @@ type SubscriptionListResponse struct {
 
 	// VisitorId: The visitorId identifies the visitor.
 	VisitorId string `json:"visitorId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *SubscriptionListResponse) MarshalJSON() ([]byte, error) {
+	type noMethod SubscriptionListResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// SubscriptionSnippet: Basic details about a subscription, including
+// title, description and thumbnails of the subscribed item.
 type SubscriptionSnippet struct {
 	// ChannelId: The ID that YouTube uses to uniquely identify the
 	// subscriber's channel.
@@ -3598,8 +7642,32 @@ type SubscriptionSnippet struct {
 
 	// Title: The subscription's title.
 	Title string `json:"title,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ChannelId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ChannelId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *SubscriptionSnippet) MarshalJSON() ([]byte, error) {
+	type noMethod SubscriptionSnippet
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// SubscriptionSubscriberSnippet: Basic details about a subscription's
+// subscriber including title, description, channel ID and thumbnails.
 type SubscriptionSubscriberSnippet struct {
 	// ChannelId: The channel ID of the subscriber.
 	ChannelId string `json:"channelId,omitempty"`
@@ -3612,8 +7680,179 @@ type SubscriptionSubscriberSnippet struct {
 
 	// Title: The title of the subscriber.
 	Title string `json:"title,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ChannelId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ChannelId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *SubscriptionSubscriberSnippet) MarshalJSON() ([]byte, error) {
+	type noMethod SubscriptionSubscriberSnippet
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// SuperChatEvent: A superChatEvent resource represents a Super Chat
+// purchase on a YouTube channel.
+type SuperChatEvent struct {
+	// Etag: Etag of this resource.
+	Etag string `json:"etag,omitempty"`
+
+	// Id: The ID that YouTube assigns to uniquely identify the Super Chat
+	// event.
+	Id string `json:"id,omitempty"`
+
+	// Kind: Identifies what kind of resource this is. Value: the fixed
+	// string "youtube#superChatEvent".
+	Kind string `json:"kind,omitempty"`
+
+	// Snippet: The snippet object contains basic details about the Super
+	// Chat event.
+	Snippet *SuperChatEventSnippet `json:"snippet,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *SuperChatEvent) MarshalJSON() ([]byte, error) {
+	type noMethod SuperChatEvent
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type SuperChatEventListResponse struct {
+	// Etag: Etag of this resource.
+	Etag string `json:"etag,omitempty"`
+
+	// EventId: Serialized EventId of the request which produced this
+	// response.
+	EventId string `json:"eventId,omitempty"`
+
+	// Items: A list of Super Chat purchases that match the request
+	// criteria.
+	Items []*SuperChatEvent `json:"items,omitempty"`
+
+	// Kind: Identifies what kind of resource this is. Value: the fixed
+	// string "youtube#superChatEventListResponse".
+	Kind string `json:"kind,omitempty"`
+
+	// NextPageToken: The token that can be used as the value of the
+	// pageToken parameter to retrieve the next page in the result set.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+
+	PageInfo *PageInfo `json:"pageInfo,omitempty"`
+
+	TokenPagination *TokenPagination `json:"tokenPagination,omitempty"`
+
+	// VisitorId: The visitorId identifies the visitor.
+	VisitorId string `json:"visitorId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *SuperChatEventListResponse) MarshalJSON() ([]byte, error) {
+	type noMethod SuperChatEventListResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type SuperChatEventSnippet struct {
+	// AmountMicros: The purchase amount, in micros of the purchase
+	// currency. e.g., 1 is represented as 1000000.
+	AmountMicros uint64 `json:"amountMicros,omitempty,string"`
+
+	// ChannelId: Channel id where the event occurred.
+	ChannelId string `json:"channelId,omitempty"`
+
+	// CommentText: The text contents of the comment left by the user.
+	CommentText string `json:"commentText,omitempty"`
+
+	// CreatedAt: The date and time when the event occurred. The value is
+	// specified in ISO 8601 (YYYY-MM-DDThh:mm:ss.sZ) format.
+	CreatedAt string `json:"createdAt,omitempty"`
+
+	// Currency: The currency in which the purchase was made. ISO 4217.
+	Currency string `json:"currency,omitempty"`
+
+	// DisplayString: A rendered string that displays the purchase amount
+	// and currency (e.g., "$1.00"). The string is rendered for the given
+	// language.
+	DisplayString string `json:"displayString,omitempty"`
+
+	// MessageType: The tier for the paid message, which is based on the
+	// amount of money spent to purchase the message.
+	MessageType int64 `json:"messageType,omitempty"`
+
+	// SupporterDetails: Details about the supporter.
+	SupporterDetails *ChannelProfileDetails `json:"supporterDetails,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "AmountMicros") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AmountMicros") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *SuperChatEventSnippet) MarshalJSON() ([]byte, error) {
+	type noMethod SuperChatEventSnippet
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// Thumbnail: A thumbnail is an image representing a YouTube resource.
 type Thumbnail struct {
 	// Height: (Optional) Height of the thumbnail image.
 	Height int64 `json:"height,omitempty"`
@@ -3623,8 +7862,32 @@ type Thumbnail struct {
 
 	// Width: (Optional) Width of the thumbnail image.
 	Width int64 `json:"width,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Height") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Height") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *Thumbnail) MarshalJSON() ([]byte, error) {
+	type noMethod Thumbnail
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ThumbnailDetails: Internal representation of thumbnails for a YouTube
+// resource.
 type ThumbnailDetails struct {
 	// Default: The default image for this resource.
 	Default *Thumbnail `json:"default,omitempty"`
@@ -3640,6 +7903,28 @@ type ThumbnailDetails struct {
 
 	// Standard: The standard quality image for this resource.
 	Standard *Thumbnail `json:"standard,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Default") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Default") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ThumbnailDetails) MarshalJSON() ([]byte, error) {
+	type noMethod ThumbnailDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type ThumbnailSetResponse struct {
@@ -3659,24 +7944,48 @@ type ThumbnailSetResponse struct {
 
 	// VisitorId: The visitorId identifies the visitor.
 	VisitorId string `json:"visitorId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *ThumbnailSetResponse) MarshalJSON() ([]byte, error) {
+	type noMethod ThumbnailSetResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// TokenPagination: Stub token pagination template to suppress results.
 type TokenPagination struct {
 }
 
+// Video: A video resource represents a YouTube video.
 type Video struct {
-	// AgeGating: Age restriction details related to a video.
+	// AgeGating: Age restriction details related to a video. This data can
+	// only be retrieved by the video owner.
 	AgeGating *VideoAgeGating `json:"ageGating,omitempty"`
 
 	// ContentDetails: The contentDetails object contains information about
 	// the video content, including the length of the video and its aspect
 	// ratio.
 	ContentDetails *VideoContentDetails `json:"contentDetails,omitempty"`
-
-	// ConversionPings: The conversionPings object encapsulates information
-	// about url pings that need to be respected by the App in different
-	// video contexts.
-	ConversionPings *VideoConversionPings `json:"conversionPings,omitempty"`
 
 	// Etag: Etag of this resource.
 	Etag string `json:"etag,omitempty"`
@@ -3755,6 +8064,32 @@ type Video struct {
 	// TopicDetails: The topicDetails object encapsulates information about
 	// Freebase topics associated with the video.
 	TopicDetails *VideoTopicDetails `json:"topicDetails,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "AgeGating") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AgeGating") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Video) MarshalJSON() ([]byte, error) {
+	type noMethod Video
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type VideoAbuseReport struct {
@@ -3775,8 +8110,33 @@ type VideoAbuseReport struct {
 
 	// VideoId: The ID that YouTube uses to uniquely identify the video.
 	VideoId string `json:"videoId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Comments") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Comments") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VideoAbuseReport) MarshalJSON() ([]byte, error) {
+	type noMethod VideoAbuseReport
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VideoAbuseReportReason: A videoAbuseReportReason resource identifies
+// a reason that a video could be reported as abusive. Video abuse
+// report reasons are used with video.ReportAbuse.
 type VideoAbuseReportReason struct {
 	// Etag: Etag of this resource.
 	Etag string `json:"etag,omitempty"`
@@ -3791,6 +8151,28 @@ type VideoAbuseReportReason struct {
 	// Snippet: The snippet object contains basic details about the abuse
 	// report reason.
 	Snippet *VideoAbuseReportReasonSnippet `json:"snippet,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *VideoAbuseReportReason) MarshalJSON() ([]byte, error) {
+	type noMethod VideoAbuseReportReason
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type VideoAbuseReportReasonListResponse struct {
@@ -3811,8 +8193,36 @@ type VideoAbuseReportReasonListResponse struct {
 
 	// VisitorId: The visitorId identifies the visitor.
 	VisitorId string `json:"visitorId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VideoAbuseReportReasonListResponse) MarshalJSON() ([]byte, error) {
+	type noMethod VideoAbuseReportReasonListResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VideoAbuseReportReasonSnippet: Basic details about a video category,
+// such as its localized title.
 type VideoAbuseReportReasonSnippet struct {
 	// Label: The localized label belonging to this abuse report reason.
 	Label string `json:"label,omitempty"`
@@ -3820,6 +8230,28 @@ type VideoAbuseReportReasonSnippet struct {
 	// SecondaryReasons: The secondary reasons associated with this reason,
 	// if any are available. (There might be 0 or more.)
 	SecondaryReasons []*VideoAbuseReportSecondaryReason `json:"secondaryReasons,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Label") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Label") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *VideoAbuseReportReasonSnippet) MarshalJSON() ([]byte, error) {
+	type noMethod VideoAbuseReportReasonSnippet
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type VideoAbuseReportSecondaryReason struct {
@@ -3828,6 +8260,28 @@ type VideoAbuseReportSecondaryReason struct {
 
 	// Label: The localized label for this abuse report secondary reason.
 	Label string `json:"label,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Id") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Id") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *VideoAbuseReportSecondaryReason) MarshalJSON() ([]byte, error) {
+	type noMethod VideoAbuseReportSecondaryReason
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type VideoAgeGating struct {
@@ -3850,8 +8304,33 @@ type VideoAgeGating struct {
 	//   "m16Plus"
 	//   "m17Plus"
 	VideoGameRating string `json:"videoGameRating,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "AlcoholContent") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AlcoholContent") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VideoAgeGating) MarshalJSON() ([]byte, error) {
+	type noMethod VideoAgeGating
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VideoCategory: A videoCategory resource identifies a category that
+// has been or could be associated with uploaded videos.
 type VideoCategory struct {
 	// Etag: Etag of this resource.
 	Etag string `json:"etag,omitempty"`
@@ -3866,6 +8345,28 @@ type VideoCategory struct {
 	// Snippet: The snippet object contains basic details about the video
 	// category, including its title.
 	Snippet *VideoCategorySnippet `json:"snippet,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *VideoCategory) MarshalJSON() ([]byte, error) {
+	type noMethod VideoCategory
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type VideoCategoryListResponse struct {
@@ -3899,8 +8400,36 @@ type VideoCategoryListResponse struct {
 
 	// VisitorId: The visitorId identifies the visitor.
 	VisitorId string `json:"visitorId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VideoCategoryListResponse) MarshalJSON() ([]byte, error) {
+	type noMethod VideoCategoryListResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VideoCategorySnippet: Basic details about a video category, such as
+// its localized title.
 type VideoCategorySnippet struct {
 	Assignable bool `json:"assignable,omitempty"`
 
@@ -3909,8 +8438,31 @@ type VideoCategorySnippet struct {
 
 	// Title: The video category's title.
 	Title string `json:"title,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Assignable") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Assignable") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VideoCategorySnippet) MarshalJSON() ([]byte, error) {
+	type noMethod VideoCategorySnippet
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VideoContentDetails: Details about the content of a YouTube Video.
 type VideoContentDetails struct {
 	// Caption: The value of captions indicates whether the video has
 	// captions or not.
@@ -3950,17 +8502,53 @@ type VideoContentDetails struct {
 	// PT15M51S indicates that the video is 15 minutes and 51 seconds long.
 	Duration string `json:"duration,omitempty"`
 
+	// HasCustomThumbnail: Indicates whether the video uploader has provided
+	// a custom thumbnail image for the video. This property is only visible
+	// to the video uploader.
+	HasCustomThumbnail bool `json:"hasCustomThumbnail,omitempty"`
+
 	// LicensedContent: The value of is_license_content indicates whether
 	// the video is licensed content.
 	LicensedContent bool `json:"licensedContent,omitempty"`
+
+	// Projection: Specifies the projection format of the video.
+	//
+	// Possible values:
+	//   "360"
+	//   "rectangular"
+	Projection string `json:"projection,omitempty"`
 
 	// RegionRestriction: The regionRestriction object contains information
 	// about the countries where a video is (or is not) viewable. The object
 	// will contain either the contentDetails.regionRestriction.allowed
 	// property or the contentDetails.regionRestriction.blocked property.
 	RegionRestriction *VideoContentDetailsRegionRestriction `json:"regionRestriction,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Caption") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Caption") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VideoContentDetails) MarshalJSON() ([]byte, error) {
+	type noMethod VideoContentDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VideoContentDetailsRegionRestriction: DEPRECATED Region restriction
+// of the video.
 type VideoContentDetailsRegionRestriction struct {
 	// Allowed: A list of region codes that identify countries where the
 	// video is viewable. If this property is present and a country is not
@@ -3975,36 +8563,34 @@ type VideoContentDetailsRegionRestriction struct {
 	// this property is present and contains an empty list, the video is
 	// viewable in all countries.
 	Blocked []string `json:"blocked,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Allowed") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Allowed") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
-type VideoConversionPing struct {
-	// Context: Defines the context of the ping.
-	//
-	// Possible values:
-	//   "comment"
-	//   "dislike"
-	//   "like"
-	//   "share"
-	Context string `json:"context,omitempty"`
-
-	// ConversionUrl: The url (without the schema) that the app shall send
-	// the ping to. It's at caller's descretion to decide which schema to
-	// use (http vs https) Example of a returned url:
-	// //googleads.g.doubleclick.net/pagead/
-	// viewthroughconversion/962985656/?data=path%3DtHe_path%3Btype%3D
-	// like%3Butuid%3DGISQtTNGYqaYl4sKxoVvKA%3Bytvid%3DUrIaJUvIQDg&labe=defau
-	// lt The caller must append biscotti authentication (ms param in case
-	// of mobile, for example) to this ping.
-	ConversionUrl string `json:"conversionUrl,omitempty"`
+func (s *VideoContentDetailsRegionRestriction) MarshalJSON() ([]byte, error) {
+	type noMethod VideoContentDetailsRegionRestriction
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-type VideoConversionPings struct {
-	// Pings: Pings that the app shall fire for a video (authenticated by
-	// biscotti cookie). Each ping has a context, in which the app must fire
-	// the ping, and a url identifying the ping.
-	Pings []*VideoConversionPing `json:"pings,omitempty"`
-}
-
+// VideoFileDetails: Describes original video file properties, including
+// technical details about audio and video streams, but also metadata
+// information like content length, digitization time, or geotagging
+// information.
 type VideoFileDetails struct {
 	// AudioStreams: A list of audio streams contained in the uploaded video
 	// file. Each item in the list contains detailed metadata about an audio
@@ -4052,17 +8638,35 @@ type VideoFileDetails struct {
 	//   "video"
 	FileType string `json:"fileType,omitempty"`
 
-	// RecordingLocation: Geographic coordinates that identify the place
-	// where the uploaded video was recorded. Coordinates are defined using
-	// WGS 84.
-	RecordingLocation *GeoPoint `json:"recordingLocation,omitempty"`
-
 	// VideoStreams: A list of video streams contained in the uploaded video
 	// file. Each item in the list contains detailed metadata about a video
 	// stream.
 	VideoStreams []*VideoFileDetailsVideoStream `json:"videoStreams,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "AudioStreams") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AudioStreams") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VideoFileDetails) MarshalJSON() ([]byte, error) {
+	type noMethod VideoFileDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VideoFileDetailsAudioStream: Information about an audio stream.
 type VideoFileDetailsAudioStream struct {
 	// BitrateBps: The audio stream's bitrate, in bits per second.
 	BitrateBps uint64 `json:"bitrateBps,omitempty,string"`
@@ -4076,8 +8680,31 @@ type VideoFileDetailsAudioStream struct {
 	// Vendor: A value that uniquely identifies a video vendor. Typically,
 	// the value is a four-letter vendor code.
 	Vendor string `json:"vendor,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "BitrateBps") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BitrateBps") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VideoFileDetailsAudioStream) MarshalJSON() ([]byte, error) {
+	type noMethod VideoFileDetailsAudioStream
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VideoFileDetailsVideoStream: Information about a video stream.
 type VideoFileDetailsVideoStream struct {
 	// AspectRatio: The video content's display aspect ratio, which
 	// specifies the aspect ratio in which the video should be displayed.
@@ -4114,6 +8741,44 @@ type VideoFileDetailsVideoStream struct {
 	// calculate the video's encoding aspect ratio as
 	// width_pixels / height_pixels.
 	WidthPixels int64 `json:"widthPixels,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "AspectRatio") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AspectRatio") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *VideoFileDetailsVideoStream) MarshalJSON() ([]byte, error) {
+	type noMethod VideoFileDetailsVideoStream
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *VideoFileDetailsVideoStream) UnmarshalJSON(data []byte) error {
+	type noMethod VideoFileDetailsVideoStream
+	var s1 struct {
+		AspectRatio  gensupport.JSONFloat64 `json:"aspectRatio"`
+		FrameRateFps gensupport.JSONFloat64 `json:"frameRateFps"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.AspectRatio = float64(s1.AspectRatio)
+	s.FrameRateFps = float64(s1.FrameRateFps)
+	return nil
 }
 
 type VideoGetRatingResponse struct {
@@ -4133,6 +8798,32 @@ type VideoGetRatingResponse struct {
 
 	// VisitorId: The visitorId identifies the visitor.
 	VisitorId string `json:"visitorId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *VideoGetRatingResponse) MarshalJSON() ([]byte, error) {
+	type noMethod VideoGetRatingResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type VideoListResponse struct {
@@ -4164,9 +8855,45 @@ type VideoListResponse struct {
 
 	// VisitorId: The visitorId identifies the visitor.
 	VisitorId string `json:"visitorId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Etag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VideoListResponse) MarshalJSON() ([]byte, error) {
+	type noMethod VideoListResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VideoLiveStreamingDetails: Details about the live streaming metadata.
 type VideoLiveStreamingDetails struct {
+	// ActiveLiveChatId: The ID of the currently active live chat attached
+	// to this video. This field is filled only if the video is a currently
+	// live broadcast that has live chat. Once the broadcast transitions to
+	// complete this field will be removed and the live chat closed down.
+	// For persistent broadcasts that live chat id will no longer be tied to
+	// this video but rather to the new video being displayed at the
+	// persistent page.
+	ActiveLiveChatId string `json:"activeLiveChatId,omitempty"`
+
 	// ActualEndTime: The time that the broadcast actually ended. The value
 	// is specified in ISO 8601 (YYYY-MM-DDThh:mm:ss.sZ) format. This value
 	// will not be available until the broadcast is over.
@@ -4196,28 +8923,129 @@ type VideoLiveStreamingDetails struct {
 	// begin. The value is specified in ISO 8601 (YYYY-MM-DDThh:mm:ss.sZ)
 	// format.
 	ScheduledStartTime string `json:"scheduledStartTime,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ActiveLiveChatId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ActiveLiveChatId") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VideoLiveStreamingDetails) MarshalJSON() ([]byte, error) {
+	type noMethod VideoLiveStreamingDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VideoLocalization: Localized versions of certain video properties
+// (e.g. title).
 type VideoLocalization struct {
 	// Description: Localized version of the video's description.
 	Description string `json:"description,omitempty"`
 
 	// Title: Localized version of the video's title.
 	Title string `json:"title,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Description") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Description") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VideoLocalization) MarshalJSON() ([]byte, error) {
+	type noMethod VideoLocalization
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VideoMonetizationDetails: Details about monetization of a YouTube
+// Video.
 type VideoMonetizationDetails struct {
 	// Access: The value of access indicates whether the video can be
 	// monetized or not.
 	Access *AccessPolicy `json:"access,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Access") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Access") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VideoMonetizationDetails) MarshalJSON() ([]byte, error) {
+	type noMethod VideoMonetizationDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VideoPlayer: Player to be used for a video playback.
 type VideoPlayer struct {
+	EmbedHeight int64 `json:"embedHeight,omitempty,string"`
+
 	// EmbedHtml: An <iframe> tag that embeds a player that will play the
 	// video.
 	EmbedHtml string `json:"embedHtml,omitempty"`
+
+	// EmbedWidth: The embed width
+	EmbedWidth int64 `json:"embedWidth,omitempty,string"`
+
+	// ForceSendFields is a list of field names (e.g. "EmbedHeight") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "EmbedHeight") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VideoPlayer) MarshalJSON() ([]byte, error) {
+	type noMethod VideoPlayer
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VideoProcessingDetails: Describes processing status and progress and
+// availability of some other Video resource parts.
 type VideoProcessingDetails struct {
 	// EditorSuggestionsAvailability: This value indicates whether video
 	// editing suggestions, which might improve video quality or the
@@ -4278,8 +9106,34 @@ type VideoProcessingDetails struct {
 	// ThumbnailsAvailability: This value indicates whether thumbnail images
 	// have been generated for the video.
 	ThumbnailsAvailability string `json:"thumbnailsAvailability,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "EditorSuggestionsAvailability") to unconditionally include in API
+	// requests. By default, fields with empty values are omitted from API
+	// requests. However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g.
+	// "EditorSuggestionsAvailability") to include in API requests with the
+	// JSON null value. By default, fields with empty values are omitted
+	// from API requests. However, any field with an empty value appearing
+	// in NullFields will be sent to the server as null. It is an error if a
+	// field in this list has a non-empty value. This may be used to include
+	// null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VideoProcessingDetails) MarshalJSON() ([]byte, error) {
+	type noMethod VideoProcessingDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VideoProcessingDetailsProcessingProgress: Video processing progress
+// and completion time estimate.
 type VideoProcessingDetailsProcessingProgress struct {
 	// PartsProcessed: The number of parts of the video that YouTube has
 	// already processed. You can estimate the percentage of the video that
@@ -4300,12 +9154,59 @@ type VideoProcessingDetailsProcessingProgress struct {
 	// TimeLeftMs: An estimate of the amount of time, in millseconds, that
 	// YouTube needs to finish processing the video.
 	TimeLeftMs uint64 `json:"timeLeftMs,omitempty,string"`
+
+	// ForceSendFields is a list of field names (e.g. "PartsProcessed") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "PartsProcessed") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VideoProcessingDetailsProcessingProgress) MarshalJSON() ([]byte, error) {
+	type noMethod VideoProcessingDetailsProcessingProgress
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VideoProjectDetails: Project specific details about the content of a
+// YouTube Video.
 type VideoProjectDetails struct {
 	// Tags: A list of project tags associated with the video during the
 	// upload.
 	Tags []string `json:"tags,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Tags") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Tags") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *VideoProjectDetails) MarshalJSON() ([]byte, error) {
+	type noMethod VideoProjectDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type VideoRating struct {
@@ -4317,8 +9218,32 @@ type VideoRating struct {
 	Rating string `json:"rating,omitempty"`
 
 	VideoId string `json:"videoId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Rating") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Rating") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VideoRating) MarshalJSON() ([]byte, error) {
+	type noMethod VideoRating
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VideoRecordingDetails: Recording information associated with the
+// video.
 type VideoRecordingDetails struct {
 	// Location: The geolocation information associated with the video.
 	Location *GeoPoint `json:"location,omitempty"`
@@ -4330,8 +9255,32 @@ type VideoRecordingDetails struct {
 	// RecordingDate: The date and time when the video was recorded. The
 	// value is specified in ISO 8601 (YYYY-MM-DDThh:mm:ss.sssZ) format.
 	RecordingDate string `json:"recordingDate,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Location") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Location") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VideoRecordingDetails) MarshalJSON() ([]byte, error) {
+	type noMethod VideoRecordingDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VideoSnippet: Basic details about a video, including title,
+// description, uploader, thumbnails and category.
 type VideoSnippet struct {
 	// CategoryId: The YouTube video category associated with the video.
 	CategoryId string `json:"categoryId,omitempty"`
@@ -4374,7 +9323,7 @@ type VideoSnippet struct {
 	PublishedAt string `json:"publishedAt,omitempty"`
 
 	// Tags: A list of keyword tags associated with the video. Tags may
-	// contain spaces. This field is only visible to the video's uploader.
+	// contain spaces.
 	Tags []string `json:"tags,omitempty"`
 
 	// Thumbnails: A map of thumbnail images associated with the video. For
@@ -4385,8 +9334,32 @@ type VideoSnippet struct {
 
 	// Title: The video's title.
 	Title string `json:"title,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "CategoryId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CategoryId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VideoSnippet) MarshalJSON() ([]byte, error) {
+	type noMethod VideoSnippet
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VideoStatistics: Statistics about the video, such as the number of
+// times the video was viewed or liked.
 type VideoStatistics struct {
 	// CommentCount: The number of comments for the video.
 	CommentCount uint64 `json:"commentCount,omitempty,string"`
@@ -4405,8 +9378,32 @@ type VideoStatistics struct {
 
 	// ViewCount: The number of times the video has been viewed.
 	ViewCount uint64 `json:"viewCount,omitempty,string"`
+
+	// ForceSendFields is a list of field names (e.g. "CommentCount") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CommentCount") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VideoStatistics) MarshalJSON() ([]byte, error) {
+	type noMethod VideoStatistics
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VideoStatus: Basic details about a video category, such as its
+// localized title.
 type VideoStatus struct {
 	// Embeddable: This value indicates if the video can be embedded on
 	// another website.
@@ -4459,6 +9456,7 @@ type VideoStatus struct {
 	//   "copyright"
 	//   "duplicate"
 	//   "inappropriate"
+	//   "legal"
 	//   "length"
 	//   "termsOfUse"
 	//   "trademark"
@@ -4475,22 +9473,70 @@ type VideoStatus struct {
 	//   "rejected"
 	//   "uploaded"
 	UploadStatus string `json:"uploadStatus,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Embeddable") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Embeddable") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VideoStatus) MarshalJSON() ([]byte, error) {
+	type noMethod VideoStatus
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VideoSuggestions: Specifies suggestions on how to improve video
+// content, including encoding hints, tag suggestions, and editor
+// suggestions.
 type VideoSuggestions struct {
 	// EditorSuggestions: A list of video editing operations that might
 	// improve the video quality or playback experience of the uploaded
 	// video.
+	//
+	// Possible values:
+	//   "audioQuietAudioSwap"
+	//   "videoAutoLevels"
+	//   "videoCrop"
+	//   "videoStabilize"
 	EditorSuggestions []string `json:"editorSuggestions,omitempty"`
 
 	// ProcessingErrors: A list of errors that will prevent YouTube from
 	// successfully processing the uploaded video video. These errors
 	// indicate that, regardless of the video's current processing status,
 	// eventually, that status will almost certainly be failed.
+	//
+	// Possible values:
+	//   "archiveFile"
+	//   "audioFile"
+	//   "docFile"
+	//   "imageFile"
+	//   "notAVideoFile"
+	//   "projectFile"
+	//   "unsupportedSpatialAudioLayout"
 	ProcessingErrors []string `json:"processingErrors,omitempty"`
 
 	// ProcessingHints: A list of suggestions that may improve YouTube's
 	// ability to process the video.
+	//
+	// Possible values:
+	//   "hdrVideo"
+	//   "nonStreamableMov"
+	//   "sendBestQualityVideo"
+	//   "spatialAudio"
+	//   "sphericalVideo"
+	//   "vrVideo"
 	ProcessingHints []string `json:"processingHints,omitempty"`
 
 	// ProcessingWarnings: A list of reasons why YouTube may have difficulty
@@ -4500,14 +9546,53 @@ type VideoSuggestions struct {
 	// that are unlikely to cause the video processing to fail but that
 	// might cause problems such as sync issues, video artifacts, or a
 	// missing audio track.
+	//
+	// Possible values:
+	//   "hasEditlist"
+	//   "inconsistentResolution"
+	//   "problematicAudioCodec"
+	//   "problematicHdrLookupTable"
+	//   "problematicVideoCodec"
+	//   "unknownAudioCodec"
+	//   "unknownContainer"
+	//   "unknownVideoCodec"
+	//   "unsupportedHdrColorMetadata"
+	//   "unsupportedHdrPixelFormat"
+	//   "unsupportedSphericalProjectionType"
+	//   "unsupportedVrStereoMode"
 	ProcessingWarnings []string `json:"processingWarnings,omitempty"`
 
 	// TagSuggestions: A list of keyword tags that could be added to the
 	// video's metadata to increase the likelihood that users will locate
 	// your video when searching or browsing on YouTube.
 	TagSuggestions []*VideoSuggestionsTagSuggestion `json:"tagSuggestions,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "EditorSuggestions")
+	// to unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "EditorSuggestions") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VideoSuggestions) MarshalJSON() ([]byte, error) {
+	type noMethod VideoSuggestions
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VideoSuggestionsTagSuggestion: A single tag suggestion with it's
+// relevance information.
 type VideoSuggestionsTagSuggestion struct {
 	// CategoryRestricts: A set of video categories for which the tag is
 	// relevant. You can use this information to display appropriate tag
@@ -4518,8 +9603,32 @@ type VideoSuggestionsTagSuggestion struct {
 
 	// Tag: The keyword tag suggested for the video.
 	Tag string `json:"tag,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "CategoryRestricts")
+	// to unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CategoryRestricts") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VideoSuggestionsTagSuggestion) MarshalJSON() ([]byte, error) {
+	type noMethod VideoSuggestionsTagSuggestion
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VideoTopicDetails: Freebase topic information related to the video.
 type VideoTopicDetails struct {
 	// RelevantTopicIds: Similar to topic_id, except that these topics are
 	// merely relevant to the video. These are topics that may be mentioned
@@ -4527,14 +9636,42 @@ type VideoTopicDetails struct {
 	// topic using Freebase Topic API.
 	RelevantTopicIds []string `json:"relevantTopicIds,omitempty"`
 
+	// TopicCategories: A list of Wikipedia URLs that provide a high-level
+	// description of the video's content.
+	TopicCategories []string `json:"topicCategories,omitempty"`
+
 	// TopicIds: A list of Freebase topic IDs that are centrally associated
 	// with the video. These are topics that are centrally featured in the
 	// video, and it can be said that the video is mainly about each of
 	// these. You can retrieve information about each topic using the
 	// Freebase Topic API.
 	TopicIds []string `json:"topicIds,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "RelevantTopicIds") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "RelevantTopicIds") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
+func (s *VideoTopicDetails) MarshalJSON() ([]byte, error) {
+	type noMethod VideoTopicDetails
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// WatchSettings: Branding properties for the watch. All deprecated.
 type WatchSettings struct {
 	// BackgroundColor: The text color for the video watch page's branded
 	// area.
@@ -4547,15 +9684,39 @@ type WatchSettings struct {
 	// TextColor: The background color for the video watch page's branded
 	// area.
 	TextColor string `json:"textColor,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "BackgroundColor") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BackgroundColor") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *WatchSettings) MarshalJSON() ([]byte, error) {
+	type noMethod WatchSettings
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // method id "youtube.activities.insert":
 
 type ActivitiesInsertCall struct {
-	s        *Service
-	part     string
-	activity *Activity
-	opt_     map[string]interface{}
+	s          *Service
+	activity   *Activity
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Insert: Posts a bulletin for a specific channel. (The user submitting
@@ -4569,40 +9730,76 @@ type ActivitiesInsertCall struct {
 // to rate a video and the playlistItems.insert() method to mark a video
 // as a favorite.
 func (r *ActivitiesService) Insert(part string, activity *Activity) *ActivitiesInsertCall {
-	c := &ActivitiesInsertCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &ActivitiesInsertCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	c.activity = activity
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *ActivitiesInsertCall) Fields(s ...googleapi.Field) *ActivitiesInsertCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *ActivitiesInsertCall) Do() (*Activity, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ActivitiesInsertCall) Context(ctx context.Context) *ActivitiesInsertCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ActivitiesInsertCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ActivitiesInsertCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.activity)
 	if err != nil {
 		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "activities")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("Content-Type", ctype)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.activities.insert" call.
+// Exactly one of *Activity or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Activity.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *ActivitiesInsertCall) Do(opts ...googleapi.CallOption) (*Activity, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -4610,8 +9807,14 @@ func (c *ActivitiesInsertCall) Do() (*Activity, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Activity
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Activity{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -4648,9 +9851,11 @@ func (c *ActivitiesInsertCall) Do() (*Activity, error) {
 // method id "youtube.activities.list":
 
 type ActivitiesListCall struct {
-	s    *Service
-	part string
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Returns a list of channel activity events that match the
@@ -4659,8 +9864,8 @@ type ActivitiesListCall struct {
 // subscriptions and Google+ friends, or the YouTube home page feed,
 // which is customized for each user.
 func (r *ActivitiesService) List(part string) *ActivitiesListCall {
-	c := &ActivitiesListCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &ActivitiesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	return c
 }
 
@@ -4668,7 +9873,7 @@ func (r *ActivitiesService) List(part string) *ActivitiesListCall {
 // parameter specifies a unique YouTube channel ID. The API will then
 // return a list of that channel's activities.
 func (c *ActivitiesListCall) ChannelId(channelId string) *ActivitiesListCall {
-	c.opt_["channelId"] = channelId
+	c.urlParams_.Set("channelId", channelId)
 	return c
 }
 
@@ -4676,7 +9881,7 @@ func (c *ActivitiesListCall) ChannelId(channelId string) *ActivitiesListCall {
 // to true to retrieve the activity feed that displays on the YouTube
 // home page for the currently authenticated user.
 func (c *ActivitiesListCall) Home(home bool) *ActivitiesListCall {
-	c.opt_["home"] = home
+	c.urlParams_.Set("home", fmt.Sprint(home))
 	return c
 }
 
@@ -4684,14 +9889,14 @@ func (c *ActivitiesListCall) Home(home bool) *ActivitiesListCall {
 // parameter specifies the maximum number of items that should be
 // returned in the result set.
 func (c *ActivitiesListCall) MaxResults(maxResults int64) *ActivitiesListCall {
-	c.opt_["maxResults"] = maxResults
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
 	return c
 }
 
 // Mine sets the optional parameter "mine": Set this parameter's value
 // to true to retrieve a feed of the authenticated user's activities.
 func (c *ActivitiesListCall) Mine(mine bool) *ActivitiesListCall {
-	c.opt_["mine"] = mine
+	c.urlParams_.Set("mine", fmt.Sprint(mine))
 	return c
 }
 
@@ -4700,7 +9905,7 @@ func (c *ActivitiesListCall) Mine(mine bool) *ActivitiesListCall {
 // returned. In an API response, the nextPageToken and prevPageToken
 // properties identify other pages that could be retrieved.
 func (c *ActivitiesListCall) PageToken(pageToken string) *ActivitiesListCall {
-	c.opt_["pageToken"] = pageToken
+	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
@@ -4712,7 +9917,7 @@ func (c *ActivitiesListCall) PageToken(pageToken string) *ActivitiesListCall {
 // result set. The value is specified in ISO 8601
 // (YYYY-MM-DDThh:mm:ss.sZ) format.
 func (c *ActivitiesListCall) PublishedAfter(publishedAfter string) *ActivitiesListCall {
-	c.opt_["publishedAfter"] = publishedAfter
+	c.urlParams_.Set("publishedAfter", publishedAfter)
 	return c
 }
 
@@ -4724,7 +9929,7 @@ func (c *ActivitiesListCall) PublishedAfter(publishedAfter string) *ActivitiesLi
 // result set. The value is specified in ISO 8601
 // (YYYY-MM-DDThh:mm:ss.sZ) format.
 func (c *ActivitiesListCall) PublishedBefore(publishedBefore string) *ActivitiesListCall {
-	c.opt_["publishedBefore"] = publishedBefore
+	c.urlParams_.Set("publishedBefore", publishedBefore)
 	return c
 }
 
@@ -4735,56 +9940,82 @@ func (c *ActivitiesListCall) PublishedBefore(publishedBefore string) *Activities
 // on YouTube does not provide enough information to generate the
 // activity feed.
 func (c *ActivitiesListCall) RegionCode(regionCode string) *ActivitiesListCall {
-	c.opt_["regionCode"] = regionCode
+	c.urlParams_.Set("regionCode", regionCode)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *ActivitiesListCall) Fields(s ...googleapi.Field) *ActivitiesListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *ActivitiesListCall) Do() (*ActivityListResponse, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ActivitiesListCall) IfNoneMatch(entityTag string) *ActivitiesListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ActivitiesListCall) Context(ctx context.Context) *ActivitiesListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ActivitiesListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ActivitiesListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["channelId"]; ok {
-		params.Set("channelId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["home"]; ok {
-		params.Set("home", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["maxResults"]; ok {
-		params.Set("maxResults", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["mine"]; ok {
-		params.Set("mine", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["pageToken"]; ok {
-		params.Set("pageToken", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["publishedAfter"]; ok {
-		params.Set("publishedAfter", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["publishedBefore"]; ok {
-		params.Set("publishedBefore", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["regionCode"]; ok {
-		params.Set("regionCode", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "activities")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.activities.list" call.
+// Exactly one of *ActivityListResponse or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *ActivityListResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ActivitiesListCall) Do(opts ...googleapi.CallOption) (*ActivityListResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -4792,8 +10023,14 @@ func (c *ActivitiesListCall) Do() (*ActivityListResponse, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *ActivityListResponse
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &ActivityListResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -4871,33 +10108,47 @@ func (c *ActivitiesListCall) Do() (*ActivityListResponse, error) {
 
 }
 
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *ActivitiesListCall) Pages(ctx context.Context, f func(*ActivityListResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
 // method id "youtube.captions.delete":
 
 type CaptionsDeleteCall struct {
-	s    *Service
-	id   string
-	opt_ map[string]interface{}
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Delete: Deletes a specified caption track.
 func (r *CaptionsService) Delete(id string) *CaptionsDeleteCall {
-	c := &CaptionsDeleteCall{s: r.s, opt_: make(map[string]interface{})}
-	c.id = id
-	return c
-}
-
-// DebugProjectIdOverride sets the optional parameter
-// "debugProjectIdOverride": The debugProjectIdOverride parameter should
-// be used for mimicking a request for a certain project ID
-func (c *CaptionsDeleteCall) DebugProjectIdOverride(debugProjectIdOverride int64) *CaptionsDeleteCall {
-	c.opt_["debugProjectIdOverride"] = debugProjectIdOverride
+	c := &CaptionsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("id", id)
 	return c
 }
 
 // OnBehalfOf sets the optional parameter "onBehalfOf": ID of the
 // Google+ Page for the channel that the request is be on behalf of
 func (c *CaptionsDeleteCall) OnBehalfOf(onBehalfOf string) *CaptionsDeleteCall {
-	c.opt_["onBehalfOf"] = onBehalfOf
+	c.urlParams_.Set("onBehalfOf", onBehalfOf)
 	return c
 }
 
@@ -4916,41 +10167,54 @@ func (c *CaptionsDeleteCall) OnBehalfOf(onBehalfOf string) *CaptionsDeleteCall {
 // authenticates with must be linked to the specified YouTube content
 // owner.
 func (c *CaptionsDeleteCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *CaptionsDeleteCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *CaptionsDeleteCall) Fields(s ...googleapi.Field) *CaptionsDeleteCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *CaptionsDeleteCall) Do() error {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *CaptionsDeleteCall) Context(ctx context.Context) *CaptionsDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CaptionsDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *CaptionsDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("id", fmt.Sprintf("%v", c.id))
-	if v, ok := c.opt_["debugProjectIdOverride"]; ok {
-		params.Set("debugProjectIdOverride", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOf"]; ok {
-		params.Set("onBehalfOf", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "captions")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.captions.delete" call.
+func (c *CaptionsDeleteCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
 	if err != nil {
 		return err
 	}
@@ -4967,12 +10231,6 @@ func (c *CaptionsDeleteCall) Do() error {
 	//     "id"
 	//   ],
 	//   "parameters": {
-	//     "debugProjectIdOverride": {
-	//       "description": "The debugProjectIdOverride parameter should be used for mimicking a request for a certain project ID",
-	//       "format": "int64",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
 	//     "id": {
 	//       "description": "The id parameter identifies the caption track that is being deleted. The value is a caption track ID as identified by the id property in a caption resource.",
 	//       "location": "query",
@@ -5002,9 +10260,12 @@ func (c *CaptionsDeleteCall) Do() error {
 // method id "youtube.captions.download":
 
 type CaptionsDownloadCall struct {
-	s    *Service
-	id   string
-	opt_ map[string]interface{}
+	s            *Service
+	id           string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // Download: Downloads a caption track. The caption track is returned in
@@ -5012,23 +10273,15 @@ type CaptionsDownloadCall struct {
 // parameter and in its original language unless the request specifies a
 // value for the tlang parameter.
 func (r *CaptionsService) Download(id string) *CaptionsDownloadCall {
-	c := &CaptionsDownloadCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &CaptionsDownloadCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.id = id
-	return c
-}
-
-// DebugProjectIdOverride sets the optional parameter
-// "debugProjectIdOverride": The debugProjectIdOverride parameter should
-// be used for mimicking a request for a certain project ID
-func (c *CaptionsDownloadCall) DebugProjectIdOverride(debugProjectIdOverride int64) *CaptionsDownloadCall {
-	c.opt_["debugProjectIdOverride"] = debugProjectIdOverride
 	return c
 }
 
 // OnBehalfOf sets the optional parameter "onBehalfOf": ID of the
 // Google+ Page for the channel that the request is be on behalf of
 func (c *CaptionsDownloadCall) OnBehalfOf(onBehalfOf string) *CaptionsDownloadCall {
-	c.opt_["onBehalfOf"] = onBehalfOf
+	c.urlParams_.Set("onBehalfOf", onBehalfOf)
 	return c
 }
 
@@ -5047,7 +10300,7 @@ func (c *CaptionsDownloadCall) OnBehalfOf(onBehalfOf string) *CaptionsDownloadCa
 // authenticates with must be linked to the specified YouTube content
 // owner.
 func (c *CaptionsDownloadCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *CaptionsDownloadCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
@@ -5063,7 +10316,7 @@ func (c *CaptionsDownloadCall) OnBehalfOfContentOwner(onBehalfOfContentOwner str
 //   "ttml" - Timed Text Markup Language caption.
 //   "vtt" - Web Video Text Tracks caption.
 func (c *CaptionsDownloadCall) Tfmt(tfmt string) *CaptionsDownloadCall {
-	c.opt_["tfmt"] = tfmt
+	c.urlParams_.Set("tfmt", tfmt)
 	return c
 }
 
@@ -5074,48 +10327,86 @@ func (c *CaptionsDownloadCall) Tfmt(tfmt string) *CaptionsDownloadCall {
 // language. The translation is generated by using machine translation,
 // such as Google Translate.
 func (c *CaptionsDownloadCall) Tlang(tlang string) *CaptionsDownloadCall {
-	c.opt_["tlang"] = tlang
+	c.urlParams_.Set("tlang", tlang)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *CaptionsDownloadCall) Fields(s ...googleapi.Field) *CaptionsDownloadCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *CaptionsDownloadCall) Do() error {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *CaptionsDownloadCall) IfNoneMatch(entityTag string) *CaptionsDownloadCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do and Download
+// methods. Any pending HTTP request will be aborted if the provided
+// context is canceled.
+func (c *CaptionsDownloadCall) Context(ctx context.Context) *CaptionsDownloadCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CaptionsDownloadCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *CaptionsDownloadCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["debugProjectIdOverride"]; ok {
-		params.Set("debugProjectIdOverride", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOf"]; ok {
-		params.Set("onBehalfOf", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["tfmt"]; ok {
-		params.Set("tfmt", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["tlang"]; ok {
-		params.Set("tlang", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "captions/{id}")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
 	googleapi.Expand(req.URL, map[string]string{
 		"id": c.id,
 	})
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Download fetches the API endpoint's "media" value, instead of the normal
+// API response value. If the returned error is nil, the Response is guaranteed to
+// have a 2xx status code. Callers must close the Response.Body as usual.
+func (c *CaptionsDownloadCall) Download(opts ...googleapi.CallOption) (*http.Response, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("media")
+	if err != nil {
+		return nil, err
+	}
+	if err := googleapi.CheckMediaResponse(res); err != nil {
+		res.Body.Close()
+		return nil, err
+	}
+	return res, nil
+}
+
+// Do executes the "youtube.captions.download" call.
+func (c *CaptionsDownloadCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
 	if err != nil {
 		return err
 	}
@@ -5132,12 +10423,6 @@ func (c *CaptionsDownloadCall) Do() error {
 	//     "id"
 	//   ],
 	//   "parameters": {
-	//     "debugProjectIdOverride": {
-	//       "description": "The debugProjectIdOverride parameter should be used for mimicking a request for a certain project ID",
-	//       "format": "int64",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
 	//     "id": {
 	//       "description": "The id parameter identifies the caption track that is being retrieved. The value is a caption track ID as identified by the id property in a caption resource.",
 	//       "location": "path",
@@ -5193,36 +10478,25 @@ func (c *CaptionsDownloadCall) Do() error {
 
 type CaptionsInsertCall struct {
 	s          *Service
-	part       string
 	caption    *Caption
-	opt_       map[string]interface{}
-	media_     io.Reader
-	resumable_ googleapi.SizeReaderAt
-	mediaType_ string
+	urlParams_ gensupport.URLParams
+	mediaInfo_ *gensupport.MediaInfo
 	ctx_       context.Context
-	protocol_  string
+	header_    http.Header
 }
 
 // Insert: Uploads a caption track.
 func (r *CaptionsService) Insert(part string, caption *Caption) *CaptionsInsertCall {
-	c := &CaptionsInsertCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &CaptionsInsertCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	c.caption = caption
-	return c
-}
-
-// DebugProjectIdOverride sets the optional parameter
-// "debugProjectIdOverride": The debugProjectIdOverride parameter should
-// be used for mimicking a request for a certain project ID.
-func (c *CaptionsInsertCall) DebugProjectIdOverride(debugProjectIdOverride int64) *CaptionsInsertCall {
-	c.opt_["debugProjectIdOverride"] = debugProjectIdOverride
 	return c
 }
 
 // OnBehalfOf sets the optional parameter "onBehalfOf": ID of the
 // Google+ Page for the channel that the request is be on behalf of
 func (c *CaptionsInsertCall) OnBehalfOf(onBehalfOf string) *CaptionsInsertCall {
-	c.opt_["onBehalfOf"] = onBehalfOf
+	c.urlParams_.Set("onBehalfOf", onBehalfOf)
 	return c
 }
 
@@ -5241,7 +10515,7 @@ func (c *CaptionsInsertCall) OnBehalfOf(onBehalfOf string) *CaptionsInsertCall {
 // authenticates with must be linked to the specified YouTube content
 // owner.
 func (c *CaptionsInsertCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *CaptionsInsertCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
@@ -5255,104 +10529,123 @@ func (c *CaptionsInsertCall) OnBehalfOfContentOwner(onBehalfOfContentOwner strin
 // transcript, which has no time codes, or if you suspect the time codes
 // in your file are incorrect and want YouTube to try to fix them.
 func (c *CaptionsInsertCall) Sync(sync bool) *CaptionsInsertCall {
-	c.opt_["sync"] = sync
+	c.urlParams_.Set("sync", fmt.Sprint(sync))
 	return c
 }
 
-// Media specifies the media to upload in a single chunk.
+// Media specifies the media to upload in one or more chunks. The chunk
+// size may be controlled by supplying a MediaOption generated by
+// googleapi.ChunkSize. The chunk size defaults to
+// googleapi.DefaultUploadChunkSize.The Content-Type header used in the
+// upload request will be determined by sniffing the contents of r,
+// unless a MediaOption generated by googleapi.ContentType is
+// supplied.
 // At most one of Media and ResumableMedia may be set.
-func (c *CaptionsInsertCall) Media(r io.Reader) *CaptionsInsertCall {
-	c.media_ = r
-	c.protocol_ = "multipart"
+func (c *CaptionsInsertCall) Media(r io.Reader, options ...googleapi.MediaOption) *CaptionsInsertCall {
+	c.mediaInfo_ = gensupport.NewInfoFromMedia(r, options)
 	return c
 }
 
-// ResumableMedia specifies the media to upload in chunks and can be cancelled with ctx.
-// At most one of Media and ResumableMedia may be set.
-// mediaType identifies the MIME media type of the upload, such as "image/png".
-// If mediaType is "", it will be auto-detected.
+// ResumableMedia specifies the media to upload in chunks and can be
+// canceled with ctx.
+//
+// Deprecated: use Media instead.
+//
+// At most one of Media and ResumableMedia may be set. mediaType
+// identifies the MIME media type of the upload, such as "image/png". If
+// mediaType is "", it will be auto-detected. The provided ctx will
+// supersede any context previously provided to the Context method.
 func (c *CaptionsInsertCall) ResumableMedia(ctx context.Context, r io.ReaderAt, size int64, mediaType string) *CaptionsInsertCall {
 	c.ctx_ = ctx
-	c.resumable_ = io.NewSectionReader(r, 0, size)
-	c.mediaType_ = mediaType
-	c.protocol_ = "resumable"
+	c.mediaInfo_ = gensupport.NewInfoFromResumableMedia(r, size, mediaType)
 	return c
 }
 
-// ProgressUpdater provides a callback function that will be called after every chunk.
-// It should be a low-latency function in order to not slow down the upload operation.
-// This should only be called when using ResumableMedia (as opposed to Media).
+// ProgressUpdater provides a callback function that will be called
+// after every chunk. It should be a low-latency function in order to
+// not slow down the upload operation. This should only be called when
+// using ResumableMedia (as opposed to Media).
 func (c *CaptionsInsertCall) ProgressUpdater(pu googleapi.ProgressUpdater) *CaptionsInsertCall {
-	c.opt_["progressUpdater"] = pu
+	c.mediaInfo_.SetProgressUpdater(pu)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *CaptionsInsertCall) Fields(s ...googleapi.Field) *CaptionsInsertCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *CaptionsInsertCall) Do() (*Caption, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+// This context will supersede any context previously provided to the
+// ResumableMedia method.
+func (c *CaptionsInsertCall) Context(ctx context.Context) *CaptionsInsertCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CaptionsInsertCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *CaptionsInsertCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.caption)
 	if err != nil {
 		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["debugProjectIdOverride"]; ok {
-		params.Set("debugProjectIdOverride", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOf"]; ok {
-		params.Set("onBehalfOf", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["sync"]; ok {
-		params.Set("sync", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "captions")
-	var progressUpdater_ googleapi.ProgressUpdater
-	if v, ok := c.opt_["progressUpdater"]; ok {
-		if pu, ok := v.(googleapi.ProgressUpdater); ok {
-			progressUpdater_ = pu
-		}
-	}
-	if c.media_ != nil || c.resumable_ != nil {
+	if c.mediaInfo_ != nil {
 		urls = strings.Replace(urls, "https://www.googleapis.com/", "https://www.googleapis.com/upload/", 1)
-		params.Set("uploadType", c.protocol_)
+		c.urlParams_.Set("uploadType", c.mediaInfo_.UploadType())
 	}
-	urls += "?" + params.Encode()
-	if c.protocol_ != "resumable" {
-		var cancel func()
-		cancel, _ = googleapi.ConditionallyIncludeMedia(c.media_, &body, &ctype)
-		if cancel != nil {
-			defer cancel()
-		}
+	if body == nil {
+		body = new(bytes.Buffer)
+		reqHeaders.Set("Content-Type", "application/json")
 	}
+	body, cleanup := c.mediaInfo_.UploadRequest(reqHeaders, body)
+	defer cleanup()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	if c.protocol_ == "resumable" {
-		req.ContentLength = 0
-		if c.mediaType_ == "" {
-			c.mediaType_ = googleapi.DetectMediaType(c.resumable_)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.captions.insert" call.
+// Exactly one of *Caption or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Caption.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *CaptionsInsertCall) Do(opts ...googleapi.CallOption) (*Caption, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
 		}
-		req.Header.Set("X-Upload-Content-Type", c.mediaType_)
-		req.Body = nil
-	} else {
-		req.Header.Set("Content-Type", ctype)
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
 	}
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -5360,25 +10653,31 @@ func (c *CaptionsInsertCall) Do() (*Caption, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	if c.protocol_ == "resumable" {
-		loc := res.Header.Get("Location")
-		rx := &googleapi.ResumableUpload{
-			Client:        c.s.client,
-			UserAgent:     c.s.userAgent(),
-			URI:           loc,
-			Media:         c.resumable_,
-			MediaType:     c.mediaType_,
-			ContentLength: c.resumable_.Size(),
-			Callback:      progressUpdater_,
+	rx := c.mediaInfo_.ResumableUpload(res.Header.Get("Location"))
+	if rx != nil {
+		rx.Client = c.s.client
+		rx.UserAgent = c.s.userAgent()
+		ctx := c.ctx_
+		if ctx == nil {
+			ctx = context.TODO()
 		}
-		res, err = rx.Upload(c.ctx_)
+		res, err = rx.Upload(ctx)
 		if err != nil {
 			return nil, err
 		}
 		defer res.Body.Close()
+		if err := googleapi.CheckResponse(res); err != nil {
+			return nil, err
+		}
 	}
-	var ret *Caption
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Caption{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -5408,12 +10707,6 @@ func (c *CaptionsInsertCall) Do() (*Caption, error) {
 	//     "part"
 	//   ],
 	//   "parameters": {
-	//     "debugProjectIdOverride": {
-	//       "description": "The debugProjectIdOverride parameter should be used for mimicking a request for a certain project ID.",
-	//       "format": "int64",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
 	//     "onBehalfOf": {
 	//       "description": "ID of the Google+ Page for the channel that the request is be on behalf of",
 	//       "location": "query",
@@ -5455,10 +10748,11 @@ func (c *CaptionsInsertCall) Do() (*Caption, error) {
 // method id "youtube.captions.list":
 
 type CaptionsListCall struct {
-	s       *Service
-	part    string
-	videoId string
-	opt_    map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Returns a list of caption tracks that are associated with a
@@ -5466,17 +10760,9 @@ type CaptionsListCall struct {
 // actual captions and that the captions.download method provides the
 // ability to retrieve a caption track.
 func (r *CaptionsService) List(part string, videoId string) *CaptionsListCall {
-	c := &CaptionsListCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
-	c.videoId = videoId
-	return c
-}
-
-// DebugProjectIdOverride sets the optional parameter
-// "debugProjectIdOverride": The debugProjectIdOverride parameter should
-// be used for mimicking a request for a certain project ID.
-func (c *CaptionsListCall) DebugProjectIdOverride(debugProjectIdOverride int64) *CaptionsListCall {
-	c.opt_["debugProjectIdOverride"] = debugProjectIdOverride
+	c := &CaptionsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
+	c.urlParams_.Set("videoId", videoId)
 	return c
 }
 
@@ -5485,14 +10771,14 @@ func (c *CaptionsListCall) DebugProjectIdOverride(debugProjectIdOverride int64) 
 // should be retrieved. Each ID must identify a caption track associated
 // with the specified video.
 func (c *CaptionsListCall) Id(id string) *CaptionsListCall {
-	c.opt_["id"] = id
+	c.urlParams_.Set("id", id)
 	return c
 }
 
 // OnBehalfOf sets the optional parameter "onBehalfOf": ID of the
 // Google+ Page for the channel that the request is on behalf of.
 func (c *CaptionsListCall) OnBehalfOf(onBehalfOf string) *CaptionsListCall {
-	c.opt_["onBehalfOf"] = onBehalfOf
+	c.urlParams_.Set("onBehalfOf", onBehalfOf)
 	return c
 }
 
@@ -5511,45 +10797,82 @@ func (c *CaptionsListCall) OnBehalfOf(onBehalfOf string) *CaptionsListCall {
 // authenticates with must be linked to the specified YouTube content
 // owner.
 func (c *CaptionsListCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *CaptionsListCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *CaptionsListCall) Fields(s ...googleapi.Field) *CaptionsListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *CaptionsListCall) Do() (*CaptionListResponse, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *CaptionsListCall) IfNoneMatch(entityTag string) *CaptionsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *CaptionsListCall) Context(ctx context.Context) *CaptionsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CaptionsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *CaptionsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	params.Set("videoId", fmt.Sprintf("%v", c.videoId))
-	if v, ok := c.opt_["debugProjectIdOverride"]; ok {
-		params.Set("debugProjectIdOverride", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["id"]; ok {
-		params.Set("id", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOf"]; ok {
-		params.Set("onBehalfOf", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "captions")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.captions.list" call.
+// Exactly one of *CaptionListResponse or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *CaptionListResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *CaptionsListCall) Do(opts ...googleapi.CallOption) (*CaptionListResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -5557,8 +10880,14 @@ func (c *CaptionsListCall) Do() (*CaptionListResponse, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *CaptionListResponse
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &CaptionListResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -5571,12 +10900,6 @@ func (c *CaptionsListCall) Do() (*CaptionListResponse, error) {
 	//     "videoId"
 	//   ],
 	//   "parameters": {
-	//     "debugProjectIdOverride": {
-	//       "description": "The debugProjectIdOverride parameter should be used for mimicking a request for a certain project ID.",
-	//       "format": "int64",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
 	//     "id": {
 	//       "description": "The id parameter specifies a comma-separated list of IDs that identify the caption resources that should be retrieved. Each ID must identify a caption track associated with the specified video.",
 	//       "location": "query",
@@ -5621,38 +10944,27 @@ func (c *CaptionsListCall) Do() (*CaptionListResponse, error) {
 
 type CaptionsUpdateCall struct {
 	s          *Service
-	part       string
 	caption    *Caption
-	opt_       map[string]interface{}
-	media_     io.Reader
-	resumable_ googleapi.SizeReaderAt
-	mediaType_ string
+	urlParams_ gensupport.URLParams
+	mediaInfo_ *gensupport.MediaInfo
 	ctx_       context.Context
-	protocol_  string
+	header_    http.Header
 }
 
 // Update: Updates a caption track. When updating a caption track, you
 // can change the track's draft status, upload a new caption file for
 // the track, or both.
 func (r *CaptionsService) Update(part string, caption *Caption) *CaptionsUpdateCall {
-	c := &CaptionsUpdateCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &CaptionsUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	c.caption = caption
-	return c
-}
-
-// DebugProjectIdOverride sets the optional parameter
-// "debugProjectIdOverride": The debugProjectIdOverride parameter should
-// be used for mimicking a request for a certain project ID.
-func (c *CaptionsUpdateCall) DebugProjectIdOverride(debugProjectIdOverride int64) *CaptionsUpdateCall {
-	c.opt_["debugProjectIdOverride"] = debugProjectIdOverride
 	return c
 }
 
 // OnBehalfOf sets the optional parameter "onBehalfOf": ID of the
 // Google+ Page for the channel that the request is be on behalf of
 func (c *CaptionsUpdateCall) OnBehalfOf(onBehalfOf string) *CaptionsUpdateCall {
-	c.opt_["onBehalfOf"] = onBehalfOf
+	c.urlParams_.Set("onBehalfOf", onBehalfOf)
 	return c
 }
 
@@ -5671,7 +10983,7 @@ func (c *CaptionsUpdateCall) OnBehalfOf(onBehalfOf string) *CaptionsUpdateCall {
 // authenticates with must be linked to the specified YouTube content
 // owner.
 func (c *CaptionsUpdateCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *CaptionsUpdateCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
@@ -5684,104 +10996,123 @@ func (c *CaptionsUpdateCall) OnBehalfOfContentOwner(onBehalfOfContentOwner strin
 // you set the value to true, YouTube will automatically synchronize the
 // caption track with the audio track.
 func (c *CaptionsUpdateCall) Sync(sync bool) *CaptionsUpdateCall {
-	c.opt_["sync"] = sync
+	c.urlParams_.Set("sync", fmt.Sprint(sync))
 	return c
 }
 
-// Media specifies the media to upload in a single chunk.
+// Media specifies the media to upload in one or more chunks. The chunk
+// size may be controlled by supplying a MediaOption generated by
+// googleapi.ChunkSize. The chunk size defaults to
+// googleapi.DefaultUploadChunkSize.The Content-Type header used in the
+// upload request will be determined by sniffing the contents of r,
+// unless a MediaOption generated by googleapi.ContentType is
+// supplied.
 // At most one of Media and ResumableMedia may be set.
-func (c *CaptionsUpdateCall) Media(r io.Reader) *CaptionsUpdateCall {
-	c.media_ = r
-	c.protocol_ = "multipart"
+func (c *CaptionsUpdateCall) Media(r io.Reader, options ...googleapi.MediaOption) *CaptionsUpdateCall {
+	c.mediaInfo_ = gensupport.NewInfoFromMedia(r, options)
 	return c
 }
 
-// ResumableMedia specifies the media to upload in chunks and can be cancelled with ctx.
-// At most one of Media and ResumableMedia may be set.
-// mediaType identifies the MIME media type of the upload, such as "image/png".
-// If mediaType is "", it will be auto-detected.
+// ResumableMedia specifies the media to upload in chunks and can be
+// canceled with ctx.
+//
+// Deprecated: use Media instead.
+//
+// At most one of Media and ResumableMedia may be set. mediaType
+// identifies the MIME media type of the upload, such as "image/png". If
+// mediaType is "", it will be auto-detected. The provided ctx will
+// supersede any context previously provided to the Context method.
 func (c *CaptionsUpdateCall) ResumableMedia(ctx context.Context, r io.ReaderAt, size int64, mediaType string) *CaptionsUpdateCall {
 	c.ctx_ = ctx
-	c.resumable_ = io.NewSectionReader(r, 0, size)
-	c.mediaType_ = mediaType
-	c.protocol_ = "resumable"
+	c.mediaInfo_ = gensupport.NewInfoFromResumableMedia(r, size, mediaType)
 	return c
 }
 
-// ProgressUpdater provides a callback function that will be called after every chunk.
-// It should be a low-latency function in order to not slow down the upload operation.
-// This should only be called when using ResumableMedia (as opposed to Media).
+// ProgressUpdater provides a callback function that will be called
+// after every chunk. It should be a low-latency function in order to
+// not slow down the upload operation. This should only be called when
+// using ResumableMedia (as opposed to Media).
 func (c *CaptionsUpdateCall) ProgressUpdater(pu googleapi.ProgressUpdater) *CaptionsUpdateCall {
-	c.opt_["progressUpdater"] = pu
+	c.mediaInfo_.SetProgressUpdater(pu)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *CaptionsUpdateCall) Fields(s ...googleapi.Field) *CaptionsUpdateCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *CaptionsUpdateCall) Do() (*Caption, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+// This context will supersede any context previously provided to the
+// ResumableMedia method.
+func (c *CaptionsUpdateCall) Context(ctx context.Context) *CaptionsUpdateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CaptionsUpdateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *CaptionsUpdateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.caption)
 	if err != nil {
 		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["debugProjectIdOverride"]; ok {
-		params.Set("debugProjectIdOverride", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOf"]; ok {
-		params.Set("onBehalfOf", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["sync"]; ok {
-		params.Set("sync", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "captions")
-	var progressUpdater_ googleapi.ProgressUpdater
-	if v, ok := c.opt_["progressUpdater"]; ok {
-		if pu, ok := v.(googleapi.ProgressUpdater); ok {
-			progressUpdater_ = pu
-		}
-	}
-	if c.media_ != nil || c.resumable_ != nil {
+	if c.mediaInfo_ != nil {
 		urls = strings.Replace(urls, "https://www.googleapis.com/", "https://www.googleapis.com/upload/", 1)
-		params.Set("uploadType", c.protocol_)
+		c.urlParams_.Set("uploadType", c.mediaInfo_.UploadType())
 	}
-	urls += "?" + params.Encode()
-	if c.protocol_ != "resumable" {
-		var cancel func()
-		cancel, _ = googleapi.ConditionallyIncludeMedia(c.media_, &body, &ctype)
-		if cancel != nil {
-			defer cancel()
-		}
+	if body == nil {
+		body = new(bytes.Buffer)
+		reqHeaders.Set("Content-Type", "application/json")
 	}
+	body, cleanup := c.mediaInfo_.UploadRequest(reqHeaders, body)
+	defer cleanup()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PUT", urls, body)
-	googleapi.SetOpaque(req.URL)
-	if c.protocol_ == "resumable" {
-		req.ContentLength = 0
-		if c.mediaType_ == "" {
-			c.mediaType_ = googleapi.DetectMediaType(c.resumable_)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.captions.update" call.
+// Exactly one of *Caption or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Caption.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *CaptionsUpdateCall) Do(opts ...googleapi.CallOption) (*Caption, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
 		}
-		req.Header.Set("X-Upload-Content-Type", c.mediaType_)
-		req.Body = nil
-	} else {
-		req.Header.Set("Content-Type", ctype)
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
 	}
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -5789,25 +11120,31 @@ func (c *CaptionsUpdateCall) Do() (*Caption, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	if c.protocol_ == "resumable" {
-		loc := res.Header.Get("Location")
-		rx := &googleapi.ResumableUpload{
-			Client:        c.s.client,
-			UserAgent:     c.s.userAgent(),
-			URI:           loc,
-			Media:         c.resumable_,
-			MediaType:     c.mediaType_,
-			ContentLength: c.resumable_.Size(),
-			Callback:      progressUpdater_,
+	rx := c.mediaInfo_.ResumableUpload(res.Header.Get("Location"))
+	if rx != nil {
+		rx.Client = c.s.client
+		rx.UserAgent = c.s.userAgent()
+		ctx := c.ctx_
+		if ctx == nil {
+			ctx = context.TODO()
 		}
-		res, err = rx.Upload(c.ctx_)
+		res, err = rx.Upload(ctx)
 		if err != nil {
 			return nil, err
 		}
 		defer res.Body.Close()
+		if err := googleapi.CheckResponse(res); err != nil {
+			return nil, err
+		}
 	}
-	var ret *Caption
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Caption{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -5837,12 +11174,6 @@ func (c *CaptionsUpdateCall) Do() (*Caption, error) {
 	//     "part"
 	//   ],
 	//   "parameters": {
-	//     "debugProjectIdOverride": {
-	//       "description": "The debugProjectIdOverride parameter should be used for mimicking a request for a certain project ID.",
-	//       "format": "int64",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
 	//     "onBehalfOf": {
 	//       "description": "ID of the Google+ Page for the channel that the request is be on behalf of",
 	//       "location": "query",
@@ -5886,12 +11217,10 @@ func (c *CaptionsUpdateCall) Do() (*Caption, error) {
 type ChannelBannersInsertCall struct {
 	s                     *Service
 	channelbannerresource *ChannelBannerResource
-	opt_                  map[string]interface{}
-	media_                io.Reader
-	resumable_            googleapi.SizeReaderAt
-	mediaType_            string
+	urlParams_            gensupport.URLParams
+	mediaInfo_            *gensupport.MediaInfo
 	ctx_                  context.Context
-	protocol_             string
+	header_               http.Header
 }
 
 // Insert: Uploads a channel banner image to YouTube. This method
@@ -5907,8 +11236,23 @@ type ChannelBannersInsertCall struct {
 // settings. Set the brandingSettings.image.bannerExternalUrl property's
 // value to the URL obtained in step 2.
 func (r *ChannelBannersService) Insert(channelbannerresource *ChannelBannerResource) *ChannelBannersInsertCall {
-	c := &ChannelBannersInsertCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &ChannelBannersInsertCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.channelbannerresource = channelbannerresource
+	return c
+}
+
+// ChannelId sets the optional parameter "channelId": The channelId
+// parameter identifies the YouTube channel to which the banner is
+// uploaded. The channelId parameter was introduced as a required
+// parameter in May 2017. As this was a backward-incompatible change,
+// channelBanners.insert requests that do not specify this parameter
+// will not return an error until six months have passed from the time
+// that the parameter was introduced. Please see the API Terms of
+// Service for the official policy regarding backward incompatible
+// changes and the API revision history for the exact date that the
+// parameter was introduced.
+func (c *ChannelBannersInsertCall) ChannelId(channelId string) *ChannelBannersInsertCall {
+	c.urlParams_.Set("channelId", channelId)
 	return c
 }
 
@@ -5926,94 +11270,123 @@ func (r *ChannelBannersService) Insert(channelbannerresource *ChannelBannerResou
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *ChannelBannersInsertCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *ChannelBannersInsertCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
-// Media specifies the media to upload in a single chunk.
+// Media specifies the media to upload in one or more chunks. The chunk
+// size may be controlled by supplying a MediaOption generated by
+// googleapi.ChunkSize. The chunk size defaults to
+// googleapi.DefaultUploadChunkSize.The Content-Type header used in the
+// upload request will be determined by sniffing the contents of r,
+// unless a MediaOption generated by googleapi.ContentType is
+// supplied.
 // At most one of Media and ResumableMedia may be set.
-func (c *ChannelBannersInsertCall) Media(r io.Reader) *ChannelBannersInsertCall {
-	c.media_ = r
-	c.protocol_ = "multipart"
+func (c *ChannelBannersInsertCall) Media(r io.Reader, options ...googleapi.MediaOption) *ChannelBannersInsertCall {
+	c.mediaInfo_ = gensupport.NewInfoFromMedia(r, options)
 	return c
 }
 
-// ResumableMedia specifies the media to upload in chunks and can be cancelled with ctx.
-// At most one of Media and ResumableMedia may be set.
-// mediaType identifies the MIME media type of the upload, such as "image/png".
-// If mediaType is "", it will be auto-detected.
+// ResumableMedia specifies the media to upload in chunks and can be
+// canceled with ctx.
+//
+// Deprecated: use Media instead.
+//
+// At most one of Media and ResumableMedia may be set. mediaType
+// identifies the MIME media type of the upload, such as "image/png". If
+// mediaType is "", it will be auto-detected. The provided ctx will
+// supersede any context previously provided to the Context method.
 func (c *ChannelBannersInsertCall) ResumableMedia(ctx context.Context, r io.ReaderAt, size int64, mediaType string) *ChannelBannersInsertCall {
 	c.ctx_ = ctx
-	c.resumable_ = io.NewSectionReader(r, 0, size)
-	c.mediaType_ = mediaType
-	c.protocol_ = "resumable"
+	c.mediaInfo_ = gensupport.NewInfoFromResumableMedia(r, size, mediaType)
 	return c
 }
 
-// ProgressUpdater provides a callback function that will be called after every chunk.
-// It should be a low-latency function in order to not slow down the upload operation.
-// This should only be called when using ResumableMedia (as opposed to Media).
+// ProgressUpdater provides a callback function that will be called
+// after every chunk. It should be a low-latency function in order to
+// not slow down the upload operation. This should only be called when
+// using ResumableMedia (as opposed to Media).
 func (c *ChannelBannersInsertCall) ProgressUpdater(pu googleapi.ProgressUpdater) *ChannelBannersInsertCall {
-	c.opt_["progressUpdater"] = pu
+	c.mediaInfo_.SetProgressUpdater(pu)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *ChannelBannersInsertCall) Fields(s ...googleapi.Field) *ChannelBannersInsertCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *ChannelBannersInsertCall) Do() (*ChannelBannerResource, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+// This context will supersede any context previously provided to the
+// ResumableMedia method.
+func (c *ChannelBannersInsertCall) Context(ctx context.Context) *ChannelBannersInsertCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ChannelBannersInsertCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ChannelBannersInsertCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.channelbannerresource)
 	if err != nil {
 		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "channelBanners/insert")
-	var progressUpdater_ googleapi.ProgressUpdater
-	if v, ok := c.opt_["progressUpdater"]; ok {
-		if pu, ok := v.(googleapi.ProgressUpdater); ok {
-			progressUpdater_ = pu
-		}
-	}
-	if c.media_ != nil || c.resumable_ != nil {
+	if c.mediaInfo_ != nil {
 		urls = strings.Replace(urls, "https://www.googleapis.com/", "https://www.googleapis.com/upload/", 1)
-		params.Set("uploadType", c.protocol_)
+		c.urlParams_.Set("uploadType", c.mediaInfo_.UploadType())
 	}
-	urls += "?" + params.Encode()
-	if c.protocol_ != "resumable" {
-		var cancel func()
-		cancel, _ = googleapi.ConditionallyIncludeMedia(c.media_, &body, &ctype)
-		if cancel != nil {
-			defer cancel()
-		}
+	if body == nil {
+		body = new(bytes.Buffer)
+		reqHeaders.Set("Content-Type", "application/json")
 	}
+	body, cleanup := c.mediaInfo_.UploadRequest(reqHeaders, body)
+	defer cleanup()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	if c.protocol_ == "resumable" {
-		req.ContentLength = 0
-		if c.mediaType_ == "" {
-			c.mediaType_ = googleapi.DetectMediaType(c.resumable_)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.channelBanners.insert" call.
+// Exactly one of *ChannelBannerResource or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *ChannelBannerResource.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ChannelBannersInsertCall) Do(opts ...googleapi.CallOption) (*ChannelBannerResource, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
 		}
-		req.Header.Set("X-Upload-Content-Type", c.mediaType_)
-		req.Body = nil
-	} else {
-		req.Header.Set("Content-Type", ctype)
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
 	}
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -6021,25 +11394,31 @@ func (c *ChannelBannersInsertCall) Do() (*ChannelBannerResource, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	if c.protocol_ == "resumable" {
-		loc := res.Header.Get("Location")
-		rx := &googleapi.ResumableUpload{
-			Client:        c.s.client,
-			UserAgent:     c.s.userAgent(),
-			URI:           loc,
-			Media:         c.resumable_,
-			MediaType:     c.mediaType_,
-			ContentLength: c.resumable_.Size(),
-			Callback:      progressUpdater_,
+	rx := c.mediaInfo_.ResumableUpload(res.Header.Get("Location"))
+	if rx != nil {
+		rx.Client = c.s.client
+		rx.UserAgent = c.s.userAgent()
+		ctx := c.ctx_
+		if ctx == nil {
+			ctx = context.TODO()
 		}
-		res, err = rx.Upload(c.ctx_)
+		res, err = rx.Upload(ctx)
 		if err != nil {
 			return nil, err
 		}
 		defer res.Body.Close()
+		if err := googleapi.CheckResponse(res); err != nil {
+			return nil, err
+		}
 	}
-	var ret *ChannelBannerResource
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &ChannelBannerResource{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -6066,6 +11445,11 @@ func (c *ChannelBannersInsertCall) Do() (*ChannelBannerResource, error) {
 	//     }
 	//   },
 	//   "parameters": {
+	//     "channelId": {
+	//       "description": "The channelId parameter identifies the YouTube channel to which the banner is uploaded. The channelId parameter was introduced as a required parameter in May 2017. As this was a backward-incompatible change, channelBanners.insert requests that do not specify this parameter will not return an error until six months have passed from the time that the parameter was introduced. Please see the API Terms of Service for the official policy regarding backward incompatible changes and the API revision history for the exact date that the parameter was introduced.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
 	//     "onBehalfOfContentOwner": {
 	//       "description": "Note: This parameter is intended exclusively for YouTube content partners.\n\nThe onBehalfOfContentOwner parameter indicates that the request's authorization credentials identify a YouTube CMS user who is acting on behalf of the content owner specified in the parameter value. This parameter is intended for YouTube content partners that own and manage many different YouTube channels. It allows content owners to authenticate once and get access to all their video and channel data, without having to provide authentication credentials for each individual channel. The CMS account that the user authenticates with must be linked to the specified YouTube content owner.",
 	//       "location": "query",
@@ -6092,15 +11476,16 @@ func (c *ChannelBannersInsertCall) Do() (*ChannelBannerResource, error) {
 // method id "youtube.channelSections.delete":
 
 type ChannelSectionsDeleteCall struct {
-	s    *Service
-	id   string
-	opt_ map[string]interface{}
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Delete: Deletes a channelSection.
 func (r *ChannelSectionsService) Delete(id string) *ChannelSectionsDeleteCall {
-	c := &ChannelSectionsDeleteCall{s: r.s, opt_: make(map[string]interface{})}
-	c.id = id
+	c := &ChannelSectionsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("id", id)
 	return c
 }
 
@@ -6118,35 +11503,54 @@ func (r *ChannelSectionsService) Delete(id string) *ChannelSectionsDeleteCall {
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *ChannelSectionsDeleteCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *ChannelSectionsDeleteCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *ChannelSectionsDeleteCall) Fields(s ...googleapi.Field) *ChannelSectionsDeleteCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *ChannelSectionsDeleteCall) Do() error {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ChannelSectionsDeleteCall) Context(ctx context.Context) *ChannelSectionsDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ChannelSectionsDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ChannelSectionsDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("id", fmt.Sprintf("%v", c.id))
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "channelSections")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.channelSections.delete" call.
+func (c *ChannelSectionsDeleteCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
 	if err != nil {
 		return err
 	}
@@ -6189,15 +11593,16 @@ func (c *ChannelSectionsDeleteCall) Do() error {
 
 type ChannelSectionsInsertCall struct {
 	s              *Service
-	part           string
 	channelsection *ChannelSection
-	opt_           map[string]interface{}
+	urlParams_     gensupport.URLParams
+	ctx_           context.Context
+	header_        http.Header
 }
 
 // Insert: Adds a channelSection for the authenticated user's channel.
 func (r *ChannelSectionsService) Insert(part string, channelsection *ChannelSection) *ChannelSectionsInsertCall {
-	c := &ChannelSectionsInsertCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &ChannelSectionsInsertCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	c.channelsection = channelsection
 	return c
 }
@@ -6216,7 +11621,7 @@ func (r *ChannelSectionsService) Insert(part string, channelsection *ChannelSect
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *ChannelSectionsInsertCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *ChannelSectionsInsertCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
@@ -6242,44 +11647,74 @@ func (c *ChannelSectionsInsertCall) OnBehalfOfContentOwner(onBehalfOfContentOwne
 // specified in the parameter value, without having to provide
 // authentication credentials for each separate channel.
 func (c *ChannelSectionsInsertCall) OnBehalfOfContentOwnerChannel(onBehalfOfContentOwnerChannel string) *ChannelSectionsInsertCall {
-	c.opt_["onBehalfOfContentOwnerChannel"] = onBehalfOfContentOwnerChannel
+	c.urlParams_.Set("onBehalfOfContentOwnerChannel", onBehalfOfContentOwnerChannel)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *ChannelSectionsInsertCall) Fields(s ...googleapi.Field) *ChannelSectionsInsertCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *ChannelSectionsInsertCall) Do() (*ChannelSection, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ChannelSectionsInsertCall) Context(ctx context.Context) *ChannelSectionsInsertCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ChannelSectionsInsertCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ChannelSectionsInsertCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.channelsection)
 	if err != nil {
 		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwnerChannel"]; ok {
-		params.Set("onBehalfOfContentOwnerChannel", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "channelSections")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("Content-Type", ctype)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.channelSections.insert" call.
+// Exactly one of *ChannelSection or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *ChannelSection.ServerResponse.Header or (if a response was returned
+// at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ChannelSectionsInsertCall) Do(opts ...googleapi.CallOption) (*ChannelSection, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -6287,8 +11722,14 @@ func (c *ChannelSectionsInsertCall) Do() (*ChannelSection, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *ChannelSection
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &ChannelSection{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -6336,16 +11777,18 @@ func (c *ChannelSectionsInsertCall) Do() (*ChannelSection, error) {
 // method id "youtube.channelSections.list":
 
 type ChannelSectionsListCall struct {
-	s    *Service
-	part string
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Returns channelSection resources that match the API request
 // criteria.
 func (r *ChannelSectionsService) List(part string) *ChannelSectionsListCall {
-	c := &ChannelSectionsListCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &ChannelSectionsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	return c
 }
 
@@ -6353,7 +11796,7 @@ func (r *ChannelSectionsService) List(part string) *ChannelSectionsListCall {
 // parameter specifies a YouTube channel ID. The API will only return
 // that channel's channelSections.
 func (c *ChannelSectionsListCall) ChannelId(channelId string) *ChannelSectionsListCall {
-	c.opt_["channelId"] = channelId
+	c.urlParams_.Set("channelId", channelId)
 	return c
 }
 
@@ -6366,7 +11809,7 @@ func (c *ChannelSectionsListCall) ChannelId(channelId string) *ChannelSectionsLi
 // owners can provide localized channel section titles using either the
 // channelSections.insert or channelSections.update method.
 func (c *ChannelSectionsListCall) Hl(hl string) *ChannelSectionsListCall {
-	c.opt_["hl"] = hl
+	c.urlParams_.Set("hl", hl)
 	return c
 }
 
@@ -6375,7 +11818,7 @@ func (c *ChannelSectionsListCall) Hl(hl string) *ChannelSectionsListCall {
 // resource(s) that are being retrieved. In a channelSection resource,
 // the id property specifies the YouTube channelSection ID.
 func (c *ChannelSectionsListCall) Id(id string) *ChannelSectionsListCall {
-	c.opt_["id"] = id
+	c.urlParams_.Set("id", id)
 	return c
 }
 
@@ -6383,7 +11826,7 @@ func (c *ChannelSectionsListCall) Id(id string) *ChannelSectionsListCall {
 // to true to retrieve a feed of the authenticated user's
 // channelSections.
 func (c *ChannelSectionsListCall) Mine(mine bool) *ChannelSectionsListCall {
-	c.opt_["mine"] = mine
+	c.urlParams_.Set("mine", fmt.Sprint(mine))
 	return c
 }
 
@@ -6401,47 +11844,82 @@ func (c *ChannelSectionsListCall) Mine(mine bool) *ChannelSectionsListCall {
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *ChannelSectionsListCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *ChannelSectionsListCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *ChannelSectionsListCall) Fields(s ...googleapi.Field) *ChannelSectionsListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *ChannelSectionsListCall) Do() (*ChannelSectionListResponse, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ChannelSectionsListCall) IfNoneMatch(entityTag string) *ChannelSectionsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ChannelSectionsListCall) Context(ctx context.Context) *ChannelSectionsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ChannelSectionsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ChannelSectionsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["channelId"]; ok {
-		params.Set("channelId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["hl"]; ok {
-		params.Set("hl", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["id"]; ok {
-		params.Set("id", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["mine"]; ok {
-		params.Set("mine", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "channelSections")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.channelSections.list" call.
+// Exactly one of *ChannelSectionListResponse or error will be non-nil.
+// Any non-2xx status code is an error. Response headers are in either
+// *ChannelSectionListResponse.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ChannelSectionsListCall) Do(opts ...googleapi.CallOption) (*ChannelSectionListResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -6449,8 +11927,14 @@ func (c *ChannelSectionsListCall) Do() (*ChannelSectionListResponse, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *ChannelSectionListResponse
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &ChannelSectionListResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -6512,15 +11996,16 @@ func (c *ChannelSectionsListCall) Do() (*ChannelSectionListResponse, error) {
 
 type ChannelSectionsUpdateCall struct {
 	s              *Service
-	part           string
 	channelsection *ChannelSection
-	opt_           map[string]interface{}
+	urlParams_     gensupport.URLParams
+	ctx_           context.Context
+	header_        http.Header
 }
 
 // Update: Update a channelSection.
 func (r *ChannelSectionsService) Update(part string, channelsection *ChannelSection) *ChannelSectionsUpdateCall {
-	c := &ChannelSectionsUpdateCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &ChannelSectionsUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	c.channelsection = channelsection
 	return c
 }
@@ -6539,41 +12024,74 @@ func (r *ChannelSectionsService) Update(part string, channelsection *ChannelSect
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *ChannelSectionsUpdateCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *ChannelSectionsUpdateCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *ChannelSectionsUpdateCall) Fields(s ...googleapi.Field) *ChannelSectionsUpdateCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *ChannelSectionsUpdateCall) Do() (*ChannelSection, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ChannelSectionsUpdateCall) Context(ctx context.Context) *ChannelSectionsUpdateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ChannelSectionsUpdateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ChannelSectionsUpdateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.channelsection)
 	if err != nil {
 		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "channelSections")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PUT", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("Content-Type", ctype)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.channelSections.update" call.
+// Exactly one of *ChannelSection or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *ChannelSection.ServerResponse.Header or (if a response was returned
+// at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ChannelSectionsUpdateCall) Do(opts ...googleapi.CallOption) (*ChannelSection, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -6581,8 +12099,14 @@ func (c *ChannelSectionsUpdateCall) Do() (*ChannelSection, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *ChannelSection
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &ChannelSection{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -6625,16 +12149,18 @@ func (c *ChannelSectionsUpdateCall) Do() (*ChannelSection, error) {
 // method id "youtube.channels.list":
 
 type ChannelsListCall struct {
-	s    *Service
-	part string
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Returns a collection of zero or more channel resources that
 // match the request criteria.
 func (r *ChannelsService) List(part string) *ChannelsListCall {
-	c := &ChannelsListCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &ChannelsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	return c
 }
 
@@ -6642,7 +12168,7 @@ func (r *ChannelsService) List(part string) *ChannelsListCall {
 // parameter specifies a YouTube guide category, thereby requesting
 // YouTube channels associated with that category.
 func (c *ChannelsListCall) CategoryId(categoryId string) *ChannelsListCall {
-	c.opt_["categoryId"] = categoryId
+	c.urlParams_.Set("categoryId", categoryId)
 	return c
 }
 
@@ -6650,7 +12176,7 @@ func (c *ChannelsListCall) CategoryId(categoryId string) *ChannelsListCall {
 // forUsername parameter specifies a YouTube username, thereby
 // requesting the channel associated with that username.
 func (c *ChannelsListCall) ForUsername(forUsername string) *ChannelsListCall {
-	c.opt_["forUsername"] = forUsername
+	c.urlParams_.Set("forUsername", forUsername)
 	return c
 }
 
@@ -6658,7 +12184,7 @@ func (c *ChannelsListCall) ForUsername(forUsername string) *ChannelsListCall {
 // for filter out the properties that are not in the given language.
 // Used for the brandingSettings part.
 func (c *ChannelsListCall) Hl(hl string) *ChannelsListCall {
-	c.opt_["hl"] = hl
+	c.urlParams_.Set("hl", hl)
 	return c
 }
 
@@ -6667,7 +12193,7 @@ func (c *ChannelsListCall) Hl(hl string) *ChannelsListCall {
 // that are being retrieved. In a channel resource, the id property
 // specifies the channel's YouTube channel ID.
 func (c *ChannelsListCall) Id(id string) *ChannelsListCall {
-	c.opt_["id"] = id
+	c.urlParams_.Set("id", id)
 	return c
 }
 
@@ -6680,7 +12206,7 @@ func (c *ChannelsListCall) Id(id string) *ChannelsListCall {
 // linked to the specified content owner and onBehalfOfContentOwner must
 // be provided.
 func (c *ChannelsListCall) ManagedByMe(managedByMe bool) *ChannelsListCall {
-	c.opt_["managedByMe"] = managedByMe
+	c.urlParams_.Set("managedByMe", fmt.Sprint(managedByMe))
 	return c
 }
 
@@ -6688,7 +12214,7 @@ func (c *ChannelsListCall) ManagedByMe(managedByMe bool) *ChannelsListCall {
 // parameter specifies the maximum number of items that should be
 // returned in the result set.
 func (c *ChannelsListCall) MaxResults(maxResults int64) *ChannelsListCall {
-	c.opt_["maxResults"] = maxResults
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
 	return c
 }
 
@@ -6696,7 +12222,7 @@ func (c *ChannelsListCall) MaxResults(maxResults int64) *ChannelsListCall {
 // to true to instruct the API to only return channels owned by the
 // authenticated user.
 func (c *ChannelsListCall) Mine(mine bool) *ChannelsListCall {
-	c.opt_["mine"] = mine
+	c.urlParams_.Set("mine", fmt.Sprint(mine))
 	return c
 }
 
@@ -6704,7 +12230,7 @@ func (c *ChannelsListCall) Mine(mine bool) *ChannelsListCall {
 // subscriptions.list method and its mySubscribers parameter to retrieve
 // a list of subscribers to the authenticated user's channel.
 func (c *ChannelsListCall) MySubscribers(mySubscribers bool) *ChannelsListCall {
-	c.opt_["mySubscribers"] = mySubscribers
+	c.urlParams_.Set("mySubscribers", fmt.Sprint(mySubscribers))
 	return c
 }
 
@@ -6722,7 +12248,7 @@ func (c *ChannelsListCall) MySubscribers(mySubscribers bool) *ChannelsListCall {
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *ChannelsListCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *ChannelsListCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
@@ -6731,62 +12257,82 @@ func (c *ChannelsListCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string)
 // returned. In an API response, the nextPageToken and prevPageToken
 // properties identify other pages that could be retrieved.
 func (c *ChannelsListCall) PageToken(pageToken string) *ChannelsListCall {
-	c.opt_["pageToken"] = pageToken
+	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *ChannelsListCall) Fields(s ...googleapi.Field) *ChannelsListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *ChannelsListCall) Do() (*ChannelListResponse, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ChannelsListCall) IfNoneMatch(entityTag string) *ChannelsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ChannelsListCall) Context(ctx context.Context) *ChannelsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ChannelsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ChannelsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["categoryId"]; ok {
-		params.Set("categoryId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["forUsername"]; ok {
-		params.Set("forUsername", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["hl"]; ok {
-		params.Set("hl", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["id"]; ok {
-		params.Set("id", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["managedByMe"]; ok {
-		params.Set("managedByMe", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["maxResults"]; ok {
-		params.Set("maxResults", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["mine"]; ok {
-		params.Set("mine", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["mySubscribers"]; ok {
-		params.Set("mySubscribers", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["pageToken"]; ok {
-		params.Set("pageToken", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "channels")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.channels.list" call.
+// Exactly one of *ChannelListResponse or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *ChannelListResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ChannelsListCall) Do(opts ...googleapi.CallOption) (*ChannelListResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -6794,8 +12340,14 @@ func (c *ChannelsListCall) Do() (*ChannelListResponse, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *ChannelListResponse
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &ChannelListResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -6883,21 +12435,43 @@ func (c *ChannelsListCall) Do() (*ChannelListResponse, error) {
 
 }
 
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *ChannelsListCall) Pages(ctx context.Context, f func(*ChannelListResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
 // method id "youtube.channels.update":
 
 type ChannelsUpdateCall struct {
-	s       *Service
-	part    string
-	channel *Channel
-	opt_    map[string]interface{}
+	s          *Service
+	channel    *Channel
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Update: Updates a channel's metadata. Note that this method currently
 // only supports updates to the channel resource's brandingSettings and
 // invideoPromotion objects and their child properties.
 func (r *ChannelsService) Update(part string, channel *Channel) *ChannelsUpdateCall {
-	c := &ChannelsUpdateCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &ChannelsUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	c.channel = channel
 	return c
 }
@@ -6913,41 +12487,74 @@ func (r *ChannelsService) Update(part string, channel *Channel) *ChannelsUpdateC
 // channel. The actual CMS account that the user authenticates with
 // needs to be linked to the specified YouTube content owner.
 func (c *ChannelsUpdateCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *ChannelsUpdateCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *ChannelsUpdateCall) Fields(s ...googleapi.Field) *ChannelsUpdateCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *ChannelsUpdateCall) Do() (*Channel, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ChannelsUpdateCall) Context(ctx context.Context) *ChannelsUpdateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ChannelsUpdateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ChannelsUpdateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.channel)
 	if err != nil {
 		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "channels")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PUT", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("Content-Type", ctype)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.channels.update" call.
+// Exactly one of *Channel or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Channel.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *ChannelsUpdateCall) Do(opts ...googleapi.CallOption) (*Channel, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -6955,8 +12562,14 @@ func (c *ChannelsUpdateCall) Do() (*Channel, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Channel
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Channel{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -7000,60 +12613,85 @@ func (c *ChannelsUpdateCall) Do() (*Channel, error) {
 
 type CommentThreadsInsertCall struct {
 	s             *Service
-	part          string
 	commentthread *CommentThread
-	opt_          map[string]interface{}
+	urlParams_    gensupport.URLParams
+	ctx_          context.Context
+	header_       http.Header
 }
 
 // Insert: Creates a new top-level comment. To add a reply to an
 // existing comment, use the comments.insert method instead.
 func (r *CommentThreadsService) Insert(part string, commentthread *CommentThread) *CommentThreadsInsertCall {
-	c := &CommentThreadsInsertCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &CommentThreadsInsertCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	c.commentthread = commentthread
 	return c
 }
 
-// ShareOnGooglePlus sets the optional parameter "shareOnGooglePlus":
-// The shareOnGooglePlus parameter indicates whether the top-level
-// comment and any replies that are made to that comment should also be
-// posted to the author's Google+ profile.
-func (c *CommentThreadsInsertCall) ShareOnGooglePlus(shareOnGooglePlus bool) *CommentThreadsInsertCall {
-	c.opt_["shareOnGooglePlus"] = shareOnGooglePlus
-	return c
-}
-
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *CommentThreadsInsertCall) Fields(s ...googleapi.Field) *CommentThreadsInsertCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *CommentThreadsInsertCall) Do() (*CommentThread, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *CommentThreadsInsertCall) Context(ctx context.Context) *CommentThreadsInsertCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CommentThreadsInsertCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *CommentThreadsInsertCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.commentthread)
 	if err != nil {
 		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["shareOnGooglePlus"]; ok {
-		params.Set("shareOnGooglePlus", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "commentThreads")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("Content-Type", ctype)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.commentThreads.insert" call.
+// Exactly one of *CommentThread or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *CommentThread.ServerResponse.Header or (if a response was returned
+// at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *CommentThreadsInsertCall) Do(opts ...googleapi.CallOption) (*CommentThread, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -7061,8 +12699,14 @@ func (c *CommentThreadsInsertCall) Do() (*CommentThread, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *CommentThread
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &CommentThread{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -7079,12 +12723,6 @@ func (c *CommentThreadsInsertCall) Do() (*CommentThread, error) {
 	//       "location": "query",
 	//       "required": true,
 	//       "type": "string"
-	//     },
-	//     "shareOnGooglePlus": {
-	//       "default": "false",
-	//       "description": "The shareOnGooglePlus parameter indicates whether the top-level comment and any replies that are made to that comment should also be posted to the author's Google+ profile.",
-	//       "location": "query",
-	//       "type": "boolean"
 	//     }
 	//   },
 	//   "path": "commentThreads",
@@ -7104,16 +12742,18 @@ func (c *CommentThreadsInsertCall) Do() (*CommentThread, error) {
 // method id "youtube.commentThreads.list":
 
 type CommentThreadsListCall struct {
-	s    *Service
-	part string
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Returns a list of comment threads that match the API request
 // parameters.
 func (r *CommentThreadsService) List(part string) *CommentThreadsListCall {
-	c := &CommentThreadsListCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &CommentThreadsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	return c
 }
 
@@ -7123,7 +12763,7 @@ func (r *CommentThreadsService) List(part string) *CommentThreadsListCall {
 // with the specified channel. The response can include comments about
 // the channel or about the channel's videos.
 func (c *CommentThreadsListCall) AllThreadsRelatedToChannelId(allThreadsRelatedToChannelId string) *CommentThreadsListCall {
-	c.opt_["allThreadsRelatedToChannelId"] = allThreadsRelatedToChannelId
+	c.urlParams_.Set("allThreadsRelatedToChannelId", allThreadsRelatedToChannelId)
 	return c
 }
 
@@ -7132,7 +12772,7 @@ func (c *CommentThreadsListCall) AllThreadsRelatedToChannelId(allThreadsRelatedT
 // comments about the specified channel. (The response will not include
 // comments left on videos that the channel uploaded.)
 func (c *CommentThreadsListCall) ChannelId(channelId string) *CommentThreadsListCall {
-	c.opt_["channelId"] = channelId
+	c.urlParams_.Set("channelId", channelId)
 	return c
 }
 
@@ -7140,7 +12780,7 @@ func (c *CommentThreadsListCall) ChannelId(channelId string) *CommentThreadsList
 // comma-separated list of comment thread IDs for the resources that
 // should be retrieved.
 func (c *CommentThreadsListCall) Id(id string) *CommentThreadsListCall {
-	c.opt_["id"] = id
+	c.urlParams_.Set("id", id)
 	return c
 }
 
@@ -7151,7 +12791,7 @@ func (c *CommentThreadsListCall) Id(id string) *CommentThreadsListCall {
 // Note: This parameter is not supported for use in conjunction with the
 // id parameter.
 func (c *CommentThreadsListCall) MaxResults(maxResults int64) *CommentThreadsListCall {
-	c.opt_["maxResults"] = maxResults
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
 	return c
 }
 
@@ -7175,7 +12815,7 @@ func (c *CommentThreadsListCall) MaxResults(maxResults int64) *CommentThreadsLis
 // default value. A comment thread can be included in the response if
 // its top-level comment has been published.
 func (c *CommentThreadsListCall) ModerationStatus(moderationStatus string) *CommentThreadsListCall {
-	c.opt_["moderationStatus"] = moderationStatus
+	c.urlParams_.Set("moderationStatus", moderationStatus)
 	return c
 }
 
@@ -7192,7 +12832,7 @@ func (c *CommentThreadsListCall) ModerationStatus(moderationStatus string) *Comm
 //   "relevance" - Order by relevance.
 //   "time" - Order by time.
 func (c *CommentThreadsListCall) Order(order string) *CommentThreadsListCall {
-	c.opt_["order"] = order
+	c.urlParams_.Set("order", order)
 	return c
 }
 
@@ -7204,7 +12844,7 @@ func (c *CommentThreadsListCall) Order(order string) *CommentThreadsListCall {
 // Note: This parameter is not supported for use in conjunction with the
 // id parameter.
 func (c *CommentThreadsListCall) PageToken(pageToken string) *CommentThreadsListCall {
-	c.opt_["pageToken"] = pageToken
+	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
@@ -7215,7 +12855,7 @@ func (c *CommentThreadsListCall) PageToken(pageToken string) *CommentThreadsList
 // Note: This parameter is not supported for use in conjunction with the
 // id parameter.
 func (c *CommentThreadsListCall) SearchTerms(searchTerms string) *CommentThreadsListCall {
-	c.opt_["searchTerms"] = searchTerms
+	c.urlParams_.Set("searchTerms", searchTerms)
 	return c
 }
 
@@ -7228,7 +12868,7 @@ func (c *CommentThreadsListCall) SearchTerms(searchTerms string) *CommentThreads
 // value.
 //   "plainText" - Returns the comments in plain text format.
 func (c *CommentThreadsListCall) TextFormat(textFormat string) *CommentThreadsListCall {
-	c.opt_["textFormat"] = textFormat
+	c.urlParams_.Set("textFormat", textFormat)
 	return c
 }
 
@@ -7236,62 +12876,82 @@ func (c *CommentThreadsListCall) TextFormat(textFormat string) *CommentThreadsLi
 // instructs the API to return comment threads associated with the
 // specified video ID.
 func (c *CommentThreadsListCall) VideoId(videoId string) *CommentThreadsListCall {
-	c.opt_["videoId"] = videoId
+	c.urlParams_.Set("videoId", videoId)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *CommentThreadsListCall) Fields(s ...googleapi.Field) *CommentThreadsListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *CommentThreadsListCall) Do() (*CommentThreadListResponse, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *CommentThreadsListCall) IfNoneMatch(entityTag string) *CommentThreadsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *CommentThreadsListCall) Context(ctx context.Context) *CommentThreadsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CommentThreadsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *CommentThreadsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["allThreadsRelatedToChannelId"]; ok {
-		params.Set("allThreadsRelatedToChannelId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["channelId"]; ok {
-		params.Set("channelId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["id"]; ok {
-		params.Set("id", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["maxResults"]; ok {
-		params.Set("maxResults", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["moderationStatus"]; ok {
-		params.Set("moderationStatus", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["order"]; ok {
-		params.Set("order", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["pageToken"]; ok {
-		params.Set("pageToken", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["searchTerms"]; ok {
-		params.Set("searchTerms", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["textFormat"]; ok {
-		params.Set("textFormat", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["videoId"]; ok {
-		params.Set("videoId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "commentThreads")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.commentThreads.list" call.
+// Exactly one of *CommentThreadListResponse or error will be non-nil.
+// Any non-2xx status code is an error. Response headers are in either
+// *CommentThreadListResponse.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *CommentThreadsListCall) Do(opts ...googleapi.CallOption) (*CommentThreadListResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -7299,8 +12959,14 @@ func (c *CommentThreadsListCall) Do() (*CommentThreadListResponse, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *CommentThreadListResponse
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &CommentThreadListResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -7413,51 +13079,109 @@ func (c *CommentThreadsListCall) Do() (*CommentThreadListResponse, error) {
 
 }
 
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *CommentThreadsListCall) Pages(ctx context.Context, f func(*CommentThreadListResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
 // method id "youtube.commentThreads.update":
 
 type CommentThreadsUpdateCall struct {
 	s             *Service
-	part          string
 	commentthread *CommentThread
-	opt_          map[string]interface{}
+	urlParams_    gensupport.URLParams
+	ctx_          context.Context
+	header_       http.Header
 }
 
 // Update: Modifies the top-level comment in a comment thread.
 func (r *CommentThreadsService) Update(part string, commentthread *CommentThread) *CommentThreadsUpdateCall {
-	c := &CommentThreadsUpdateCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &CommentThreadsUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	c.commentthread = commentthread
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *CommentThreadsUpdateCall) Fields(s ...googleapi.Field) *CommentThreadsUpdateCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *CommentThreadsUpdateCall) Do() (*CommentThread, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *CommentThreadsUpdateCall) Context(ctx context.Context) *CommentThreadsUpdateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CommentThreadsUpdateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *CommentThreadsUpdateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.commentthread)
 	if err != nil {
 		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "commentThreads")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PUT", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("Content-Type", ctype)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.commentThreads.update" call.
+// Exactly one of *CommentThread or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *CommentThread.ServerResponse.Header or (if a response was returned
+// at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *CommentThreadsUpdateCall) Do(opts ...googleapi.CallOption) (*CommentThread, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -7465,8 +13189,14 @@ func (c *CommentThreadsUpdateCall) Do() (*CommentThread, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *CommentThread
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &CommentThread{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -7502,40 +13232,63 @@ func (c *CommentThreadsUpdateCall) Do() (*CommentThread, error) {
 // method id "youtube.comments.delete":
 
 type CommentsDeleteCall struct {
-	s    *Service
-	id   string
-	opt_ map[string]interface{}
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Delete: Deletes a comment.
 func (r *CommentsService) Delete(id string) *CommentsDeleteCall {
-	c := &CommentsDeleteCall{s: r.s, opt_: make(map[string]interface{})}
-	c.id = id
+	c := &CommentsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("id", id)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *CommentsDeleteCall) Fields(s ...googleapi.Field) *CommentsDeleteCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *CommentsDeleteCall) Do() error {
-	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("id", fmt.Sprintf("%v", c.id))
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *CommentsDeleteCall) Context(ctx context.Context) *CommentsDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CommentsDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
 	}
+	return c.header_
+}
+
+func (c *CommentsDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "comments")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.comments.delete" call.
+func (c *CommentsDeleteCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
 	if err != nil {
 		return err
 	}
@@ -7570,49 +13323,86 @@ func (c *CommentsDeleteCall) Do() error {
 // method id "youtube.comments.insert":
 
 type CommentsInsertCall struct {
-	s       *Service
-	part    string
-	comment *Comment
-	opt_    map[string]interface{}
+	s          *Service
+	comment    *Comment
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Insert: Creates a reply to an existing comment. Note: To create a
 // top-level comment, use the commentThreads.insert method.
 func (r *CommentsService) Insert(part string, comment *Comment) *CommentsInsertCall {
-	c := &CommentsInsertCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &CommentsInsertCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	c.comment = comment
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *CommentsInsertCall) Fields(s ...googleapi.Field) *CommentsInsertCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *CommentsInsertCall) Do() (*Comment, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *CommentsInsertCall) Context(ctx context.Context) *CommentsInsertCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CommentsInsertCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *CommentsInsertCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.comment)
 	if err != nil {
 		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "comments")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("Content-Type", ctype)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.comments.insert" call.
+// Exactly one of *Comment or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Comment.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *CommentsInsertCall) Do(opts ...googleapi.CallOption) (*Comment, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -7620,8 +13410,14 @@ func (c *CommentsInsertCall) Do() (*Comment, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Comment
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Comment{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -7657,16 +13453,18 @@ func (c *CommentsInsertCall) Do() (*Comment, error) {
 // method id "youtube.comments.list":
 
 type CommentsListCall struct {
-	s    *Service
-	part string
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Returns a list of comments that match the API request
 // parameters.
 func (r *CommentsService) List(part string) *CommentsListCall {
-	c := &CommentsListCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &CommentsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	return c
 }
 
@@ -7675,7 +13473,7 @@ func (r *CommentsService) List(part string) *CommentsListCall {
 // retrieved. In a comment resource, the id property specifies the
 // comment's ID.
 func (c *CommentsListCall) Id(id string) *CommentsListCall {
-	c.opt_["id"] = id
+	c.urlParams_.Set("id", id)
 	return c
 }
 
@@ -7686,7 +13484,7 @@ func (c *CommentsListCall) Id(id string) *CommentsListCall {
 // Note: This parameter is not supported for use in conjunction with the
 // id parameter.
 func (c *CommentsListCall) MaxResults(maxResults int64) *CommentsListCall {
-	c.opt_["maxResults"] = maxResults
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
 	return c
 }
 
@@ -7698,7 +13496,7 @@ func (c *CommentsListCall) MaxResults(maxResults int64) *CommentsListCall {
 // Note: This parameter is not supported for use in conjunction with the
 // id parameter.
 func (c *CommentsListCall) PageToken(pageToken string) *CommentsListCall {
-	c.opt_["pageToken"] = pageToken
+	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
@@ -7709,7 +13507,7 @@ func (c *CommentsListCall) PageToken(pageToken string) *CommentsListCall {
 // Note: YouTube currently supports replies only for top-level comments.
 // However, replies to replies may be supported in the future.
 func (c *CommentsListCall) ParentId(parentId string) *CommentsListCall {
-	c.opt_["parentId"] = parentId
+	c.urlParams_.Set("parentId", parentId)
 	return c
 }
 
@@ -7722,47 +13520,82 @@ func (c *CommentsListCall) ParentId(parentId string) *CommentsListCall {
 // value.
 //   "plainText" - Returns the comments in plain text format.
 func (c *CommentsListCall) TextFormat(textFormat string) *CommentsListCall {
-	c.opt_["textFormat"] = textFormat
+	c.urlParams_.Set("textFormat", textFormat)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *CommentsListCall) Fields(s ...googleapi.Field) *CommentsListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *CommentsListCall) Do() (*CommentListResponse, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *CommentsListCall) IfNoneMatch(entityTag string) *CommentsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *CommentsListCall) Context(ctx context.Context) *CommentsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CommentsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *CommentsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["id"]; ok {
-		params.Set("id", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["maxResults"]; ok {
-		params.Set("maxResults", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["pageToken"]; ok {
-		params.Set("pageToken", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["parentId"]; ok {
-		params.Set("parentId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["textFormat"]; ok {
-		params.Set("textFormat", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "comments")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.comments.list" call.
+// Exactly one of *CommentListResponse or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *CommentListResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *CommentsListCall) Do(opts ...googleapi.CallOption) (*CommentListResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -7770,8 +13603,14 @@ func (c *CommentsListCall) Do() (*CommentListResponse, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *CommentListResponse
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &CommentListResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -7839,44 +13678,88 @@ func (c *CommentsListCall) Do() (*CommentListResponse, error) {
 
 }
 
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *CommentsListCall) Pages(ctx context.Context, f func(*CommentListResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
 // method id "youtube.comments.markAsSpam":
 
 type CommentsMarkAsSpamCall struct {
-	s    *Service
-	id   string
-	opt_ map[string]interface{}
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // MarkAsSpam: Expresses the caller's opinion that one or more comments
 // should be flagged as spam.
 func (r *CommentsService) MarkAsSpam(id string) *CommentsMarkAsSpamCall {
-	c := &CommentsMarkAsSpamCall{s: r.s, opt_: make(map[string]interface{})}
-	c.id = id
+	c := &CommentsMarkAsSpamCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("id", id)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *CommentsMarkAsSpamCall) Fields(s ...googleapi.Field) *CommentsMarkAsSpamCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *CommentsMarkAsSpamCall) Do() error {
-	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("id", fmt.Sprintf("%v", c.id))
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *CommentsMarkAsSpamCall) Context(ctx context.Context) *CommentsMarkAsSpamCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CommentsMarkAsSpamCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
 	}
+	return c.header_
+}
+
+func (c *CommentsMarkAsSpamCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "comments/markAsSpam")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.comments.markAsSpam" call.
+func (c *CommentsMarkAsSpamCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
 	if err != nil {
 		return err
 	}
@@ -7911,19 +13794,19 @@ func (c *CommentsMarkAsSpamCall) Do() error {
 // method id "youtube.comments.setModerationStatus":
 
 type CommentsSetModerationStatusCall struct {
-	s                *Service
-	id               string
-	moderationStatus string
-	opt_             map[string]interface{}
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // SetModerationStatus: Sets the moderation status of one or more
 // comments. The API request must be authorized by the owner of the
 // channel or video associated with the comments.
 func (r *CommentsService) SetModerationStatus(id string, moderationStatus string) *CommentsSetModerationStatusCall {
-	c := &CommentsSetModerationStatusCall{s: r.s, opt_: make(map[string]interface{})}
-	c.id = id
-	c.moderationStatus = moderationStatus
+	c := &CommentsSetModerationStatusCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("id", id)
+	c.urlParams_.Set("moderationStatus", moderationStatus)
 	return c
 }
 
@@ -7935,36 +13818,54 @@ func (r *CommentsService) SetModerationStatus(id string, moderationStatus string
 // Note: This parameter is only valid if the moderationStatus parameter
 // is also set to rejected.
 func (c *CommentsSetModerationStatusCall) BanAuthor(banAuthor bool) *CommentsSetModerationStatusCall {
-	c.opt_["banAuthor"] = banAuthor
+	c.urlParams_.Set("banAuthor", fmt.Sprint(banAuthor))
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *CommentsSetModerationStatusCall) Fields(s ...googleapi.Field) *CommentsSetModerationStatusCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *CommentsSetModerationStatusCall) Do() error {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *CommentsSetModerationStatusCall) Context(ctx context.Context) *CommentsSetModerationStatusCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CommentsSetModerationStatusCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *CommentsSetModerationStatusCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("id", fmt.Sprintf("%v", c.id))
-	params.Set("moderationStatus", fmt.Sprintf("%v", c.moderationStatus))
-	if v, ok := c.opt_["banAuthor"]; ok {
-		params.Set("banAuthor", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "comments/setModerationStatus")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.comments.setModerationStatus" call.
+func (c *CommentsSetModerationStatusCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
 	if err != nil {
 		return err
 	}
@@ -8022,48 +13923,85 @@ func (c *CommentsSetModerationStatusCall) Do() error {
 // method id "youtube.comments.update":
 
 type CommentsUpdateCall struct {
-	s       *Service
-	part    string
-	comment *Comment
-	opt_    map[string]interface{}
+	s          *Service
+	comment    *Comment
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Update: Modifies a comment.
 func (r *CommentsService) Update(part string, comment *Comment) *CommentsUpdateCall {
-	c := &CommentsUpdateCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &CommentsUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	c.comment = comment
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *CommentsUpdateCall) Fields(s ...googleapi.Field) *CommentsUpdateCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *CommentsUpdateCall) Do() (*Comment, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *CommentsUpdateCall) Context(ctx context.Context) *CommentsUpdateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CommentsUpdateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *CommentsUpdateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.comment)
 	if err != nil {
 		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "comments")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PUT", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("Content-Type", ctype)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.comments.update" call.
+// Exactly one of *Comment or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Comment.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *CommentsUpdateCall) Do(opts ...googleapi.CallOption) (*Comment, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -8071,8 +14009,14 @@ func (c *CommentsUpdateCall) Do() (*Comment, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Comment
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Comment{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -8105,26 +14049,236 @@ func (c *CommentsUpdateCall) Do() (*Comment, error) {
 
 }
 
+// method id "youtube.fanFundingEvents.list":
+
+type FanFundingEventsListCall struct {
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// List: Lists fan funding events for a channel.
+func (r *FanFundingEventsService) List(part string) *FanFundingEventsListCall {
+	c := &FanFundingEventsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
+	return c
+}
+
+// Hl sets the optional parameter "hl": The hl parameter instructs the
+// API to retrieve localized resource metadata for a specific
+// application language that the YouTube website supports. The parameter
+// value must be a language code included in the list returned by the
+// i18nLanguages.list method.
+//
+// If localized resource details are available in that language, the
+// resource's snippet.localized object will contain the localized
+// values. However, if localized details are not available, the
+// snippet.localized object will contain resource details in the
+// resource's default language.
+func (c *FanFundingEventsListCall) Hl(hl string) *FanFundingEventsListCall {
+	c.urlParams_.Set("hl", hl)
+	return c
+}
+
+// MaxResults sets the optional parameter "maxResults": The maxResults
+// parameter specifies the maximum number of items that should be
+// returned in the result set.
+func (c *FanFundingEventsListCall) MaxResults(maxResults int64) *FanFundingEventsListCall {
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": The pageToken
+// parameter identifies a specific page in the result set that should be
+// returned. In an API response, the nextPageToken and prevPageToken
+// properties identify other pages that could be retrieved.
+func (c *FanFundingEventsListCall) PageToken(pageToken string) *FanFundingEventsListCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *FanFundingEventsListCall) Fields(s ...googleapi.Field) *FanFundingEventsListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *FanFundingEventsListCall) IfNoneMatch(entityTag string) *FanFundingEventsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *FanFundingEventsListCall) Context(ctx context.Context) *FanFundingEventsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *FanFundingEventsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *FanFundingEventsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "fanFundingEvents")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.fanFundingEvents.list" call.
+// Exactly one of *FanFundingEventListResponse or error will be non-nil.
+// Any non-2xx status code is an error. Response headers are in either
+// *FanFundingEventListResponse.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *FanFundingEventsListCall) Do(opts ...googleapi.CallOption) (*FanFundingEventListResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &FanFundingEventListResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Lists fan funding events for a channel.",
+	//   "httpMethod": "GET",
+	//   "id": "youtube.fanFundingEvents.list",
+	//   "parameterOrder": [
+	//     "part"
+	//   ],
+	//   "parameters": {
+	//     "hl": {
+	//       "description": "The hl parameter instructs the API to retrieve localized resource metadata for a specific application language that the YouTube website supports. The parameter value must be a language code included in the list returned by the i18nLanguages.list method.\n\nIf localized resource details are available in that language, the resource's snippet.localized object will contain the localized values. However, if localized details are not available, the snippet.localized object will contain resource details in the resource's default language.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "maxResults": {
+	//       "default": "5",
+	//       "description": "The maxResults parameter specifies the maximum number of items that should be returned in the result set.",
+	//       "format": "uint32",
+	//       "location": "query",
+	//       "maximum": "50",
+	//       "minimum": "0",
+	//       "type": "integer"
+	//     },
+	//     "pageToken": {
+	//       "description": "The pageToken parameter identifies a specific page in the result set that should be returned. In an API response, the nextPageToken and prevPageToken properties identify other pages that could be retrieved.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "part": {
+	//       "description": "The part parameter specifies the fanFundingEvent resource parts that the API response will include. Supported values are id and snippet.",
+	//       "location": "query",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "fanFundingEvents",
+	//   "response": {
+	//     "$ref": "FanFundingEventListResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/youtube",
+	//     "https://www.googleapis.com/auth/youtube.force-ssl",
+	//     "https://www.googleapis.com/auth/youtube.readonly"
+	//   ]
+	// }
+
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *FanFundingEventsListCall) Pages(ctx context.Context, f func(*FanFundingEventListResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
 // method id "youtube.guideCategories.list":
 
 type GuideCategoriesListCall struct {
-	s    *Service
-	part string
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Returns a list of categories that can be associated with
 // YouTube channels.
 func (r *GuideCategoriesService) List(part string) *GuideCategoriesListCall {
-	c := &GuideCategoriesListCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &GuideCategoriesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	return c
 }
 
 // Hl sets the optional parameter "hl": The hl parameter specifies the
 // language that will be used for text values in the API response.
 func (c *GuideCategoriesListCall) Hl(hl string) *GuideCategoriesListCall {
-	c.opt_["hl"] = hl
+	c.urlParams_.Set("hl", hl)
 	return c
 }
 
@@ -8133,7 +14287,7 @@ func (c *GuideCategoriesListCall) Hl(hl string) *GuideCategoriesListCall {
 // resource(s) that are being retrieved. In a guideCategory resource,
 // the id property specifies the YouTube channel category ID.
 func (c *GuideCategoriesListCall) Id(id string) *GuideCategoriesListCall {
-	c.opt_["id"] = id
+	c.urlParams_.Set("id", id)
 	return c
 }
 
@@ -8142,41 +14296,82 @@ func (c *GuideCategoriesListCall) Id(id string) *GuideCategoriesListCall {
 // available in the specified country. The parameter value is an ISO
 // 3166-1 alpha-2 country code.
 func (c *GuideCategoriesListCall) RegionCode(regionCode string) *GuideCategoriesListCall {
-	c.opt_["regionCode"] = regionCode
+	c.urlParams_.Set("regionCode", regionCode)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *GuideCategoriesListCall) Fields(s ...googleapi.Field) *GuideCategoriesListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *GuideCategoriesListCall) Do() (*GuideCategoryListResponse, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *GuideCategoriesListCall) IfNoneMatch(entityTag string) *GuideCategoriesListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *GuideCategoriesListCall) Context(ctx context.Context) *GuideCategoriesListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *GuideCategoriesListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *GuideCategoriesListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["hl"]; ok {
-		params.Set("hl", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["id"]; ok {
-		params.Set("id", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["regionCode"]; ok {
-		params.Set("regionCode", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "guideCategories")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.guideCategories.list" call.
+// Exactly one of *GuideCategoryListResponse or error will be non-nil.
+// Any non-2xx status code is an error. Response headers are in either
+// *GuideCategoryListResponse.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *GuideCategoriesListCall) Do(opts ...googleapi.CallOption) (*GuideCategoryListResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -8184,8 +14379,14 @@ func (c *GuideCategoriesListCall) Do() (*GuideCategoryListResponse, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *GuideCategoryListResponse
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &GuideCategoryListResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -8237,51 +14438,100 @@ func (c *GuideCategoriesListCall) Do() (*GuideCategoryListResponse, error) {
 // method id "youtube.i18nLanguages.list":
 
 type I18nLanguagesListCall struct {
-	s    *Service
-	part string
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Returns a list of application languages that the YouTube
 // website supports.
 func (r *I18nLanguagesService) List(part string) *I18nLanguagesListCall {
-	c := &I18nLanguagesListCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &I18nLanguagesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	return c
 }
 
 // Hl sets the optional parameter "hl": The hl parameter specifies the
 // language that should be used for text values in the API response.
 func (c *I18nLanguagesListCall) Hl(hl string) *I18nLanguagesListCall {
-	c.opt_["hl"] = hl
+	c.urlParams_.Set("hl", hl)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *I18nLanguagesListCall) Fields(s ...googleapi.Field) *I18nLanguagesListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *I18nLanguagesListCall) Do() (*I18nLanguageListResponse, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *I18nLanguagesListCall) IfNoneMatch(entityTag string) *I18nLanguagesListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *I18nLanguagesListCall) Context(ctx context.Context) *I18nLanguagesListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *I18nLanguagesListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *I18nLanguagesListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["hl"]; ok {
-		params.Set("hl", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "i18nLanguages")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.i18nLanguages.list" call.
+// Exactly one of *I18nLanguageListResponse or error will be non-nil.
+// Any non-2xx status code is an error. Response headers are in either
+// *I18nLanguageListResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *I18nLanguagesListCall) Do(opts ...googleapi.CallOption) (*I18nLanguageListResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -8289,8 +14539,14 @@ func (c *I18nLanguagesListCall) Do() (*I18nLanguageListResponse, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *I18nLanguageListResponse
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &I18nLanguageListResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -8332,51 +14588,100 @@ func (c *I18nLanguagesListCall) Do() (*I18nLanguageListResponse, error) {
 // method id "youtube.i18nRegions.list":
 
 type I18nRegionsListCall struct {
-	s    *Service
-	part string
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Returns a list of content regions that the YouTube website
 // supports.
 func (r *I18nRegionsService) List(part string) *I18nRegionsListCall {
-	c := &I18nRegionsListCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &I18nRegionsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	return c
 }
 
 // Hl sets the optional parameter "hl": The hl parameter specifies the
 // language that should be used for text values in the API response.
 func (c *I18nRegionsListCall) Hl(hl string) *I18nRegionsListCall {
-	c.opt_["hl"] = hl
+	c.urlParams_.Set("hl", hl)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *I18nRegionsListCall) Fields(s ...googleapi.Field) *I18nRegionsListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *I18nRegionsListCall) Do() (*I18nRegionListResponse, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *I18nRegionsListCall) IfNoneMatch(entityTag string) *I18nRegionsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *I18nRegionsListCall) Context(ctx context.Context) *I18nRegionsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *I18nRegionsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *I18nRegionsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["hl"]; ok {
-		params.Set("hl", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "i18nRegions")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.i18nRegions.list" call.
+// Exactly one of *I18nRegionListResponse or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *I18nRegionListResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *I18nRegionsListCall) Do(opts ...googleapi.CallOption) (*I18nRegionListResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -8384,8 +14689,14 @@ func (c *I18nRegionsListCall) Do() (*I18nRegionListResponse, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *I18nRegionListResponse
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &I18nRegionListResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -8427,10 +14738,10 @@ func (c *I18nRegionsListCall) Do() (*I18nRegionListResponse, error) {
 // method id "youtube.liveBroadcasts.bind":
 
 type LiveBroadcastsBindCall struct {
-	s    *Service
-	id   string
-	part string
-	opt_ map[string]interface{}
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Bind: Binds a YouTube broadcast to a stream or removes an existing
@@ -8438,9 +14749,9 @@ type LiveBroadcastsBindCall struct {
 // bound to one video stream, though a video stream may be bound to more
 // than one broadcast.
 func (r *LiveBroadcastsService) Bind(id string, part string) *LiveBroadcastsBindCall {
-	c := &LiveBroadcastsBindCall{s: r.s, opt_: make(map[string]interface{})}
-	c.id = id
-	c.part = part
+	c := &LiveBroadcastsBindCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("id", id)
+	c.urlParams_.Set("part", part)
 	return c
 }
 
@@ -8458,7 +14769,7 @@ func (r *LiveBroadcastsService) Bind(id string, part string) *LiveBroadcastsBind
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *LiveBroadcastsBindCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *LiveBroadcastsBindCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
@@ -8484,7 +14795,7 @@ func (c *LiveBroadcastsBindCall) OnBehalfOfContentOwner(onBehalfOfContentOwner s
 // specified in the parameter value, without having to provide
 // authentication credentials for each separate channel.
 func (c *LiveBroadcastsBindCall) OnBehalfOfContentOwnerChannel(onBehalfOfContentOwnerChannel string) *LiveBroadcastsBindCall {
-	c.opt_["onBehalfOfContentOwnerChannel"] = onBehalfOfContentOwnerChannel
+	c.urlParams_.Set("onBehalfOfContentOwnerChannel", onBehalfOfContentOwnerChannel)
 	return c
 }
 
@@ -8493,42 +14804,69 @@ func (c *LiveBroadcastsBindCall) OnBehalfOfContentOwnerChannel(onBehalfOfContent
 // bound to a broadcast. If this parameter is omitted, the API will
 // remove any existing binding between the broadcast and a video stream.
 func (c *LiveBroadcastsBindCall) StreamId(streamId string) *LiveBroadcastsBindCall {
-	c.opt_["streamId"] = streamId
+	c.urlParams_.Set("streamId", streamId)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *LiveBroadcastsBindCall) Fields(s ...googleapi.Field) *LiveBroadcastsBindCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *LiveBroadcastsBindCall) Do() (*LiveBroadcast, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LiveBroadcastsBindCall) Context(ctx context.Context) *LiveBroadcastsBindCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LiveBroadcastsBindCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LiveBroadcastsBindCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("id", fmt.Sprintf("%v", c.id))
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwnerChannel"]; ok {
-		params.Set("onBehalfOfContentOwnerChannel", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["streamId"]; ok {
-		params.Set("streamId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "liveBroadcasts/bind")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.liveBroadcasts.bind" call.
+// Exactly one of *LiveBroadcast or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *LiveBroadcast.ServerResponse.Header or (if a response was returned
+// at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *LiveBroadcastsBindCall) Do(opts ...googleapi.CallOption) (*LiveBroadcast, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -8536,8 +14874,14 @@ func (c *LiveBroadcastsBindCall) Do() (*LiveBroadcast, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *LiveBroadcast
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &LiveBroadcast{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -8593,18 +14937,18 @@ func (c *LiveBroadcastsBindCall) Do() (*LiveBroadcast, error) {
 // method id "youtube.liveBroadcasts.control":
 
 type LiveBroadcastsControlCall struct {
-	s    *Service
-	id   string
-	part string
-	opt_ map[string]interface{}
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Control: Controls the settings for a slate that can be displayed in
 // the broadcast stream.
 func (r *LiveBroadcastsService) Control(id string, part string) *LiveBroadcastsControlCall {
-	c := &LiveBroadcastsControlCall{s: r.s, opt_: make(map[string]interface{})}
-	c.id = id
-	c.part = part
+	c := &LiveBroadcastsControlCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("id", id)
+	c.urlParams_.Set("part", part)
 	return c
 }
 
@@ -8612,7 +14956,7 @@ func (r *LiveBroadcastsService) Control(id string, part string) *LiveBroadcastsC
 // displaySlate parameter specifies whether the slate is being enabled
 // or disabled.
 func (c *LiveBroadcastsControlCall) DisplaySlate(displaySlate bool) *LiveBroadcastsControlCall {
-	c.opt_["displaySlate"] = displaySlate
+	c.urlParams_.Set("displaySlate", fmt.Sprint(displaySlate))
 	return c
 }
 
@@ -8632,7 +14976,7 @@ func (c *LiveBroadcastsControlCall) DisplaySlate(displaySlate bool) *LiveBroadca
 // Important: You should only specify a value for this parameter if your
 // broadcast stream is delayed.
 func (c *LiveBroadcastsControlCall) OffsetTimeMs(offsetTimeMs uint64) *LiveBroadcastsControlCall {
-	c.opt_["offsetTimeMs"] = offsetTimeMs
+	c.urlParams_.Set("offsetTimeMs", fmt.Sprint(offsetTimeMs))
 	return c
 }
 
@@ -8650,7 +14994,7 @@ func (c *LiveBroadcastsControlCall) OffsetTimeMs(offsetTimeMs uint64) *LiveBroad
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *LiveBroadcastsControlCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *LiveBroadcastsControlCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
@@ -8676,7 +15020,7 @@ func (c *LiveBroadcastsControlCall) OnBehalfOfContentOwner(onBehalfOfContentOwne
 // specified in the parameter value, without having to provide
 // authentication credentials for each separate channel.
 func (c *LiveBroadcastsControlCall) OnBehalfOfContentOwnerChannel(onBehalfOfContentOwnerChannel string) *LiveBroadcastsControlCall {
-	c.opt_["onBehalfOfContentOwnerChannel"] = onBehalfOfContentOwnerChannel
+	c.urlParams_.Set("onBehalfOfContentOwnerChannel", onBehalfOfContentOwnerChannel)
 	return c
 }
 
@@ -8685,48 +15029,69 @@ func (c *LiveBroadcastsControlCall) OnBehalfOfContentOwnerChannel(onBehalfOfCont
 // change will occur. The value is specified in ISO 8601
 // (YYYY-MM-DDThh:mm:ss.sssZ) format.
 func (c *LiveBroadcastsControlCall) Walltime(walltime string) *LiveBroadcastsControlCall {
-	c.opt_["walltime"] = walltime
+	c.urlParams_.Set("walltime", walltime)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *LiveBroadcastsControlCall) Fields(s ...googleapi.Field) *LiveBroadcastsControlCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *LiveBroadcastsControlCall) Do() (*LiveBroadcast, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LiveBroadcastsControlCall) Context(ctx context.Context) *LiveBroadcastsControlCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LiveBroadcastsControlCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LiveBroadcastsControlCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("id", fmt.Sprintf("%v", c.id))
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["displaySlate"]; ok {
-		params.Set("displaySlate", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["offsetTimeMs"]; ok {
-		params.Set("offsetTimeMs", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwnerChannel"]; ok {
-		params.Set("onBehalfOfContentOwnerChannel", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["walltime"]; ok {
-		params.Set("walltime", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "liveBroadcasts/control")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.liveBroadcasts.control" call.
+// Exactly one of *LiveBroadcast or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *LiveBroadcast.ServerResponse.Header or (if a response was returned
+// at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *LiveBroadcastsControlCall) Do(opts ...googleapi.CallOption) (*LiveBroadcast, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -8734,8 +15099,14 @@ func (c *LiveBroadcastsControlCall) Do() (*LiveBroadcast, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *LiveBroadcast
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &LiveBroadcast{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -8803,15 +15174,16 @@ func (c *LiveBroadcastsControlCall) Do() (*LiveBroadcast, error) {
 // method id "youtube.liveBroadcasts.delete":
 
 type LiveBroadcastsDeleteCall struct {
-	s    *Service
-	id   string
-	opt_ map[string]interface{}
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Delete: Deletes a broadcast.
 func (r *LiveBroadcastsService) Delete(id string) *LiveBroadcastsDeleteCall {
-	c := &LiveBroadcastsDeleteCall{s: r.s, opt_: make(map[string]interface{})}
-	c.id = id
+	c := &LiveBroadcastsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("id", id)
 	return c
 }
 
@@ -8829,7 +15201,7 @@ func (r *LiveBroadcastsService) Delete(id string) *LiveBroadcastsDeleteCall {
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *LiveBroadcastsDeleteCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *LiveBroadcastsDeleteCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
@@ -8855,38 +15227,54 @@ func (c *LiveBroadcastsDeleteCall) OnBehalfOfContentOwner(onBehalfOfContentOwner
 // specified in the parameter value, without having to provide
 // authentication credentials for each separate channel.
 func (c *LiveBroadcastsDeleteCall) OnBehalfOfContentOwnerChannel(onBehalfOfContentOwnerChannel string) *LiveBroadcastsDeleteCall {
-	c.opt_["onBehalfOfContentOwnerChannel"] = onBehalfOfContentOwnerChannel
+	c.urlParams_.Set("onBehalfOfContentOwnerChannel", onBehalfOfContentOwnerChannel)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *LiveBroadcastsDeleteCall) Fields(s ...googleapi.Field) *LiveBroadcastsDeleteCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *LiveBroadcastsDeleteCall) Do() error {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LiveBroadcastsDeleteCall) Context(ctx context.Context) *LiveBroadcastsDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LiveBroadcastsDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LiveBroadcastsDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("id", fmt.Sprintf("%v", c.id))
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwnerChannel"]; ok {
-		params.Set("onBehalfOfContentOwnerChannel", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "liveBroadcasts")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.liveBroadcasts.delete" call.
+func (c *LiveBroadcastsDeleteCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
 	if err != nil {
 		return err
 	}
@@ -8933,15 +15321,16 @@ func (c *LiveBroadcastsDeleteCall) Do() error {
 
 type LiveBroadcastsInsertCall struct {
 	s             *Service
-	part          string
 	livebroadcast *LiveBroadcast
-	opt_          map[string]interface{}
+	urlParams_    gensupport.URLParams
+	ctx_          context.Context
+	header_       http.Header
 }
 
 // Insert: Creates a broadcast.
 func (r *LiveBroadcastsService) Insert(part string, livebroadcast *LiveBroadcast) *LiveBroadcastsInsertCall {
-	c := &LiveBroadcastsInsertCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &LiveBroadcastsInsertCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	c.livebroadcast = livebroadcast
 	return c
 }
@@ -8960,7 +15349,7 @@ func (r *LiveBroadcastsService) Insert(part string, livebroadcast *LiveBroadcast
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *LiveBroadcastsInsertCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *LiveBroadcastsInsertCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
@@ -8986,44 +15375,74 @@ func (c *LiveBroadcastsInsertCall) OnBehalfOfContentOwner(onBehalfOfContentOwner
 // specified in the parameter value, without having to provide
 // authentication credentials for each separate channel.
 func (c *LiveBroadcastsInsertCall) OnBehalfOfContentOwnerChannel(onBehalfOfContentOwnerChannel string) *LiveBroadcastsInsertCall {
-	c.opt_["onBehalfOfContentOwnerChannel"] = onBehalfOfContentOwnerChannel
+	c.urlParams_.Set("onBehalfOfContentOwnerChannel", onBehalfOfContentOwnerChannel)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *LiveBroadcastsInsertCall) Fields(s ...googleapi.Field) *LiveBroadcastsInsertCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *LiveBroadcastsInsertCall) Do() (*LiveBroadcast, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LiveBroadcastsInsertCall) Context(ctx context.Context) *LiveBroadcastsInsertCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LiveBroadcastsInsertCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LiveBroadcastsInsertCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.livebroadcast)
 	if err != nil {
 		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwnerChannel"]; ok {
-		params.Set("onBehalfOfContentOwnerChannel", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "liveBroadcasts")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("Content-Type", ctype)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.liveBroadcasts.insert" call.
+// Exactly one of *LiveBroadcast or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *LiveBroadcast.ServerResponse.Header or (if a response was returned
+// at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *LiveBroadcastsInsertCall) Do(opts ...googleapi.CallOption) (*LiveBroadcast, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -9031,8 +15450,14 @@ func (c *LiveBroadcastsInsertCall) Do() (*LiveBroadcast, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *LiveBroadcast
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &LiveBroadcast{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -9079,16 +15504,18 @@ func (c *LiveBroadcastsInsertCall) Do() (*LiveBroadcast, error) {
 // method id "youtube.liveBroadcasts.list":
 
 type LiveBroadcastsListCall struct {
-	s    *Service
-	part string
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Returns a list of YouTube broadcasts that match the API request
 // parameters.
 func (r *LiveBroadcastsService) List(part string) *LiveBroadcastsListCall {
-	c := &LiveBroadcastsListCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &LiveBroadcastsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	return c
 }
 
@@ -9102,7 +15529,21 @@ func (r *LiveBroadcastsService) List(part string) *LiveBroadcastsListCall {
 //   "completed" - Return broadcasts that have already ended.
 //   "upcoming" - Return broadcasts that have not yet started.
 func (c *LiveBroadcastsListCall) BroadcastStatus(broadcastStatus string) *LiveBroadcastsListCall {
-	c.opt_["broadcastStatus"] = broadcastStatus
+	c.urlParams_.Set("broadcastStatus", broadcastStatus)
+	return c
+}
+
+// BroadcastType sets the optional parameter "broadcastType": The
+// broadcastType parameter filters the API response to only include
+// broadcasts with the specified type. This is only compatible with the
+// mine filter for now.
+//
+// Possible values:
+//   "all" - Return all broadcasts.
+//   "event" - Return only scheduled event broadcasts.
+//   "persistent" - Return only persistent broadcasts.
+func (c *LiveBroadcastsListCall) BroadcastType(broadcastType string) *LiveBroadcastsListCall {
+	c.urlParams_.Set("broadcastType", broadcastType)
 	return c
 }
 
@@ -9111,7 +15552,7 @@ func (c *LiveBroadcastsListCall) BroadcastStatus(broadcastStatus string) *LiveBr
 // broadcasts being retrieved. In a liveBroadcast resource, the id
 // property specifies the broadcast's ID.
 func (c *LiveBroadcastsListCall) Id(id string) *LiveBroadcastsListCall {
-	c.opt_["id"] = id
+	c.urlParams_.Set("id", id)
 	return c
 }
 
@@ -9119,7 +15560,7 @@ func (c *LiveBroadcastsListCall) Id(id string) *LiveBroadcastsListCall {
 // parameter specifies the maximum number of items that should be
 // returned in the result set.
 func (c *LiveBroadcastsListCall) MaxResults(maxResults int64) *LiveBroadcastsListCall {
-	c.opt_["maxResults"] = maxResults
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
 	return c
 }
 
@@ -9128,7 +15569,7 @@ func (c *LiveBroadcastsListCall) MaxResults(maxResults int64) *LiveBroadcastsLis
 // authenticated user. Set the parameter value to true to only retrieve
 // your own broadcasts.
 func (c *LiveBroadcastsListCall) Mine(mine bool) *LiveBroadcastsListCall {
-	c.opt_["mine"] = mine
+	c.urlParams_.Set("mine", fmt.Sprint(mine))
 	return c
 }
 
@@ -9146,7 +15587,7 @@ func (c *LiveBroadcastsListCall) Mine(mine bool) *LiveBroadcastsListCall {
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *LiveBroadcastsListCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *LiveBroadcastsListCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
@@ -9172,7 +15613,7 @@ func (c *LiveBroadcastsListCall) OnBehalfOfContentOwner(onBehalfOfContentOwner s
 // specified in the parameter value, without having to provide
 // authentication credentials for each separate channel.
 func (c *LiveBroadcastsListCall) OnBehalfOfContentOwnerChannel(onBehalfOfContentOwnerChannel string) *LiveBroadcastsListCall {
-	c.opt_["onBehalfOfContentOwnerChannel"] = onBehalfOfContentOwnerChannel
+	c.urlParams_.Set("onBehalfOfContentOwnerChannel", onBehalfOfContentOwnerChannel)
 	return c
 }
 
@@ -9181,53 +15622,82 @@ func (c *LiveBroadcastsListCall) OnBehalfOfContentOwnerChannel(onBehalfOfContent
 // returned. In an API response, the nextPageToken and prevPageToken
 // properties identify other pages that could be retrieved.
 func (c *LiveBroadcastsListCall) PageToken(pageToken string) *LiveBroadcastsListCall {
-	c.opt_["pageToken"] = pageToken
+	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *LiveBroadcastsListCall) Fields(s ...googleapi.Field) *LiveBroadcastsListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *LiveBroadcastsListCall) Do() (*LiveBroadcastListResponse, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *LiveBroadcastsListCall) IfNoneMatch(entityTag string) *LiveBroadcastsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LiveBroadcastsListCall) Context(ctx context.Context) *LiveBroadcastsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LiveBroadcastsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LiveBroadcastsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["broadcastStatus"]; ok {
-		params.Set("broadcastStatus", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["id"]; ok {
-		params.Set("id", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["maxResults"]; ok {
-		params.Set("maxResults", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["mine"]; ok {
-		params.Set("mine", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwnerChannel"]; ok {
-		params.Set("onBehalfOfContentOwnerChannel", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["pageToken"]; ok {
-		params.Set("pageToken", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "liveBroadcasts")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.liveBroadcasts.list" call.
+// Exactly one of *LiveBroadcastListResponse or error will be non-nil.
+// Any non-2xx status code is an error. Response headers are in either
+// *LiveBroadcastListResponse.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *LiveBroadcastsListCall) Do(opts ...googleapi.CallOption) (*LiveBroadcastListResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -9235,8 +15705,14 @@ func (c *LiveBroadcastsListCall) Do() (*LiveBroadcastListResponse, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *LiveBroadcastListResponse
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &LiveBroadcastListResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -9261,6 +15737,22 @@ func (c *LiveBroadcastsListCall) Do() (*LiveBroadcastListResponse, error) {
 	//         "Return all broadcasts.",
 	//         "Return broadcasts that have already ended.",
 	//         "Return broadcasts that have not yet started."
+	//       ],
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "broadcastType": {
+	//       "default": "BROADCAST_TYPE_FILTER_EVENT",
+	//       "description": "The broadcastType parameter filters the API response to only include broadcasts with the specified type. This is only compatible with the mine filter for now.",
+	//       "enum": [
+	//         "all",
+	//         "event",
+	//         "persistent"
+	//       ],
+	//       "enumDescriptions": [
+	//         "Return all broadcasts.",
+	//         "Return only scheduled event broadcasts.",
+	//         "Return only persistent broadcasts."
 	//       ],
 	//       "location": "query",
 	//       "type": "string"
@@ -9319,14 +15811,34 @@ func (c *LiveBroadcastsListCall) Do() (*LiveBroadcastListResponse, error) {
 
 }
 
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *LiveBroadcastsListCall) Pages(ctx context.Context, f func(*LiveBroadcastListResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
 // method id "youtube.liveBroadcasts.transition":
 
 type LiveBroadcastsTransitionCall struct {
-	s               *Service
-	broadcastStatus string
-	id              string
-	part            string
-	opt_            map[string]interface{}
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Transition: Changes the status of a YouTube live broadcast and
@@ -9337,10 +15849,10 @@ type LiveBroadcastsTransitionCall struct {
 // status.streamStatus property for the stream bound to your broadcast
 // is active.
 func (r *LiveBroadcastsService) Transition(broadcastStatus string, id string, part string) *LiveBroadcastsTransitionCall {
-	c := &LiveBroadcastsTransitionCall{s: r.s, opt_: make(map[string]interface{})}
-	c.broadcastStatus = broadcastStatus
-	c.id = id
-	c.part = part
+	c := &LiveBroadcastsTransitionCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("broadcastStatus", broadcastStatus)
+	c.urlParams_.Set("id", id)
+	c.urlParams_.Set("part", part)
 	return c
 }
 
@@ -9358,7 +15870,7 @@ func (r *LiveBroadcastsService) Transition(broadcastStatus string, id string, pa
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *LiveBroadcastsTransitionCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *LiveBroadcastsTransitionCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
@@ -9384,40 +15896,69 @@ func (c *LiveBroadcastsTransitionCall) OnBehalfOfContentOwner(onBehalfOfContentO
 // specified in the parameter value, without having to provide
 // authentication credentials for each separate channel.
 func (c *LiveBroadcastsTransitionCall) OnBehalfOfContentOwnerChannel(onBehalfOfContentOwnerChannel string) *LiveBroadcastsTransitionCall {
-	c.opt_["onBehalfOfContentOwnerChannel"] = onBehalfOfContentOwnerChannel
+	c.urlParams_.Set("onBehalfOfContentOwnerChannel", onBehalfOfContentOwnerChannel)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *LiveBroadcastsTransitionCall) Fields(s ...googleapi.Field) *LiveBroadcastsTransitionCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *LiveBroadcastsTransitionCall) Do() (*LiveBroadcast, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LiveBroadcastsTransitionCall) Context(ctx context.Context) *LiveBroadcastsTransitionCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LiveBroadcastsTransitionCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LiveBroadcastsTransitionCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("broadcastStatus", fmt.Sprintf("%v", c.broadcastStatus))
-	params.Set("id", fmt.Sprintf("%v", c.id))
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwnerChannel"]; ok {
-		params.Set("onBehalfOfContentOwnerChannel", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "liveBroadcasts/transition")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.liveBroadcasts.transition" call.
+// Exactly one of *LiveBroadcast or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *LiveBroadcast.ServerResponse.Header or (if a response was returned
+// at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *LiveBroadcastsTransitionCall) Do(opts ...googleapi.CallOption) (*LiveBroadcast, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -9425,8 +15966,14 @@ func (c *LiveBroadcastsTransitionCall) Do() (*LiveBroadcast, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *LiveBroadcast
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &LiveBroadcast{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -9495,17 +16042,18 @@ func (c *LiveBroadcastsTransitionCall) Do() (*LiveBroadcast, error) {
 
 type LiveBroadcastsUpdateCall struct {
 	s             *Service
-	part          string
 	livebroadcast *LiveBroadcast
-	opt_          map[string]interface{}
+	urlParams_    gensupport.URLParams
+	ctx_          context.Context
+	header_       http.Header
 }
 
 // Update: Updates a broadcast. For example, you could modify the
 // broadcast settings defined in the liveBroadcast resource's
 // contentDetails object.
 func (r *LiveBroadcastsService) Update(part string, livebroadcast *LiveBroadcast) *LiveBroadcastsUpdateCall {
-	c := &LiveBroadcastsUpdateCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &LiveBroadcastsUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	c.livebroadcast = livebroadcast
 	return c
 }
@@ -9524,7 +16072,7 @@ func (r *LiveBroadcastsService) Update(part string, livebroadcast *LiveBroadcast
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *LiveBroadcastsUpdateCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *LiveBroadcastsUpdateCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
@@ -9550,44 +16098,74 @@ func (c *LiveBroadcastsUpdateCall) OnBehalfOfContentOwner(onBehalfOfContentOwner
 // specified in the parameter value, without having to provide
 // authentication credentials for each separate channel.
 func (c *LiveBroadcastsUpdateCall) OnBehalfOfContentOwnerChannel(onBehalfOfContentOwnerChannel string) *LiveBroadcastsUpdateCall {
-	c.opt_["onBehalfOfContentOwnerChannel"] = onBehalfOfContentOwnerChannel
+	c.urlParams_.Set("onBehalfOfContentOwnerChannel", onBehalfOfContentOwnerChannel)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *LiveBroadcastsUpdateCall) Fields(s ...googleapi.Field) *LiveBroadcastsUpdateCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *LiveBroadcastsUpdateCall) Do() (*LiveBroadcast, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LiveBroadcastsUpdateCall) Context(ctx context.Context) *LiveBroadcastsUpdateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LiveBroadcastsUpdateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LiveBroadcastsUpdateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.livebroadcast)
 	if err != nil {
 		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwnerChannel"]; ok {
-		params.Set("onBehalfOfContentOwnerChannel", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "liveBroadcasts")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PUT", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("Content-Type", ctype)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.liveBroadcasts.update" call.
+// Exactly one of *LiveBroadcast or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *LiveBroadcast.ServerResponse.Header or (if a response was returned
+// at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *LiveBroadcastsUpdateCall) Do(opts ...googleapi.CallOption) (*LiveBroadcast, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -9595,8 +16173,14 @@ func (c *LiveBroadcastsUpdateCall) Do() (*LiveBroadcast, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *LiveBroadcast
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &LiveBroadcast{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -9640,18 +16224,1112 @@ func (c *LiveBroadcastsUpdateCall) Do() (*LiveBroadcast, error) {
 
 }
 
+// method id "youtube.liveChatBans.delete":
+
+type LiveChatBansDeleteCall struct {
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
+}
+
+// Delete: Removes a chat ban.
+func (r *LiveChatBansService) Delete(id string) *LiveChatBansDeleteCall {
+	c := &LiveChatBansDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("id", id)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *LiveChatBansDeleteCall) Fields(s ...googleapi.Field) *LiveChatBansDeleteCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LiveChatBansDeleteCall) Context(ctx context.Context) *LiveChatBansDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LiveChatBansDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LiveChatBansDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "liveChat/bans")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("DELETE", urls, body)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.liveChatBans.delete" call.
+func (c *LiveChatBansDeleteCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if err != nil {
+		return err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return err
+	}
+	return nil
+	// {
+	//   "description": "Removes a chat ban.",
+	//   "httpMethod": "DELETE",
+	//   "id": "youtube.liveChatBans.delete",
+	//   "parameterOrder": [
+	//     "id"
+	//   ],
+	//   "parameters": {
+	//     "id": {
+	//       "description": "The id parameter identifies the chat ban to remove. The value uniquely identifies both the ban and the chat.",
+	//       "location": "query",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "liveChat/bans",
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/youtube",
+	//     "https://www.googleapis.com/auth/youtube.force-ssl"
+	//   ]
+	// }
+
+}
+
+// method id "youtube.liveChatBans.insert":
+
+type LiveChatBansInsertCall struct {
+	s           *Service
+	livechatban *LiveChatBan
+	urlParams_  gensupport.URLParams
+	ctx_        context.Context
+	header_     http.Header
+}
+
+// Insert: Adds a new ban to the chat.
+func (r *LiveChatBansService) Insert(part string, livechatban *LiveChatBan) *LiveChatBansInsertCall {
+	c := &LiveChatBansInsertCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
+	c.livechatban = livechatban
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *LiveChatBansInsertCall) Fields(s ...googleapi.Field) *LiveChatBansInsertCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LiveChatBansInsertCall) Context(ctx context.Context) *LiveChatBansInsertCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LiveChatBansInsertCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LiveChatBansInsertCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.livechatban)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "liveChat/bans")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.liveChatBans.insert" call.
+// Exactly one of *LiveChatBan or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *LiveChatBan.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *LiveChatBansInsertCall) Do(opts ...googleapi.CallOption) (*LiveChatBan, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &LiveChatBan{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Adds a new ban to the chat.",
+	//   "httpMethod": "POST",
+	//   "id": "youtube.liveChatBans.insert",
+	//   "parameterOrder": [
+	//     "part"
+	//   ],
+	//   "parameters": {
+	//     "part": {
+	//       "description": "The part parameter serves two purposes in this operation. It identifies the properties that the write operation will set as well as the properties that the API response returns. Set the parameter value to snippet.",
+	//       "location": "query",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "liveChat/bans",
+	//   "request": {
+	//     "$ref": "LiveChatBan"
+	//   },
+	//   "response": {
+	//     "$ref": "LiveChatBan"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/youtube",
+	//     "https://www.googleapis.com/auth/youtube.force-ssl"
+	//   ]
+	// }
+
+}
+
+// method id "youtube.liveChatMessages.delete":
+
+type LiveChatMessagesDeleteCall struct {
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
+}
+
+// Delete: Deletes a chat message.
+func (r *LiveChatMessagesService) Delete(id string) *LiveChatMessagesDeleteCall {
+	c := &LiveChatMessagesDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("id", id)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *LiveChatMessagesDeleteCall) Fields(s ...googleapi.Field) *LiveChatMessagesDeleteCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LiveChatMessagesDeleteCall) Context(ctx context.Context) *LiveChatMessagesDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LiveChatMessagesDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LiveChatMessagesDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "liveChat/messages")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("DELETE", urls, body)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.liveChatMessages.delete" call.
+func (c *LiveChatMessagesDeleteCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if err != nil {
+		return err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return err
+	}
+	return nil
+	// {
+	//   "description": "Deletes a chat message.",
+	//   "httpMethod": "DELETE",
+	//   "id": "youtube.liveChatMessages.delete",
+	//   "parameterOrder": [
+	//     "id"
+	//   ],
+	//   "parameters": {
+	//     "id": {
+	//       "description": "The id parameter specifies the YouTube chat message ID of the resource that is being deleted.",
+	//       "location": "query",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "liveChat/messages",
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/youtube",
+	//     "https://www.googleapis.com/auth/youtube.force-ssl"
+	//   ]
+	// }
+
+}
+
+// method id "youtube.liveChatMessages.insert":
+
+type LiveChatMessagesInsertCall struct {
+	s               *Service
+	livechatmessage *LiveChatMessage
+	urlParams_      gensupport.URLParams
+	ctx_            context.Context
+	header_         http.Header
+}
+
+// Insert: Adds a message to a live chat.
+func (r *LiveChatMessagesService) Insert(part string, livechatmessage *LiveChatMessage) *LiveChatMessagesInsertCall {
+	c := &LiveChatMessagesInsertCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
+	c.livechatmessage = livechatmessage
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *LiveChatMessagesInsertCall) Fields(s ...googleapi.Field) *LiveChatMessagesInsertCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LiveChatMessagesInsertCall) Context(ctx context.Context) *LiveChatMessagesInsertCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LiveChatMessagesInsertCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LiveChatMessagesInsertCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.livechatmessage)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "liveChat/messages")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.liveChatMessages.insert" call.
+// Exactly one of *LiveChatMessage or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *LiveChatMessage.ServerResponse.Header or (if a response was returned
+// at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *LiveChatMessagesInsertCall) Do(opts ...googleapi.CallOption) (*LiveChatMessage, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &LiveChatMessage{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Adds a message to a live chat.",
+	//   "httpMethod": "POST",
+	//   "id": "youtube.liveChatMessages.insert",
+	//   "parameterOrder": [
+	//     "part"
+	//   ],
+	//   "parameters": {
+	//     "part": {
+	//       "description": "The part parameter serves two purposes. It identifies the properties that the write operation will set as well as the properties that the API response will include. Set the parameter value to snippet.",
+	//       "location": "query",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "liveChat/messages",
+	//   "request": {
+	//     "$ref": "LiveChatMessage"
+	//   },
+	//   "response": {
+	//     "$ref": "LiveChatMessage"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/youtube",
+	//     "https://www.googleapis.com/auth/youtube.force-ssl"
+	//   ]
+	// }
+
+}
+
+// method id "youtube.liveChatMessages.list":
+
+type LiveChatMessagesListCall struct {
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// List: Lists live chat messages for a specific chat.
+func (r *LiveChatMessagesService) List(liveChatId string, part string) *LiveChatMessagesListCall {
+	c := &LiveChatMessagesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("liveChatId", liveChatId)
+	c.urlParams_.Set("part", part)
+	return c
+}
+
+// Hl sets the optional parameter "hl": The hl parameter instructs the
+// API to retrieve localized resource metadata for a specific
+// application language that the YouTube website supports. The parameter
+// value must be a language code included in the list returned by the
+// i18nLanguages.list method.
+//
+// If localized resource details are available in that language, the
+// resource's snippet.localized object will contain the localized
+// values. However, if localized details are not available, the
+// snippet.localized object will contain resource details in the
+// resource's default language.
+func (c *LiveChatMessagesListCall) Hl(hl string) *LiveChatMessagesListCall {
+	c.urlParams_.Set("hl", hl)
+	return c
+}
+
+// MaxResults sets the optional parameter "maxResults": The maxResults
+// parameter specifies the maximum number of messages that should be
+// returned in the result set.
+func (c *LiveChatMessagesListCall) MaxResults(maxResults int64) *LiveChatMessagesListCall {
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": The pageToken
+// parameter identifies a specific page in the result set that should be
+// returned. In an API response, the nextPageToken property identify
+// other pages that could be retrieved.
+func (c *LiveChatMessagesListCall) PageToken(pageToken string) *LiveChatMessagesListCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// ProfileImageSize sets the optional parameter "profileImageSize": The
+// profileImageSize parameter specifies the size of the user profile
+// pictures that should be returned in the result set. Default: 88.
+func (c *LiveChatMessagesListCall) ProfileImageSize(profileImageSize int64) *LiveChatMessagesListCall {
+	c.urlParams_.Set("profileImageSize", fmt.Sprint(profileImageSize))
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *LiveChatMessagesListCall) Fields(s ...googleapi.Field) *LiveChatMessagesListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *LiveChatMessagesListCall) IfNoneMatch(entityTag string) *LiveChatMessagesListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LiveChatMessagesListCall) Context(ctx context.Context) *LiveChatMessagesListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LiveChatMessagesListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LiveChatMessagesListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "liveChat/messages")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.liveChatMessages.list" call.
+// Exactly one of *LiveChatMessageListResponse or error will be non-nil.
+// Any non-2xx status code is an error. Response headers are in either
+// *LiveChatMessageListResponse.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *LiveChatMessagesListCall) Do(opts ...googleapi.CallOption) (*LiveChatMessageListResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &LiveChatMessageListResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Lists live chat messages for a specific chat.",
+	//   "httpMethod": "GET",
+	//   "id": "youtube.liveChatMessages.list",
+	//   "parameterOrder": [
+	//     "liveChatId",
+	//     "part"
+	//   ],
+	//   "parameters": {
+	//     "hl": {
+	//       "description": "The hl parameter instructs the API to retrieve localized resource metadata for a specific application language that the YouTube website supports. The parameter value must be a language code included in the list returned by the i18nLanguages.list method.\n\nIf localized resource details are available in that language, the resource's snippet.localized object will contain the localized values. However, if localized details are not available, the snippet.localized object will contain resource details in the resource's default language.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "liveChatId": {
+	//       "description": "The liveChatId parameter specifies the ID of the chat whose messages will be returned.",
+	//       "location": "query",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "maxResults": {
+	//       "default": "500",
+	//       "description": "The maxResults parameter specifies the maximum number of messages that should be returned in the result set.",
+	//       "format": "uint32",
+	//       "location": "query",
+	//       "maximum": "2000",
+	//       "minimum": "200",
+	//       "type": "integer"
+	//     },
+	//     "pageToken": {
+	//       "description": "The pageToken parameter identifies a specific page in the result set that should be returned. In an API response, the nextPageToken property identify other pages that could be retrieved.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "part": {
+	//       "description": "The part parameter specifies the liveChatComment resource parts that the API response will include. Supported values are id and snippet.",
+	//       "location": "query",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "profileImageSize": {
+	//       "description": "The profileImageSize parameter specifies the size of the user profile pictures that should be returned in the result set. Default: 88.",
+	//       "format": "uint32",
+	//       "location": "query",
+	//       "maximum": "720",
+	//       "minimum": "16",
+	//       "type": "integer"
+	//     }
+	//   },
+	//   "path": "liveChat/messages",
+	//   "response": {
+	//     "$ref": "LiveChatMessageListResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/youtube",
+	//     "https://www.googleapis.com/auth/youtube.force-ssl",
+	//     "https://www.googleapis.com/auth/youtube.readonly"
+	//   ]
+	// }
+
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *LiveChatMessagesListCall) Pages(ctx context.Context, f func(*LiveChatMessageListResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
+// method id "youtube.liveChatModerators.delete":
+
+type LiveChatModeratorsDeleteCall struct {
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
+}
+
+// Delete: Removes a chat moderator.
+func (r *LiveChatModeratorsService) Delete(id string) *LiveChatModeratorsDeleteCall {
+	c := &LiveChatModeratorsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("id", id)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *LiveChatModeratorsDeleteCall) Fields(s ...googleapi.Field) *LiveChatModeratorsDeleteCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LiveChatModeratorsDeleteCall) Context(ctx context.Context) *LiveChatModeratorsDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LiveChatModeratorsDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LiveChatModeratorsDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "liveChat/moderators")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("DELETE", urls, body)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.liveChatModerators.delete" call.
+func (c *LiveChatModeratorsDeleteCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if err != nil {
+		return err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return err
+	}
+	return nil
+	// {
+	//   "description": "Removes a chat moderator.",
+	//   "httpMethod": "DELETE",
+	//   "id": "youtube.liveChatModerators.delete",
+	//   "parameterOrder": [
+	//     "id"
+	//   ],
+	//   "parameters": {
+	//     "id": {
+	//       "description": "The id parameter identifies the chat moderator to remove. The value uniquely identifies both the moderator and the chat.",
+	//       "location": "query",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "liveChat/moderators",
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/youtube",
+	//     "https://www.googleapis.com/auth/youtube.force-ssl"
+	//   ]
+	// }
+
+}
+
+// method id "youtube.liveChatModerators.insert":
+
+type LiveChatModeratorsInsertCall struct {
+	s                 *Service
+	livechatmoderator *LiveChatModerator
+	urlParams_        gensupport.URLParams
+	ctx_              context.Context
+	header_           http.Header
+}
+
+// Insert: Adds a new moderator for the chat.
+func (r *LiveChatModeratorsService) Insert(part string, livechatmoderator *LiveChatModerator) *LiveChatModeratorsInsertCall {
+	c := &LiveChatModeratorsInsertCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
+	c.livechatmoderator = livechatmoderator
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *LiveChatModeratorsInsertCall) Fields(s ...googleapi.Field) *LiveChatModeratorsInsertCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LiveChatModeratorsInsertCall) Context(ctx context.Context) *LiveChatModeratorsInsertCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LiveChatModeratorsInsertCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LiveChatModeratorsInsertCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.livechatmoderator)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "liveChat/moderators")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.liveChatModerators.insert" call.
+// Exactly one of *LiveChatModerator or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *LiveChatModerator.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *LiveChatModeratorsInsertCall) Do(opts ...googleapi.CallOption) (*LiveChatModerator, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &LiveChatModerator{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Adds a new moderator for the chat.",
+	//   "httpMethod": "POST",
+	//   "id": "youtube.liveChatModerators.insert",
+	//   "parameterOrder": [
+	//     "part"
+	//   ],
+	//   "parameters": {
+	//     "part": {
+	//       "description": "The part parameter serves two purposes in this operation. It identifies the properties that the write operation will set as well as the properties that the API response returns. Set the parameter value to snippet.",
+	//       "location": "query",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "liveChat/moderators",
+	//   "request": {
+	//     "$ref": "LiveChatModerator"
+	//   },
+	//   "response": {
+	//     "$ref": "LiveChatModerator"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/youtube",
+	//     "https://www.googleapis.com/auth/youtube.force-ssl"
+	//   ]
+	// }
+
+}
+
+// method id "youtube.liveChatModerators.list":
+
+type LiveChatModeratorsListCall struct {
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// List: Lists moderators for a live chat.
+func (r *LiveChatModeratorsService) List(liveChatId string, part string) *LiveChatModeratorsListCall {
+	c := &LiveChatModeratorsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("liveChatId", liveChatId)
+	c.urlParams_.Set("part", part)
+	return c
+}
+
+// MaxResults sets the optional parameter "maxResults": The maxResults
+// parameter specifies the maximum number of items that should be
+// returned in the result set.
+func (c *LiveChatModeratorsListCall) MaxResults(maxResults int64) *LiveChatModeratorsListCall {
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": The pageToken
+// parameter identifies a specific page in the result set that should be
+// returned. In an API response, the nextPageToken and prevPageToken
+// properties identify other pages that could be retrieved.
+func (c *LiveChatModeratorsListCall) PageToken(pageToken string) *LiveChatModeratorsListCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *LiveChatModeratorsListCall) Fields(s ...googleapi.Field) *LiveChatModeratorsListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *LiveChatModeratorsListCall) IfNoneMatch(entityTag string) *LiveChatModeratorsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LiveChatModeratorsListCall) Context(ctx context.Context) *LiveChatModeratorsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LiveChatModeratorsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LiveChatModeratorsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "liveChat/moderators")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.liveChatModerators.list" call.
+// Exactly one of *LiveChatModeratorListResponse or error will be
+// non-nil. Any non-2xx status code is an error. Response headers are in
+// either *LiveChatModeratorListResponse.ServerResponse.Header or (if a
+// response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *LiveChatModeratorsListCall) Do(opts ...googleapi.CallOption) (*LiveChatModeratorListResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &LiveChatModeratorListResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Lists moderators for a live chat.",
+	//   "httpMethod": "GET",
+	//   "id": "youtube.liveChatModerators.list",
+	//   "parameterOrder": [
+	//     "liveChatId",
+	//     "part"
+	//   ],
+	//   "parameters": {
+	//     "liveChatId": {
+	//       "description": "The liveChatId parameter specifies the YouTube live chat for which the API should return moderators.",
+	//       "location": "query",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "maxResults": {
+	//       "default": "5",
+	//       "description": "The maxResults parameter specifies the maximum number of items that should be returned in the result set.",
+	//       "format": "uint32",
+	//       "location": "query",
+	//       "maximum": "50",
+	//       "minimum": "0",
+	//       "type": "integer"
+	//     },
+	//     "pageToken": {
+	//       "description": "The pageToken parameter identifies a specific page in the result set that should be returned. In an API response, the nextPageToken and prevPageToken properties identify other pages that could be retrieved.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "part": {
+	//       "description": "The part parameter specifies the liveChatModerator resource parts that the API response will include. Supported values are id and snippet.",
+	//       "location": "query",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "liveChat/moderators",
+	//   "response": {
+	//     "$ref": "LiveChatModeratorListResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/youtube",
+	//     "https://www.googleapis.com/auth/youtube.force-ssl",
+	//     "https://www.googleapis.com/auth/youtube.readonly"
+	//   ]
+	// }
+
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *LiveChatModeratorsListCall) Pages(ctx context.Context, f func(*LiveChatModeratorListResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
 // method id "youtube.liveStreams.delete":
 
 type LiveStreamsDeleteCall struct {
-	s    *Service
-	id   string
-	opt_ map[string]interface{}
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Delete: Deletes a video stream.
 func (r *LiveStreamsService) Delete(id string) *LiveStreamsDeleteCall {
-	c := &LiveStreamsDeleteCall{s: r.s, opt_: make(map[string]interface{})}
-	c.id = id
+	c := &LiveStreamsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("id", id)
 	return c
 }
 
@@ -9669,7 +17347,7 @@ func (r *LiveStreamsService) Delete(id string) *LiveStreamsDeleteCall {
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *LiveStreamsDeleteCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *LiveStreamsDeleteCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
@@ -9695,38 +17373,54 @@ func (c *LiveStreamsDeleteCall) OnBehalfOfContentOwner(onBehalfOfContentOwner st
 // specified in the parameter value, without having to provide
 // authentication credentials for each separate channel.
 func (c *LiveStreamsDeleteCall) OnBehalfOfContentOwnerChannel(onBehalfOfContentOwnerChannel string) *LiveStreamsDeleteCall {
-	c.opt_["onBehalfOfContentOwnerChannel"] = onBehalfOfContentOwnerChannel
+	c.urlParams_.Set("onBehalfOfContentOwnerChannel", onBehalfOfContentOwnerChannel)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *LiveStreamsDeleteCall) Fields(s ...googleapi.Field) *LiveStreamsDeleteCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *LiveStreamsDeleteCall) Do() error {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LiveStreamsDeleteCall) Context(ctx context.Context) *LiveStreamsDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LiveStreamsDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LiveStreamsDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("id", fmt.Sprintf("%v", c.id))
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwnerChannel"]; ok {
-		params.Set("onBehalfOfContentOwnerChannel", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "liveStreams")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.liveStreams.delete" call.
+func (c *LiveStreamsDeleteCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
 	if err != nil {
 		return err
 	}
@@ -9773,17 +17467,18 @@ func (c *LiveStreamsDeleteCall) Do() error {
 
 type LiveStreamsInsertCall struct {
 	s          *Service
-	part       string
 	livestream *LiveStream
-	opt_       map[string]interface{}
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Insert: Creates a video stream. The stream enables you to send your
 // video to YouTube, which can then broadcast the video to your
 // audience.
 func (r *LiveStreamsService) Insert(part string, livestream *LiveStream) *LiveStreamsInsertCall {
-	c := &LiveStreamsInsertCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &LiveStreamsInsertCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	c.livestream = livestream
 	return c
 }
@@ -9802,7 +17497,7 @@ func (r *LiveStreamsService) Insert(part string, livestream *LiveStream) *LiveSt
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *LiveStreamsInsertCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *LiveStreamsInsertCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
@@ -9828,44 +17523,74 @@ func (c *LiveStreamsInsertCall) OnBehalfOfContentOwner(onBehalfOfContentOwner st
 // specified in the parameter value, without having to provide
 // authentication credentials for each separate channel.
 func (c *LiveStreamsInsertCall) OnBehalfOfContentOwnerChannel(onBehalfOfContentOwnerChannel string) *LiveStreamsInsertCall {
-	c.opt_["onBehalfOfContentOwnerChannel"] = onBehalfOfContentOwnerChannel
+	c.urlParams_.Set("onBehalfOfContentOwnerChannel", onBehalfOfContentOwnerChannel)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *LiveStreamsInsertCall) Fields(s ...googleapi.Field) *LiveStreamsInsertCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *LiveStreamsInsertCall) Do() (*LiveStream, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LiveStreamsInsertCall) Context(ctx context.Context) *LiveStreamsInsertCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LiveStreamsInsertCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LiveStreamsInsertCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.livestream)
 	if err != nil {
 		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwnerChannel"]; ok {
-		params.Set("onBehalfOfContentOwnerChannel", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "liveStreams")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("Content-Type", ctype)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.liveStreams.insert" call.
+// Exactly one of *LiveStream or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *LiveStream.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *LiveStreamsInsertCall) Do(opts ...googleapi.CallOption) (*LiveStream, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -9873,8 +17598,14 @@ func (c *LiveStreamsInsertCall) Do() (*LiveStream, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *LiveStream
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &LiveStream{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -9921,16 +17652,18 @@ func (c *LiveStreamsInsertCall) Do() (*LiveStream, error) {
 // method id "youtube.liveStreams.list":
 
 type LiveStreamsListCall struct {
-	s    *Service
-	part string
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Returns a list of video streams that match the API request
 // parameters.
 func (r *LiveStreamsService) List(part string) *LiveStreamsListCall {
-	c := &LiveStreamsListCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &LiveStreamsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	return c
 }
 
@@ -9939,7 +17672,7 @@ func (r *LiveStreamsService) List(part string) *LiveStreamsListCall {
 // being retrieved. In a liveStream resource, the id property specifies
 // the stream's ID.
 func (c *LiveStreamsListCall) Id(id string) *LiveStreamsListCall {
-	c.opt_["id"] = id
+	c.urlParams_.Set("id", id)
 	return c
 }
 
@@ -9947,7 +17680,7 @@ func (c *LiveStreamsListCall) Id(id string) *LiveStreamsListCall {
 // parameter specifies the maximum number of items that should be
 // returned in the result set.
 func (c *LiveStreamsListCall) MaxResults(maxResults int64) *LiveStreamsListCall {
-	c.opt_["maxResults"] = maxResults
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
 	return c
 }
 
@@ -9956,7 +17689,7 @@ func (c *LiveStreamsListCall) MaxResults(maxResults int64) *LiveStreamsListCall 
 // authenticated user. Set the parameter value to true to only retrieve
 // your own streams.
 func (c *LiveStreamsListCall) Mine(mine bool) *LiveStreamsListCall {
-	c.opt_["mine"] = mine
+	c.urlParams_.Set("mine", fmt.Sprint(mine))
 	return c
 }
 
@@ -9974,7 +17707,7 @@ func (c *LiveStreamsListCall) Mine(mine bool) *LiveStreamsListCall {
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *LiveStreamsListCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *LiveStreamsListCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
@@ -10000,7 +17733,7 @@ func (c *LiveStreamsListCall) OnBehalfOfContentOwner(onBehalfOfContentOwner stri
 // specified in the parameter value, without having to provide
 // authentication credentials for each separate channel.
 func (c *LiveStreamsListCall) OnBehalfOfContentOwnerChannel(onBehalfOfContentOwnerChannel string) *LiveStreamsListCall {
-	c.opt_["onBehalfOfContentOwnerChannel"] = onBehalfOfContentOwnerChannel
+	c.urlParams_.Set("onBehalfOfContentOwnerChannel", onBehalfOfContentOwnerChannel)
 	return c
 }
 
@@ -10009,50 +17742,82 @@ func (c *LiveStreamsListCall) OnBehalfOfContentOwnerChannel(onBehalfOfContentOwn
 // returned. In an API response, the nextPageToken and prevPageToken
 // properties identify other pages that could be retrieved.
 func (c *LiveStreamsListCall) PageToken(pageToken string) *LiveStreamsListCall {
-	c.opt_["pageToken"] = pageToken
+	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *LiveStreamsListCall) Fields(s ...googleapi.Field) *LiveStreamsListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *LiveStreamsListCall) Do() (*LiveStreamListResponse, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *LiveStreamsListCall) IfNoneMatch(entityTag string) *LiveStreamsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LiveStreamsListCall) Context(ctx context.Context) *LiveStreamsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LiveStreamsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LiveStreamsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["id"]; ok {
-		params.Set("id", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["maxResults"]; ok {
-		params.Set("maxResults", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["mine"]; ok {
-		params.Set("mine", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwnerChannel"]; ok {
-		params.Set("onBehalfOfContentOwnerChannel", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["pageToken"]; ok {
-		params.Set("pageToken", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "liveStreams")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.liveStreams.list" call.
+// Exactly one of *LiveStreamListResponse or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *LiveStreamListResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *LiveStreamsListCall) Do(opts ...googleapi.CallOption) (*LiveStreamListResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -10060,8 +17825,14 @@ func (c *LiveStreamsListCall) Do() (*LiveStreamListResponse, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *LiveStreamListResponse
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &LiveStreamListResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -10127,21 +17898,43 @@ func (c *LiveStreamsListCall) Do() (*LiveStreamListResponse, error) {
 
 }
 
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *LiveStreamsListCall) Pages(ctx context.Context, f func(*LiveStreamListResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
 // method id "youtube.liveStreams.update":
 
 type LiveStreamsUpdateCall struct {
 	s          *Service
-	part       string
 	livestream *LiveStream
-	opt_       map[string]interface{}
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Update: Updates a video stream. If the properties that you want to
 // change cannot be updated, then you need to create a new stream with
 // the proper settings.
 func (r *LiveStreamsService) Update(part string, livestream *LiveStream) *LiveStreamsUpdateCall {
-	c := &LiveStreamsUpdateCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &LiveStreamsUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	c.livestream = livestream
 	return c
 }
@@ -10160,7 +17953,7 @@ func (r *LiveStreamsService) Update(part string, livestream *LiveStream) *LiveSt
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *LiveStreamsUpdateCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *LiveStreamsUpdateCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
@@ -10186,44 +17979,74 @@ func (c *LiveStreamsUpdateCall) OnBehalfOfContentOwner(onBehalfOfContentOwner st
 // specified in the parameter value, without having to provide
 // authentication credentials for each separate channel.
 func (c *LiveStreamsUpdateCall) OnBehalfOfContentOwnerChannel(onBehalfOfContentOwnerChannel string) *LiveStreamsUpdateCall {
-	c.opt_["onBehalfOfContentOwnerChannel"] = onBehalfOfContentOwnerChannel
+	c.urlParams_.Set("onBehalfOfContentOwnerChannel", onBehalfOfContentOwnerChannel)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *LiveStreamsUpdateCall) Fields(s ...googleapi.Field) *LiveStreamsUpdateCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *LiveStreamsUpdateCall) Do() (*LiveStream, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *LiveStreamsUpdateCall) Context(ctx context.Context) *LiveStreamsUpdateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *LiveStreamsUpdateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *LiveStreamsUpdateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.livestream)
 	if err != nil {
 		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwnerChannel"]; ok {
-		params.Set("onBehalfOfContentOwnerChannel", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "liveStreams")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PUT", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("Content-Type", ctype)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.liveStreams.update" call.
+// Exactly one of *LiveStream or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *LiveStream.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *LiveStreamsUpdateCall) Do(opts ...googleapi.CallOption) (*LiveStream, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -10231,8 +18054,14 @@ func (c *LiveStreamsUpdateCall) Do() (*LiveStream, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *LiveStream
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &LiveStream{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -10279,40 +18108,81 @@ func (c *LiveStreamsUpdateCall) Do() (*LiveStream, error) {
 // method id "youtube.playlistItems.delete":
 
 type PlaylistItemsDeleteCall struct {
-	s    *Service
-	id   string
-	opt_ map[string]interface{}
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Delete: Deletes a playlist item.
 func (r *PlaylistItemsService) Delete(id string) *PlaylistItemsDeleteCall {
-	c := &PlaylistItemsDeleteCall{s: r.s, opt_: make(map[string]interface{})}
-	c.id = id
+	c := &PlaylistItemsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("id", id)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// OnBehalfOfContentOwner sets the optional parameter
+// "onBehalfOfContentOwner": Note: This parameter is intended
+// exclusively for YouTube content partners.
+//
+// The onBehalfOfContentOwner parameter indicates that the request's
+// authorization credentials identify a YouTube CMS user who is acting
+// on behalf of the content owner specified in the parameter value. This
+// parameter is intended for YouTube content partners that own and
+// manage many different YouTube channels. It allows content owners to
+// authenticate once and get access to all their video and channel data,
+// without having to provide authentication credentials for each
+// individual channel. The CMS account that the user authenticates with
+// must be linked to the specified YouTube content owner.
+func (c *PlaylistItemsDeleteCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *PlaylistItemsDeleteCall {
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *PlaylistItemsDeleteCall) Fields(s ...googleapi.Field) *PlaylistItemsDeleteCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *PlaylistItemsDeleteCall) Do() error {
-	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("id", fmt.Sprintf("%v", c.id))
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *PlaylistItemsDeleteCall) Context(ctx context.Context) *PlaylistItemsDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *PlaylistItemsDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
 	}
+	return c.header_
+}
+
+func (c *PlaylistItemsDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "playlistItems")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.playlistItems.delete" call.
+func (c *PlaylistItemsDeleteCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
 	if err != nil {
 		return err
 	}
@@ -10334,6 +18204,11 @@ func (c *PlaylistItemsDeleteCall) Do() error {
 	//       "location": "query",
 	//       "required": true,
 	//       "type": "string"
+	//     },
+	//     "onBehalfOfContentOwner": {
+	//       "description": "Note: This parameter is intended exclusively for YouTube content partners.\n\nThe onBehalfOfContentOwner parameter indicates that the request's authorization credentials identify a YouTube CMS user who is acting on behalf of the content owner specified in the parameter value. This parameter is intended for YouTube content partners that own and manage many different YouTube channels. It allows content owners to authenticate once and get access to all their video and channel data, without having to provide authentication credentials for each individual channel. The CMS account that the user authenticates with must be linked to the specified YouTube content owner.",
+	//       "location": "query",
+	//       "type": "string"
 	//     }
 	//   },
 	//   "path": "playlistItems",
@@ -10350,15 +18225,16 @@ func (c *PlaylistItemsDeleteCall) Do() error {
 
 type PlaylistItemsInsertCall struct {
 	s            *Service
-	part         string
 	playlistitem *PlaylistItem
-	opt_         map[string]interface{}
+	urlParams_   gensupport.URLParams
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // Insert: Adds a resource to a playlist.
 func (r *PlaylistItemsService) Insert(part string, playlistitem *PlaylistItem) *PlaylistItemsInsertCall {
-	c := &PlaylistItemsInsertCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &PlaylistItemsInsertCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	c.playlistitem = playlistitem
 	return c
 }
@@ -10377,41 +18253,74 @@ func (r *PlaylistItemsService) Insert(part string, playlistitem *PlaylistItem) *
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *PlaylistItemsInsertCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *PlaylistItemsInsertCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *PlaylistItemsInsertCall) Fields(s ...googleapi.Field) *PlaylistItemsInsertCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *PlaylistItemsInsertCall) Do() (*PlaylistItem, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *PlaylistItemsInsertCall) Context(ctx context.Context) *PlaylistItemsInsertCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *PlaylistItemsInsertCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *PlaylistItemsInsertCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.playlistitem)
 	if err != nil {
 		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "playlistItems")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("Content-Type", ctype)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.playlistItems.insert" call.
+// Exactly one of *PlaylistItem or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *PlaylistItem.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *PlaylistItemsInsertCall) Do(opts ...googleapi.CallOption) (*PlaylistItem, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -10419,8 +18328,14 @@ func (c *PlaylistItemsInsertCall) Do() (*PlaylistItem, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *PlaylistItem
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &PlaylistItem{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -10463,9 +18378,11 @@ func (c *PlaylistItemsInsertCall) Do() (*PlaylistItem, error) {
 // method id "youtube.playlistItems.list":
 
 type PlaylistItemsListCall struct {
-	s    *Service
-	part string
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Returns a collection of playlist items that match the API
@@ -10473,15 +18390,15 @@ type PlaylistItemsListCall struct {
 // specified playlist or retrieve one or more playlist items by their
 // unique IDs.
 func (r *PlaylistItemsService) List(part string) *PlaylistItemsListCall {
-	c := &PlaylistItemsListCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &PlaylistItemsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	return c
 }
 
 // Id sets the optional parameter "id": The id parameter specifies a
 // comma-separated list of one or more unique playlist item IDs.
 func (c *PlaylistItemsListCall) Id(id string) *PlaylistItemsListCall {
-	c.opt_["id"] = id
+	c.urlParams_.Set("id", id)
 	return c
 }
 
@@ -10489,7 +18406,7 @@ func (c *PlaylistItemsListCall) Id(id string) *PlaylistItemsListCall {
 // parameter specifies the maximum number of items that should be
 // returned in the result set.
 func (c *PlaylistItemsListCall) MaxResults(maxResults int64) *PlaylistItemsListCall {
-	c.opt_["maxResults"] = maxResults
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
 	return c
 }
 
@@ -10507,7 +18424,7 @@ func (c *PlaylistItemsListCall) MaxResults(maxResults int64) *PlaylistItemsListC
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *PlaylistItemsListCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *PlaylistItemsListCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
@@ -10516,7 +18433,7 @@ func (c *PlaylistItemsListCall) OnBehalfOfContentOwner(onBehalfOfContentOwner st
 // returned. In an API response, the nextPageToken and prevPageToken
 // properties identify other pages that could be retrieved.
 func (c *PlaylistItemsListCall) PageToken(pageToken string) *PlaylistItemsListCall {
-	c.opt_["pageToken"] = pageToken
+	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
@@ -10526,7 +18443,7 @@ func (c *PlaylistItemsListCall) PageToken(pageToken string) *PlaylistItemsListCa
 // parameter, every request to retrieve playlist items must specify a
 // value for either the id parameter or the playlistId parameter.
 func (c *PlaylistItemsListCall) PlaylistId(playlistId string) *PlaylistItemsListCall {
-	c.opt_["playlistId"] = playlistId
+	c.urlParams_.Set("playlistId", playlistId)
 	return c
 }
 
@@ -10534,50 +18451,82 @@ func (c *PlaylistItemsListCall) PlaylistId(playlistId string) *PlaylistItemsList
 // specifies that the request should return only the playlist items that
 // contain the specified video.
 func (c *PlaylistItemsListCall) VideoId(videoId string) *PlaylistItemsListCall {
-	c.opt_["videoId"] = videoId
+	c.urlParams_.Set("videoId", videoId)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *PlaylistItemsListCall) Fields(s ...googleapi.Field) *PlaylistItemsListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *PlaylistItemsListCall) Do() (*PlaylistItemListResponse, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *PlaylistItemsListCall) IfNoneMatch(entityTag string) *PlaylistItemsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *PlaylistItemsListCall) Context(ctx context.Context) *PlaylistItemsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *PlaylistItemsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *PlaylistItemsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["id"]; ok {
-		params.Set("id", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["maxResults"]; ok {
-		params.Set("maxResults", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["pageToken"]; ok {
-		params.Set("pageToken", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["playlistId"]; ok {
-		params.Set("playlistId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["videoId"]; ok {
-		params.Set("videoId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "playlistItems")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.playlistItems.list" call.
+// Exactly one of *PlaylistItemListResponse or error will be non-nil.
+// Any non-2xx status code is an error. Response headers are in either
+// *PlaylistItemListResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *PlaylistItemsListCall) Do(opts ...googleapi.CallOption) (*PlaylistItemListResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -10585,8 +18534,14 @@ func (c *PlaylistItemsListCall) Do() (*PlaylistItemListResponse, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *PlaylistItemListResponse
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &PlaylistItemListResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -10654,52 +18609,128 @@ func (c *PlaylistItemsListCall) Do() (*PlaylistItemListResponse, error) {
 
 }
 
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *PlaylistItemsListCall) Pages(ctx context.Context, f func(*PlaylistItemListResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
 // method id "youtube.playlistItems.update":
 
 type PlaylistItemsUpdateCall struct {
 	s            *Service
-	part         string
 	playlistitem *PlaylistItem
-	opt_         map[string]interface{}
+	urlParams_   gensupport.URLParams
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // Update: Modifies a playlist item. For example, you could update the
 // item's position in the playlist.
 func (r *PlaylistItemsService) Update(part string, playlistitem *PlaylistItem) *PlaylistItemsUpdateCall {
-	c := &PlaylistItemsUpdateCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &PlaylistItemsUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	c.playlistitem = playlistitem
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
-func (c *PlaylistItemsUpdateCall) Fields(s ...googleapi.Field) *PlaylistItemsUpdateCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+// OnBehalfOfContentOwner sets the optional parameter
+// "onBehalfOfContentOwner": Note: This parameter is intended
+// exclusively for YouTube content partners.
+//
+// The onBehalfOfContentOwner parameter indicates that the request's
+// authorization credentials identify a YouTube CMS user who is acting
+// on behalf of the content owner specified in the parameter value. This
+// parameter is intended for YouTube content partners that own and
+// manage many different YouTube channels. It allows content owners to
+// authenticate once and get access to all their video and channel data,
+// without having to provide authentication credentials for each
+// individual channel. The CMS account that the user authenticates with
+// must be linked to the specified YouTube content owner.
+func (c *PlaylistItemsUpdateCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *PlaylistItemsUpdateCall {
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
-func (c *PlaylistItemsUpdateCall) Do() (*PlaylistItem, error) {
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *PlaylistItemsUpdateCall) Fields(s ...googleapi.Field) *PlaylistItemsUpdateCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *PlaylistItemsUpdateCall) Context(ctx context.Context) *PlaylistItemsUpdateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *PlaylistItemsUpdateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *PlaylistItemsUpdateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.playlistitem)
 	if err != nil {
 		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "playlistItems")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PUT", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("Content-Type", ctype)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.playlistItems.update" call.
+// Exactly one of *PlaylistItem or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *PlaylistItem.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *PlaylistItemsUpdateCall) Do(opts ...googleapi.CallOption) (*PlaylistItem, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -10707,8 +18738,14 @@ func (c *PlaylistItemsUpdateCall) Do() (*PlaylistItem, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *PlaylistItem
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &PlaylistItem{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -10720,6 +18757,11 @@ func (c *PlaylistItemsUpdateCall) Do() (*PlaylistItem, error) {
 	//     "part"
 	//   ],
 	//   "parameters": {
+	//     "onBehalfOfContentOwner": {
+	//       "description": "Note: This parameter is intended exclusively for YouTube content partners.\n\nThe onBehalfOfContentOwner parameter indicates that the request's authorization credentials identify a YouTube CMS user who is acting on behalf of the content owner specified in the parameter value. This parameter is intended for YouTube content partners that own and manage many different YouTube channels. It allows content owners to authenticate once and get access to all their video and channel data, without having to provide authentication credentials for each individual channel. The CMS account that the user authenticates with must be linked to the specified YouTube content owner.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
 	//     "part": {
 	//       "description": "The part parameter serves two purposes in this operation. It identifies the properties that the write operation will set as well as the properties that the API response will include.\n\nNote that this method will override the existing values for all of the mutable properties that are contained in any parts that the parameter value specifies. For example, a playlist item can specify a start time and end time, which identify the times portion of the video that should play when users watch the video in the playlist. If your request is updating a playlist item that sets these values, and the request's part parameter value includes the contentDetails part, the playlist item's start and end times will be updated to whatever value the request body specifies. If the request body does not specify values, the existing start and end times will be removed and replaced with the default settings.",
 	//       "location": "query",
@@ -10746,15 +18788,16 @@ func (c *PlaylistItemsUpdateCall) Do() (*PlaylistItem, error) {
 // method id "youtube.playlists.delete":
 
 type PlaylistsDeleteCall struct {
-	s    *Service
-	id   string
-	opt_ map[string]interface{}
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Delete: Deletes a playlist.
 func (r *PlaylistsService) Delete(id string) *PlaylistsDeleteCall {
-	c := &PlaylistsDeleteCall{s: r.s, opt_: make(map[string]interface{})}
-	c.id = id
+	c := &PlaylistsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("id", id)
 	return c
 }
 
@@ -10772,35 +18815,54 @@ func (r *PlaylistsService) Delete(id string) *PlaylistsDeleteCall {
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *PlaylistsDeleteCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *PlaylistsDeleteCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *PlaylistsDeleteCall) Fields(s ...googleapi.Field) *PlaylistsDeleteCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *PlaylistsDeleteCall) Do() error {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *PlaylistsDeleteCall) Context(ctx context.Context) *PlaylistsDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *PlaylistsDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *PlaylistsDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("id", fmt.Sprintf("%v", c.id))
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "playlists")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.playlists.delete" call.
+func (c *PlaylistsDeleteCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
 	if err != nil {
 		return err
 	}
@@ -10842,16 +18904,17 @@ func (c *PlaylistsDeleteCall) Do() error {
 // method id "youtube.playlists.insert":
 
 type PlaylistsInsertCall struct {
-	s        *Service
-	part     string
-	playlist *Playlist
-	opt_     map[string]interface{}
+	s          *Service
+	playlist   *Playlist
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Insert: Creates a playlist.
 func (r *PlaylistsService) Insert(part string, playlist *Playlist) *PlaylistsInsertCall {
-	c := &PlaylistsInsertCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &PlaylistsInsertCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	c.playlist = playlist
 	return c
 }
@@ -10870,7 +18933,7 @@ func (r *PlaylistsService) Insert(part string, playlist *Playlist) *PlaylistsIns
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *PlaylistsInsertCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *PlaylistsInsertCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
@@ -10896,44 +18959,74 @@ func (c *PlaylistsInsertCall) OnBehalfOfContentOwner(onBehalfOfContentOwner stri
 // specified in the parameter value, without having to provide
 // authentication credentials for each separate channel.
 func (c *PlaylistsInsertCall) OnBehalfOfContentOwnerChannel(onBehalfOfContentOwnerChannel string) *PlaylistsInsertCall {
-	c.opt_["onBehalfOfContentOwnerChannel"] = onBehalfOfContentOwnerChannel
+	c.urlParams_.Set("onBehalfOfContentOwnerChannel", onBehalfOfContentOwnerChannel)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *PlaylistsInsertCall) Fields(s ...googleapi.Field) *PlaylistsInsertCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *PlaylistsInsertCall) Do() (*Playlist, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *PlaylistsInsertCall) Context(ctx context.Context) *PlaylistsInsertCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *PlaylistsInsertCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *PlaylistsInsertCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.playlist)
 	if err != nil {
 		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwnerChannel"]; ok {
-		params.Set("onBehalfOfContentOwnerChannel", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "playlists")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("Content-Type", ctype)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.playlists.insert" call.
+// Exactly one of *Playlist or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Playlist.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *PlaylistsInsertCall) Do(opts ...googleapi.CallOption) (*Playlist, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -10941,8 +19034,14 @@ func (c *PlaylistsInsertCall) Do() (*Playlist, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Playlist
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Playlist{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -10990,9 +19089,11 @@ func (c *PlaylistsInsertCall) Do() (*Playlist, error) {
 // method id "youtube.playlists.list":
 
 type PlaylistsListCall struct {
-	s    *Service
-	part string
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Returns a collection of playlists that match the API request
@@ -11000,8 +19101,8 @@ type PlaylistsListCall struct {
 // authenticated user owns, or you can retrieve one or more playlists by
 // their unique IDs.
 func (r *PlaylistsService) List(part string) *PlaylistsListCall {
-	c := &PlaylistsListCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &PlaylistsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	return c
 }
 
@@ -11009,7 +19110,7 @@ func (r *PlaylistsService) List(part string) *PlaylistsListCall {
 // indicates that the API should only return the specified channel's
 // playlists.
 func (c *PlaylistsListCall) ChannelId(channelId string) *PlaylistsListCall {
-	c.opt_["channelId"] = channelId
+	c.urlParams_.Set("channelId", channelId)
 	return c
 }
 
@@ -11017,7 +19118,7 @@ func (c *PlaylistsListCall) ChannelId(channelId string) *PlaylistsListCall {
 // for filter out the properties that are not in the given language.
 // Used for the snippet part.
 func (c *PlaylistsListCall) Hl(hl string) *PlaylistsListCall {
-	c.opt_["hl"] = hl
+	c.urlParams_.Set("hl", hl)
 	return c
 }
 
@@ -11026,7 +19127,7 @@ func (c *PlaylistsListCall) Hl(hl string) *PlaylistsListCall {
 // resource(s) that are being retrieved. In a playlist resource, the id
 // property specifies the playlist's YouTube playlist ID.
 func (c *PlaylistsListCall) Id(id string) *PlaylistsListCall {
-	c.opt_["id"] = id
+	c.urlParams_.Set("id", id)
 	return c
 }
 
@@ -11034,7 +19135,7 @@ func (c *PlaylistsListCall) Id(id string) *PlaylistsListCall {
 // parameter specifies the maximum number of items that should be
 // returned in the result set.
 func (c *PlaylistsListCall) MaxResults(maxResults int64) *PlaylistsListCall {
-	c.opt_["maxResults"] = maxResults
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
 	return c
 }
 
@@ -11042,7 +19143,7 @@ func (c *PlaylistsListCall) MaxResults(maxResults int64) *PlaylistsListCall {
 // to true to instruct the API to only return playlists owned by the
 // authenticated user.
 func (c *PlaylistsListCall) Mine(mine bool) *PlaylistsListCall {
-	c.opt_["mine"] = mine
+	c.urlParams_.Set("mine", fmt.Sprint(mine))
 	return c
 }
 
@@ -11060,7 +19161,7 @@ func (c *PlaylistsListCall) Mine(mine bool) *PlaylistsListCall {
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *PlaylistsListCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *PlaylistsListCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
@@ -11086,7 +19187,7 @@ func (c *PlaylistsListCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string
 // specified in the parameter value, without having to provide
 // authentication credentials for each separate channel.
 func (c *PlaylistsListCall) OnBehalfOfContentOwnerChannel(onBehalfOfContentOwnerChannel string) *PlaylistsListCall {
-	c.opt_["onBehalfOfContentOwnerChannel"] = onBehalfOfContentOwnerChannel
+	c.urlParams_.Set("onBehalfOfContentOwnerChannel", onBehalfOfContentOwnerChannel)
 	return c
 }
 
@@ -11095,56 +19196,82 @@ func (c *PlaylistsListCall) OnBehalfOfContentOwnerChannel(onBehalfOfContentOwner
 // returned. In an API response, the nextPageToken and prevPageToken
 // properties identify other pages that could be retrieved.
 func (c *PlaylistsListCall) PageToken(pageToken string) *PlaylistsListCall {
-	c.opt_["pageToken"] = pageToken
+	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *PlaylistsListCall) Fields(s ...googleapi.Field) *PlaylistsListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *PlaylistsListCall) Do() (*PlaylistListResponse, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *PlaylistsListCall) IfNoneMatch(entityTag string) *PlaylistsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *PlaylistsListCall) Context(ctx context.Context) *PlaylistsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *PlaylistsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *PlaylistsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["channelId"]; ok {
-		params.Set("channelId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["hl"]; ok {
-		params.Set("hl", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["id"]; ok {
-		params.Set("id", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["maxResults"]; ok {
-		params.Set("maxResults", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["mine"]; ok {
-		params.Set("mine", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwnerChannel"]; ok {
-		params.Set("onBehalfOfContentOwnerChannel", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["pageToken"]; ok {
-		params.Set("pageToken", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "playlists")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.playlists.list" call.
+// Exactly one of *PlaylistListResponse or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *PlaylistListResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *PlaylistsListCall) Do(opts ...googleapi.CallOption) (*PlaylistListResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -11152,8 +19279,14 @@ func (c *PlaylistsListCall) Do() (*PlaylistListResponse, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *PlaylistListResponse
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &PlaylistListResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -11230,20 +19363,42 @@ func (c *PlaylistsListCall) Do() (*PlaylistListResponse, error) {
 
 }
 
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *PlaylistsListCall) Pages(ctx context.Context, f func(*PlaylistListResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
 // method id "youtube.playlists.update":
 
 type PlaylistsUpdateCall struct {
-	s        *Service
-	part     string
-	playlist *Playlist
-	opt_     map[string]interface{}
+	s          *Service
+	playlist   *Playlist
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Update: Modifies a playlist. For example, you could change a
 // playlist's title, description, or privacy status.
 func (r *PlaylistsService) Update(part string, playlist *Playlist) *PlaylistsUpdateCall {
-	c := &PlaylistsUpdateCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &PlaylistsUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	c.playlist = playlist
 	return c
 }
@@ -11262,41 +19417,74 @@ func (r *PlaylistsService) Update(part string, playlist *Playlist) *PlaylistsUpd
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *PlaylistsUpdateCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *PlaylistsUpdateCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *PlaylistsUpdateCall) Fields(s ...googleapi.Field) *PlaylistsUpdateCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *PlaylistsUpdateCall) Do() (*Playlist, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *PlaylistsUpdateCall) Context(ctx context.Context) *PlaylistsUpdateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *PlaylistsUpdateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *PlaylistsUpdateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.playlist)
 	if err != nil {
 		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "playlists")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PUT", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("Content-Type", ctype)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.playlists.update" call.
+// Exactly one of *Playlist or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Playlist.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *PlaylistsUpdateCall) Do(opts ...googleapi.CallOption) (*Playlist, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -11304,8 +19492,14 @@ func (c *PlaylistsUpdateCall) Do() (*Playlist, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Playlist
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Playlist{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -11348,9 +19542,11 @@ func (c *PlaylistsUpdateCall) Do() (*Playlist, error) {
 // method id "youtube.search.list":
 
 type SearchListCall struct {
-	s    *Service
-	part string
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Returns a collection of search results that match the query
@@ -11359,8 +19555,8 @@ type SearchListCall struct {
 // you can also configure queries to only retrieve a specific type of
 // resource.
 func (r *SearchService) List(part string) *SearchListCall {
-	c := &SearchListCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &SearchListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	return c
 }
 
@@ -11368,7 +19564,7 @@ func (r *SearchService) List(part string) *SearchListCall {
 // parameter indicates that the API response should only contain
 // resources created by the channel
 func (c *SearchListCall) ChannelId(channelId string) *SearchListCall {
-	c.opt_["channelId"] = channelId
+	c.urlParams_.Set("channelId", channelId)
 	return c
 }
 
@@ -11380,7 +19576,7 @@ func (c *SearchListCall) ChannelId(channelId string) *SearchListCall {
 //   "any" - Return all channels.
 //   "show" - Only retrieve shows.
 func (c *SearchListCall) ChannelType(channelType string) *SearchListCall {
-	c.opt_["channelType"] = channelType
+	c.urlParams_.Set("channelType", channelType)
 	return c
 }
 
@@ -11394,7 +19590,7 @@ func (c *SearchListCall) ChannelType(channelType string) *SearchListCall {
 //   "live" - Only include active broadcasts.
 //   "upcoming" - Only include upcoming broadcasts.
 func (c *SearchListCall) EventType(eventType string) *SearchListCall {
-	c.opt_["eventType"] = eventType
+	c.urlParams_.Set("eventType", eventType)
 	return c
 }
 
@@ -11408,7 +19604,7 @@ func (c *SearchListCall) EventType(eventType string) *SearchListCall {
 // using a CMS account linked to the specified content owner and
 // onBehalfOfContentOwner must be provided.
 func (c *SearchListCall) ForContentOwner(forContentOwner bool) *SearchListCall {
-	c.opt_["forContentOwner"] = forContentOwner
+	c.urlParams_.Set("forContentOwner", fmt.Sprint(forContentOwner))
 	return c
 }
 
@@ -11420,7 +19616,7 @@ func (c *SearchListCall) ForContentOwner(forContentOwner bool) *SearchListCall {
 // uploaded through the developer's own app or website but not to videos
 // uploaded through other apps or sites.
 func (c *SearchListCall) ForDeveloper(forDeveloper bool) *SearchListCall {
-	c.opt_["forDeveloper"] = forDeveloper
+	c.urlParams_.Set("forDeveloper", fmt.Sprint(forDeveloper))
 	return c
 }
 
@@ -11429,7 +19625,7 @@ func (c *SearchListCall) ForDeveloper(forDeveloper bool) *SearchListCall {
 // authenticated user. If you set this parameter to true, then the type
 // parameter's value must also be set to video.
 func (c *SearchListCall) ForMine(forMine bool) *SearchListCall {
-	c.opt_["forMine"] = forMine
+	c.urlParams_.Set("forMine", fmt.Sprint(forMine))
 	return c
 }
 
@@ -11449,7 +19645,7 @@ func (c *SearchListCall) ForMine(forMine bool) *SearchListCall {
 // error if your request specifies a value for the location parameter
 // but does not also specify a value for the locationRadius parameter.
 func (c *SearchListCall) Location(location string) *SearchListCall {
-	c.opt_["location"] = location
+	c.urlParams_.Set("location", location)
 	return c
 }
 
@@ -11466,7 +19662,7 @@ func (c *SearchListCall) Location(location string) *SearchListCall {
 // Note: See the definition of the location parameter for more
 // information.
 func (c *SearchListCall) LocationRadius(locationRadius string) *SearchListCall {
-	c.opt_["locationRadius"] = locationRadius
+	c.urlParams_.Set("locationRadius", locationRadius)
 	return c
 }
 
@@ -11474,7 +19670,7 @@ func (c *SearchListCall) LocationRadius(locationRadius string) *SearchListCall {
 // parameter specifies the maximum number of items that should be
 // returned in the result set.
 func (c *SearchListCall) MaxResults(maxResults int64) *SearchListCall {
-	c.opt_["maxResults"] = maxResults
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
 	return c
 }
 
@@ -11492,7 +19688,7 @@ func (c *SearchListCall) MaxResults(maxResults int64) *SearchListCall {
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *SearchListCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *SearchListCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
@@ -11512,7 +19708,7 @@ func (c *SearchListCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *
 //   "viewCount" - Resources are sorted from highest to lowest number of
 // views.
 func (c *SearchListCall) Order(order string) *SearchListCall {
-	c.opt_["order"] = order
+	c.urlParams_.Set("order", order)
 	return c
 }
 
@@ -11521,7 +19717,7 @@ func (c *SearchListCall) Order(order string) *SearchListCall {
 // returned. In an API response, the nextPageToken and prevPageToken
 // properties identify other pages that could be retrieved.
 func (c *SearchListCall) PageToken(pageToken string) *SearchListCall {
-	c.opt_["pageToken"] = pageToken
+	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
@@ -11530,7 +19726,7 @@ func (c *SearchListCall) PageToken(pageToken string) *SearchListCall {
 // contain resources created after the specified time. The value is an
 // RFC 3339 formatted date-time value (1970-01-01T00:00:00Z).
 func (c *SearchListCall) PublishedAfter(publishedAfter string) *SearchListCall {
-	c.opt_["publishedAfter"] = publishedAfter
+	c.urlParams_.Set("publishedAfter", publishedAfter)
 	return c
 }
 
@@ -11539,7 +19735,7 @@ func (c *SearchListCall) PublishedAfter(publishedAfter string) *SearchListCall {
 // contain resources created before the specified time. The value is an
 // RFC 3339 formatted date-time value (1970-01-01T00:00:00Z).
 func (c *SearchListCall) PublishedBefore(publishedBefore string) *SearchListCall {
-	c.opt_["publishedBefore"] = publishedBefore
+	c.urlParams_.Set("publishedBefore", publishedBefore)
 	return c
 }
 
@@ -11556,7 +19752,7 @@ func (c *SearchListCall) PublishedBefore(publishedBefore string) *SearchListCall
 // URL-escaped when it is sent in your API request. The URL-escaped
 // value for the pipe character is %7C.
 func (c *SearchListCall) Q(q string) *SearchListCall {
-	c.opt_["q"] = q
+	c.urlParams_.Set("q", q)
 	return c
 }
 
@@ -11565,7 +19761,7 @@ func (c *SearchListCall) Q(q string) *SearchListCall {
 // specified country. The parameter value is an ISO 3166-1 alpha-2
 // country code.
 func (c *SearchListCall) RegionCode(regionCode string) *SearchListCall {
-	c.opt_["regionCode"] = regionCode
+	c.urlParams_.Set("regionCode", regionCode)
 	return c
 }
 
@@ -11575,7 +19771,7 @@ func (c *SearchListCall) RegionCode(regionCode string) *SearchListCall {
 // parameter value must be set to a YouTube video ID and, if you are
 // using this parameter, the type parameter must be set to video.
 func (c *SearchListCall) RelatedToVideoId(relatedToVideoId string) *SearchListCall {
-	c.opt_["relatedToVideoId"] = relatedToVideoId
+	c.urlParams_.Set("relatedToVideoId", relatedToVideoId)
 	return c
 }
 
@@ -11588,7 +19784,7 @@ func (c *SearchListCall) RelatedToVideoId(relatedToVideoId string) *SearchListCa
 // languages will still be returned if they are highly relevant to the
 // search query term.
 func (c *SearchListCall) RelevanceLanguage(relevanceLanguage string) *SearchListCall {
-	c.opt_["relevanceLanguage"] = relevanceLanguage
+	c.urlParams_.Set("relevanceLanguage", relevanceLanguage)
 	return c
 }
 
@@ -11607,7 +19803,7 @@ func (c *SearchListCall) RelevanceLanguage(relevanceLanguage string) *SearchList
 // the search result set. Based on their content, search results could
 // be removed from search results or demoted in search results.
 func (c *SearchListCall) SafeSearch(safeSearch string) *SearchListCall {
-	c.opt_["safeSearch"] = safeSearch
+	c.urlParams_.Set("safeSearch", safeSearch)
 	return c
 }
 
@@ -11616,7 +19812,7 @@ func (c *SearchListCall) SafeSearch(safeSearch string) *SearchListCall {
 // associated with the specified topic. The value identifies a Freebase
 // topic ID.
 func (c *SearchListCall) TopicId(topicId string) *SearchListCall {
-	c.opt_["topicId"] = topicId
+	c.urlParams_.Set("topicId", topicId)
 	return c
 }
 
@@ -11624,7 +19820,7 @@ func (c *SearchListCall) TopicId(topicId string) *SearchListCall {
 // a search query to only retrieve a particular type of resource. The
 // value is a comma-separated list of resource types.
 func (c *SearchListCall) Type(type_ string) *SearchListCall {
-	c.opt_["type"] = type_
+	c.urlParams_.Set("type", type_)
 	return c
 }
 
@@ -11639,7 +19835,7 @@ func (c *SearchListCall) Type(type_ string) *SearchListCall {
 //   "closedCaption" - Only include videos that have captions.
 //   "none" - Only include videos that do not have captions.
 func (c *SearchListCall) VideoCaption(videoCaption string) *SearchListCall {
-	c.opt_["videoCaption"] = videoCaption
+	c.urlParams_.Set("videoCaption", videoCaption)
 	return c
 }
 
@@ -11648,7 +19844,7 @@ func (c *SearchListCall) VideoCaption(videoCaption string) *SearchListCall {
 // category. If you specify a value for this parameter, you must also
 // set the type parameter's value to video.
 func (c *SearchListCall) VideoCategoryId(videoCategoryId string) *SearchListCall {
-	c.opt_["videoCategoryId"] = videoCategoryId
+	c.urlParams_.Set("videoCategoryId", videoCategoryId)
 	return c
 }
 
@@ -11665,7 +19861,7 @@ func (c *SearchListCall) VideoCategoryId(videoCategoryId string) *SearchListCall
 //   "high" - Only retrieve HD videos.
 //   "standard" - Only retrieve videos in standard definition.
 func (c *SearchListCall) VideoDefinition(videoDefinition string) *SearchListCall {
-	c.opt_["videoDefinition"] = videoDefinition
+	c.urlParams_.Set("videoDefinition", videoDefinition)
 	return c
 }
 
@@ -11680,7 +19876,7 @@ func (c *SearchListCall) VideoDefinition(videoDefinition string) *SearchListCall
 //   "any" - Include both 3D and non-3D videos in returned results. This
 // is the default value.
 func (c *SearchListCall) VideoDimension(videoDimension string) *SearchListCall {
-	c.opt_["videoDimension"] = videoDimension
+	c.urlParams_.Set("videoDimension", videoDimension)
 	return c
 }
 
@@ -11697,7 +19893,7 @@ func (c *SearchListCall) VideoDimension(videoDimension string) *SearchListCall {
 // long (inclusive).
 //   "short" - Only include videos that are less than four minutes long.
 func (c *SearchListCall) VideoDuration(videoDuration string) *SearchListCall {
-	c.opt_["videoDuration"] = videoDuration
+	c.urlParams_.Set("videoDuration", videoDuration)
 	return c
 }
 
@@ -11711,7 +19907,7 @@ func (c *SearchListCall) VideoDuration(videoDuration string) *SearchListCall {
 //   "any" - Return all videos, embeddable or not.
 //   "true" - Only retrieve embeddable videos.
 func (c *SearchListCall) VideoEmbeddable(videoEmbeddable string) *SearchListCall {
-	c.opt_["videoEmbeddable"] = videoEmbeddable
+	c.urlParams_.Set("videoEmbeddable", videoEmbeddable)
 	return c
 }
 
@@ -11731,7 +19927,7 @@ func (c *SearchListCall) VideoEmbeddable(videoEmbeddable string) *SearchListCall
 //   "youtube" - Only return videos that have the standard YouTube
 // license.
 func (c *SearchListCall) VideoLicense(videoLicense string) *SearchListCall {
-	c.opt_["videoLicense"] = videoLicense
+	c.urlParams_.Set("videoLicense", videoLicense)
 	return c
 }
 
@@ -11745,7 +19941,7 @@ func (c *SearchListCall) VideoLicense(videoLicense string) *SearchListCall {
 //   "any" - Return all videos, syndicated or not.
 //   "true" - Only retrieve syndicated videos.
 func (c *SearchListCall) VideoSyndicated(videoSyndicated string) *SearchListCall {
-	c.opt_["videoSyndicated"] = videoSyndicated
+	c.urlParams_.Set("videoSyndicated", videoSyndicated)
 	return c
 }
 
@@ -11759,122 +19955,82 @@ func (c *SearchListCall) VideoSyndicated(videoSyndicated string) *SearchListCall
 //   "episode" - Only retrieve episodes of shows.
 //   "movie" - Only retrieve movies.
 func (c *SearchListCall) VideoType(videoType string) *SearchListCall {
-	c.opt_["videoType"] = videoType
+	c.urlParams_.Set("videoType", videoType)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *SearchListCall) Fields(s ...googleapi.Field) *SearchListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *SearchListCall) Do() (*SearchListResponse, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *SearchListCall) IfNoneMatch(entityTag string) *SearchListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *SearchListCall) Context(ctx context.Context) *SearchListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *SearchListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *SearchListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["channelId"]; ok {
-		params.Set("channelId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["channelType"]; ok {
-		params.Set("channelType", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["eventType"]; ok {
-		params.Set("eventType", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["forContentOwner"]; ok {
-		params.Set("forContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["forDeveloper"]; ok {
-		params.Set("forDeveloper", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["forMine"]; ok {
-		params.Set("forMine", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["location"]; ok {
-		params.Set("location", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["locationRadius"]; ok {
-		params.Set("locationRadius", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["maxResults"]; ok {
-		params.Set("maxResults", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["order"]; ok {
-		params.Set("order", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["pageToken"]; ok {
-		params.Set("pageToken", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["publishedAfter"]; ok {
-		params.Set("publishedAfter", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["publishedBefore"]; ok {
-		params.Set("publishedBefore", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["q"]; ok {
-		params.Set("q", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["regionCode"]; ok {
-		params.Set("regionCode", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["relatedToVideoId"]; ok {
-		params.Set("relatedToVideoId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["relevanceLanguage"]; ok {
-		params.Set("relevanceLanguage", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["safeSearch"]; ok {
-		params.Set("safeSearch", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["topicId"]; ok {
-		params.Set("topicId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["type"]; ok {
-		params.Set("type", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["videoCaption"]; ok {
-		params.Set("videoCaption", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["videoCategoryId"]; ok {
-		params.Set("videoCategoryId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["videoDefinition"]; ok {
-		params.Set("videoDefinition", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["videoDimension"]; ok {
-		params.Set("videoDimension", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["videoDuration"]; ok {
-		params.Set("videoDuration", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["videoEmbeddable"]; ok {
-		params.Set("videoEmbeddable", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["videoLicense"]; ok {
-		params.Set("videoLicense", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["videoSyndicated"]; ok {
-		params.Set("videoSyndicated", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["videoType"]; ok {
-		params.Set("videoType", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "search")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.search.list" call.
+// Exactly one of *SearchListResponse or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *SearchListResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *SearchListCall) Do(opts ...googleapi.CallOption) (*SearchListResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -11882,8 +20038,14 @@ func (c *SearchListCall) Do() (*SearchListResponse, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *SearchListResponse
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &SearchListResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -12196,43 +20358,299 @@ func (c *SearchListCall) Do() (*SearchListResponse, error) {
 
 }
 
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *SearchListCall) Pages(ctx context.Context, f func(*SearchListResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
+// method id "youtube.sponsors.list":
+
+type SponsorsListCall struct {
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// List: Lists sponsors for a channel.
+func (r *SponsorsService) List(part string) *SponsorsListCall {
+	c := &SponsorsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
+	return c
+}
+
+// Filter sets the optional parameter "filter": The filter parameter
+// specifies which channel sponsors to return.
+//
+// Possible values:
+//   "all" - Return all sponsors, from newest to oldest.
+//   "newest" - Return the most recent sponsors, from newest to oldest.
+func (c *SponsorsListCall) Filter(filter string) *SponsorsListCall {
+	c.urlParams_.Set("filter", filter)
+	return c
+}
+
+// MaxResults sets the optional parameter "maxResults": The maxResults
+// parameter specifies the maximum number of items that should be
+// returned in the result set.
+func (c *SponsorsListCall) MaxResults(maxResults int64) *SponsorsListCall {
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": The pageToken
+// parameter identifies a specific page in the result set that should be
+// returned. In an API response, the nextPageToken and prevPageToken
+// properties identify other pages that could be retrieved.
+func (c *SponsorsListCall) PageToken(pageToken string) *SponsorsListCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *SponsorsListCall) Fields(s ...googleapi.Field) *SponsorsListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *SponsorsListCall) IfNoneMatch(entityTag string) *SponsorsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *SponsorsListCall) Context(ctx context.Context) *SponsorsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *SponsorsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *SponsorsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "sponsors")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.sponsors.list" call.
+// Exactly one of *SponsorListResponse or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *SponsorListResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *SponsorsListCall) Do(opts ...googleapi.CallOption) (*SponsorListResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &SponsorListResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Lists sponsors for a channel.",
+	//   "httpMethod": "GET",
+	//   "id": "youtube.sponsors.list",
+	//   "parameterOrder": [
+	//     "part"
+	//   ],
+	//   "parameters": {
+	//     "filter": {
+	//       "default": "POLL_NEWEST",
+	//       "description": "The filter parameter specifies which channel sponsors to return.",
+	//       "enum": [
+	//         "all",
+	//         "newest"
+	//       ],
+	//       "enumDescriptions": [
+	//         "Return all sponsors, from newest to oldest.",
+	//         "Return the most recent sponsors, from newest to oldest."
+	//       ],
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "maxResults": {
+	//       "default": "5",
+	//       "description": "The maxResults parameter specifies the maximum number of items that should be returned in the result set.",
+	//       "format": "uint32",
+	//       "location": "query",
+	//       "maximum": "50",
+	//       "minimum": "0",
+	//       "type": "integer"
+	//     },
+	//     "pageToken": {
+	//       "description": "The pageToken parameter identifies a specific page in the result set that should be returned. In an API response, the nextPageToken and prevPageToken properties identify other pages that could be retrieved.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "part": {
+	//       "description": "The part parameter specifies the sponsor resource parts that the API response will include. Supported values are id and snippet.",
+	//       "location": "query",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "sponsors",
+	//   "response": {
+	//     "$ref": "SponsorListResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/youtube",
+	//     "https://www.googleapis.com/auth/youtube.force-ssl",
+	//     "https://www.googleapis.com/auth/youtube.readonly"
+	//   ]
+	// }
+
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *SponsorsListCall) Pages(ctx context.Context, f func(*SponsorListResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
 // method id "youtube.subscriptions.delete":
 
 type SubscriptionsDeleteCall struct {
-	s    *Service
-	id   string
-	opt_ map[string]interface{}
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Delete: Deletes a subscription.
 func (r *SubscriptionsService) Delete(id string) *SubscriptionsDeleteCall {
-	c := &SubscriptionsDeleteCall{s: r.s, opt_: make(map[string]interface{})}
-	c.id = id
+	c := &SubscriptionsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("id", id)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *SubscriptionsDeleteCall) Fields(s ...googleapi.Field) *SubscriptionsDeleteCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *SubscriptionsDeleteCall) Do() error {
-	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("id", fmt.Sprintf("%v", c.id))
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *SubscriptionsDeleteCall) Context(ctx context.Context) *SubscriptionsDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *SubscriptionsDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
 	}
+	return c.header_
+}
+
+func (c *SubscriptionsDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "subscriptions")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.subscriptions.delete" call.
+func (c *SubscriptionsDeleteCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
 	if err != nil {
 		return err
 	}
@@ -12270,47 +20688,84 @@ func (c *SubscriptionsDeleteCall) Do() error {
 
 type SubscriptionsInsertCall struct {
 	s            *Service
-	part         string
 	subscription *Subscription
-	opt_         map[string]interface{}
+	urlParams_   gensupport.URLParams
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // Insert: Adds a subscription for the authenticated user's channel.
 func (r *SubscriptionsService) Insert(part string, subscription *Subscription) *SubscriptionsInsertCall {
-	c := &SubscriptionsInsertCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &SubscriptionsInsertCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	c.subscription = subscription
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *SubscriptionsInsertCall) Fields(s ...googleapi.Field) *SubscriptionsInsertCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *SubscriptionsInsertCall) Do() (*Subscription, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *SubscriptionsInsertCall) Context(ctx context.Context) *SubscriptionsInsertCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *SubscriptionsInsertCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *SubscriptionsInsertCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.subscription)
 	if err != nil {
 		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "subscriptions")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("Content-Type", ctype)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.subscriptions.insert" call.
+// Exactly one of *Subscription or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Subscription.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *SubscriptionsInsertCall) Do(opts ...googleapi.CallOption) (*Subscription, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -12318,8 +20773,14 @@ func (c *SubscriptionsInsertCall) Do() (*Subscription, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Subscription
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Subscription{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -12357,16 +20818,18 @@ func (c *SubscriptionsInsertCall) Do() (*Subscription, error) {
 // method id "youtube.subscriptions.list":
 
 type SubscriptionsListCall struct {
-	s    *Service
-	part string
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Returns subscription resources that match the API request
 // criteria.
 func (r *SubscriptionsService) List(part string) *SubscriptionsListCall {
-	c := &SubscriptionsListCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &SubscriptionsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	return c
 }
 
@@ -12374,7 +20837,7 @@ func (r *SubscriptionsService) List(part string) *SubscriptionsListCall {
 // parameter specifies a YouTube channel ID. The API will only return
 // that channel's subscriptions.
 func (c *SubscriptionsListCall) ChannelId(channelId string) *SubscriptionsListCall {
-	c.opt_["channelId"] = channelId
+	c.urlParams_.Set("channelId", channelId)
 	return c
 }
 
@@ -12383,7 +20846,7 @@ func (c *SubscriptionsListCall) ChannelId(channelId string) *SubscriptionsListCa
 // IDs. The API response will then only contain subscriptions matching
 // those channels.
 func (c *SubscriptionsListCall) ForChannelId(forChannelId string) *SubscriptionsListCall {
-	c.opt_["forChannelId"] = forChannelId
+	c.urlParams_.Set("forChannelId", forChannelId)
 	return c
 }
 
@@ -12392,7 +20855,7 @@ func (c *SubscriptionsListCall) ForChannelId(forChannelId string) *Subscriptions
 // resource(s) that are being retrieved. In a subscription resource, the
 // id property specifies the YouTube subscription ID.
 func (c *SubscriptionsListCall) Id(id string) *SubscriptionsListCall {
-	c.opt_["id"] = id
+	c.urlParams_.Set("id", id)
 	return c
 }
 
@@ -12400,22 +20863,31 @@ func (c *SubscriptionsListCall) Id(id string) *SubscriptionsListCall {
 // parameter specifies the maximum number of items that should be
 // returned in the result set.
 func (c *SubscriptionsListCall) MaxResults(maxResults int64) *SubscriptionsListCall {
-	c.opt_["maxResults"] = maxResults
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
 	return c
 }
 
 // Mine sets the optional parameter "mine": Set this parameter's value
 // to true to retrieve a feed of the authenticated user's subscriptions.
 func (c *SubscriptionsListCall) Mine(mine bool) *SubscriptionsListCall {
-	c.opt_["mine"] = mine
+	c.urlParams_.Set("mine", fmt.Sprint(mine))
+	return c
+}
+
+// MyRecentSubscribers sets the optional parameter
+// "myRecentSubscribers": Set this parameter's value to true to retrieve
+// a feed of the subscribers of the authenticated user in reverse
+// chronological order (newest first).
+func (c *SubscriptionsListCall) MyRecentSubscribers(myRecentSubscribers bool) *SubscriptionsListCall {
+	c.urlParams_.Set("myRecentSubscribers", fmt.Sprint(myRecentSubscribers))
 	return c
 }
 
 // MySubscribers sets the optional parameter "mySubscribers": Set this
 // parameter's value to true to retrieve a feed of the subscribers of
-// the authenticated user.
+// the authenticated user in no particular order.
 func (c *SubscriptionsListCall) MySubscribers(mySubscribers bool) *SubscriptionsListCall {
-	c.opt_["mySubscribers"] = mySubscribers
+	c.urlParams_.Set("mySubscribers", fmt.Sprint(mySubscribers))
 	return c
 }
 
@@ -12433,7 +20905,7 @@ func (c *SubscriptionsListCall) MySubscribers(mySubscribers bool) *Subscriptions
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *SubscriptionsListCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *SubscriptionsListCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
@@ -12459,7 +20931,7 @@ func (c *SubscriptionsListCall) OnBehalfOfContentOwner(onBehalfOfContentOwner st
 // specified in the parameter value, without having to provide
 // authentication credentials for each separate channel.
 func (c *SubscriptionsListCall) OnBehalfOfContentOwnerChannel(onBehalfOfContentOwnerChannel string) *SubscriptionsListCall {
-	c.opt_["onBehalfOfContentOwnerChannel"] = onBehalfOfContentOwnerChannel
+	c.urlParams_.Set("onBehalfOfContentOwnerChannel", onBehalfOfContentOwnerChannel)
 	return c
 }
 
@@ -12472,7 +20944,7 @@ func (c *SubscriptionsListCall) OnBehalfOfContentOwnerChannel(onBehalfOfContentO
 //   "relevance" - Sort by relevance.
 //   "unread" - Sort by order of activity.
 func (c *SubscriptionsListCall) Order(order string) *SubscriptionsListCall {
-	c.opt_["order"] = order
+	c.urlParams_.Set("order", order)
 	return c
 }
 
@@ -12481,62 +20953,82 @@ func (c *SubscriptionsListCall) Order(order string) *SubscriptionsListCall {
 // returned. In an API response, the nextPageToken and prevPageToken
 // properties identify other pages that could be retrieved.
 func (c *SubscriptionsListCall) PageToken(pageToken string) *SubscriptionsListCall {
-	c.opt_["pageToken"] = pageToken
+	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *SubscriptionsListCall) Fields(s ...googleapi.Field) *SubscriptionsListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *SubscriptionsListCall) Do() (*SubscriptionListResponse, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *SubscriptionsListCall) IfNoneMatch(entityTag string) *SubscriptionsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *SubscriptionsListCall) Context(ctx context.Context) *SubscriptionsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *SubscriptionsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *SubscriptionsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["channelId"]; ok {
-		params.Set("channelId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["forChannelId"]; ok {
-		params.Set("forChannelId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["id"]; ok {
-		params.Set("id", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["maxResults"]; ok {
-		params.Set("maxResults", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["mine"]; ok {
-		params.Set("mine", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["mySubscribers"]; ok {
-		params.Set("mySubscribers", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwnerChannel"]; ok {
-		params.Set("onBehalfOfContentOwnerChannel", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["order"]; ok {
-		params.Set("order", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["pageToken"]; ok {
-		params.Set("pageToken", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "subscriptions")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.subscriptions.list" call.
+// Exactly one of *SubscriptionListResponse or error will be non-nil.
+// Any non-2xx status code is an error. Response headers are in either
+// *SubscriptionListResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *SubscriptionsListCall) Do(opts ...googleapi.CallOption) (*SubscriptionListResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -12544,8 +21036,14 @@ func (c *SubscriptionsListCall) Do() (*SubscriptionListResponse, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *SubscriptionListResponse
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &SubscriptionListResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -12586,8 +21084,13 @@ func (c *SubscriptionsListCall) Do() (*SubscriptionListResponse, error) {
 	//       "location": "query",
 	//       "type": "boolean"
 	//     },
+	//     "myRecentSubscribers": {
+	//       "description": "Set this parameter's value to true to retrieve a feed of the subscribers of the authenticated user in reverse chronological order (newest first).",
+	//       "location": "query",
+	//       "type": "boolean"
+	//     },
 	//     "mySubscribers": {
-	//       "description": "Set this parameter's value to true to retrieve a feed of the subscribers of the authenticated user.",
+	//       "description": "Set this parameter's value to true to retrieve a feed of the subscribers of the authenticated user in no particular order.",
 	//       "location": "query",
 	//       "type": "boolean"
 	//     },
@@ -12643,24 +21146,250 @@ func (c *SubscriptionsListCall) Do() (*SubscriptionListResponse, error) {
 
 }
 
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *SubscriptionsListCall) Pages(ctx context.Context, f func(*SubscriptionListResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
+// method id "youtube.superChatEvents.list":
+
+type SuperChatEventsListCall struct {
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// List: Lists Super Chat events for a channel.
+func (r *SuperChatEventsService) List(part string) *SuperChatEventsListCall {
+	c := &SuperChatEventsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
+	return c
+}
+
+// Hl sets the optional parameter "hl": The hl parameter instructs the
+// API to retrieve localized resource metadata for a specific
+// application language that the YouTube website supports. The parameter
+// value must be a language code included in the list returned by the
+// i18nLanguages.list method.
+//
+// If localized resource details are available in that language, the
+// resource's snippet.localized object will contain the localized
+// values. However, if localized details are not available, the
+// snippet.localized object will contain resource details in the
+// resource's default language.
+func (c *SuperChatEventsListCall) Hl(hl string) *SuperChatEventsListCall {
+	c.urlParams_.Set("hl", hl)
+	return c
+}
+
+// MaxResults sets the optional parameter "maxResults": The maxResults
+// parameter specifies the maximum number of items that should be
+// returned in the result set.
+func (c *SuperChatEventsListCall) MaxResults(maxResults int64) *SuperChatEventsListCall {
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": The pageToken
+// parameter identifies a specific page in the result set that should be
+// returned. In an API response, the nextPageToken and prevPageToken
+// properties identify other pages that could be retrieved.
+func (c *SuperChatEventsListCall) PageToken(pageToken string) *SuperChatEventsListCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *SuperChatEventsListCall) Fields(s ...googleapi.Field) *SuperChatEventsListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *SuperChatEventsListCall) IfNoneMatch(entityTag string) *SuperChatEventsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *SuperChatEventsListCall) Context(ctx context.Context) *SuperChatEventsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *SuperChatEventsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *SuperChatEventsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "superChatEvents")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.superChatEvents.list" call.
+// Exactly one of *SuperChatEventListResponse or error will be non-nil.
+// Any non-2xx status code is an error. Response headers are in either
+// *SuperChatEventListResponse.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *SuperChatEventsListCall) Do(opts ...googleapi.CallOption) (*SuperChatEventListResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &SuperChatEventListResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Lists Super Chat events for a channel.",
+	//   "httpMethod": "GET",
+	//   "id": "youtube.superChatEvents.list",
+	//   "parameterOrder": [
+	//     "part"
+	//   ],
+	//   "parameters": {
+	//     "hl": {
+	//       "description": "The hl parameter instructs the API to retrieve localized resource metadata for a specific application language that the YouTube website supports. The parameter value must be a language code included in the list returned by the i18nLanguages.list method.\n\nIf localized resource details are available in that language, the resource's snippet.localized object will contain the localized values. However, if localized details are not available, the snippet.localized object will contain resource details in the resource's default language.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "maxResults": {
+	//       "default": "5",
+	//       "description": "The maxResults parameter specifies the maximum number of items that should be returned in the result set.",
+	//       "format": "uint32",
+	//       "location": "query",
+	//       "maximum": "50",
+	//       "minimum": "1",
+	//       "type": "integer"
+	//     },
+	//     "pageToken": {
+	//       "description": "The pageToken parameter identifies a specific page in the result set that should be returned. In an API response, the nextPageToken and prevPageToken properties identify other pages that could be retrieved.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "part": {
+	//       "description": "The part parameter specifies the superChatEvent resource parts that the API response will include. Supported values are id and snippet.",
+	//       "location": "query",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "superChatEvents",
+	//   "response": {
+	//     "$ref": "SuperChatEventListResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/youtube",
+	//     "https://www.googleapis.com/auth/youtube.force-ssl",
+	//     "https://www.googleapis.com/auth/youtube.readonly"
+	//   ]
+	// }
+
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *SuperChatEventsListCall) Pages(ctx context.Context, f func(*SuperChatEventListResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
 // method id "youtube.thumbnails.set":
 
 type ThumbnailsSetCall struct {
 	s          *Service
-	videoId    string
-	opt_       map[string]interface{}
-	media_     io.Reader
-	resumable_ googleapi.SizeReaderAt
-	mediaType_ string
+	urlParams_ gensupport.URLParams
+	mediaInfo_ *gensupport.MediaInfo
 	ctx_       context.Context
-	protocol_  string
+	header_    http.Header
 }
 
 // Set: Uploads a custom video thumbnail to YouTube and sets it for a
 // video.
 func (r *ThumbnailsService) Set(videoId string) *ThumbnailsSetCall {
-	c := &ThumbnailsSetCall{s: r.s, opt_: make(map[string]interface{})}
-	c.videoId = videoId
+	c := &ThumbnailsSetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("videoId", videoId)
 	return c
 }
 
@@ -12679,92 +21408,118 @@ func (r *ThumbnailsService) Set(videoId string) *ThumbnailsSetCall {
 // authenticates with must be linked to the specified YouTube content
 // owner.
 func (c *ThumbnailsSetCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *ThumbnailsSetCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
-// Media specifies the media to upload in a single chunk.
+// Media specifies the media to upload in one or more chunks. The chunk
+// size may be controlled by supplying a MediaOption generated by
+// googleapi.ChunkSize. The chunk size defaults to
+// googleapi.DefaultUploadChunkSize.The Content-Type header used in the
+// upload request will be determined by sniffing the contents of r,
+// unless a MediaOption generated by googleapi.ContentType is
+// supplied.
 // At most one of Media and ResumableMedia may be set.
-func (c *ThumbnailsSetCall) Media(r io.Reader) *ThumbnailsSetCall {
-	c.media_ = r
-	c.protocol_ = "multipart"
+func (c *ThumbnailsSetCall) Media(r io.Reader, options ...googleapi.MediaOption) *ThumbnailsSetCall {
+	c.mediaInfo_ = gensupport.NewInfoFromMedia(r, options)
 	return c
 }
 
-// ResumableMedia specifies the media to upload in chunks and can be cancelled with ctx.
-// At most one of Media and ResumableMedia may be set.
-// mediaType identifies the MIME media type of the upload, such as "image/png".
-// If mediaType is "", it will be auto-detected.
+// ResumableMedia specifies the media to upload in chunks and can be
+// canceled with ctx.
+//
+// Deprecated: use Media instead.
+//
+// At most one of Media and ResumableMedia may be set. mediaType
+// identifies the MIME media type of the upload, such as "image/png". If
+// mediaType is "", it will be auto-detected. The provided ctx will
+// supersede any context previously provided to the Context method.
 func (c *ThumbnailsSetCall) ResumableMedia(ctx context.Context, r io.ReaderAt, size int64, mediaType string) *ThumbnailsSetCall {
 	c.ctx_ = ctx
-	c.resumable_ = io.NewSectionReader(r, 0, size)
-	c.mediaType_ = mediaType
-	c.protocol_ = "resumable"
+	c.mediaInfo_ = gensupport.NewInfoFromResumableMedia(r, size, mediaType)
 	return c
 }
 
-// ProgressUpdater provides a callback function that will be called after every chunk.
-// It should be a low-latency function in order to not slow down the upload operation.
-// This should only be called when using ResumableMedia (as opposed to Media).
+// ProgressUpdater provides a callback function that will be called
+// after every chunk. It should be a low-latency function in order to
+// not slow down the upload operation. This should only be called when
+// using ResumableMedia (as opposed to Media).
 func (c *ThumbnailsSetCall) ProgressUpdater(pu googleapi.ProgressUpdater) *ThumbnailsSetCall {
-	c.opt_["progressUpdater"] = pu
+	c.mediaInfo_.SetProgressUpdater(pu)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *ThumbnailsSetCall) Fields(s ...googleapi.Field) *ThumbnailsSetCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *ThumbnailsSetCall) Do() (*ThumbnailSetResponse, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+// This context will supersede any context previously provided to the
+// ResumableMedia method.
+func (c *ThumbnailsSetCall) Context(ctx context.Context) *ThumbnailsSetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ThumbnailsSetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ThumbnailsSetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("videoId", fmt.Sprintf("%v", c.videoId))
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "thumbnails/set")
-	var progressUpdater_ googleapi.ProgressUpdater
-	if v, ok := c.opt_["progressUpdater"]; ok {
-		if pu, ok := v.(googleapi.ProgressUpdater); ok {
-			progressUpdater_ = pu
-		}
-	}
-	if c.media_ != nil || c.resumable_ != nil {
+	if c.mediaInfo_ != nil {
 		urls = strings.Replace(urls, "https://www.googleapis.com/", "https://www.googleapis.com/upload/", 1)
-		params.Set("uploadType", c.protocol_)
+		c.urlParams_.Set("uploadType", c.mediaInfo_.UploadType())
 	}
-	urls += "?" + params.Encode()
-	body = new(bytes.Buffer)
-	ctype := "application/json"
-	if c.protocol_ != "resumable" {
-		var cancel func()
-		cancel, _ = googleapi.ConditionallyIncludeMedia(c.media_, &body, &ctype)
-		if cancel != nil {
-			defer cancel()
-		}
+	if body == nil {
+		body = new(bytes.Buffer)
+		reqHeaders.Set("Content-Type", "application/json")
 	}
+	body, cleanup := c.mediaInfo_.UploadRequest(reqHeaders, body)
+	defer cleanup()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	if c.protocol_ == "resumable" {
-		req.ContentLength = 0
-		if c.mediaType_ == "" {
-			c.mediaType_ = googleapi.DetectMediaType(c.resumable_)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.thumbnails.set" call.
+// Exactly one of *ThumbnailSetResponse or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *ThumbnailSetResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ThumbnailsSetCall) Do(opts ...googleapi.CallOption) (*ThumbnailSetResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
 		}
-		req.Header.Set("X-Upload-Content-Type", c.mediaType_)
-		req.Body = nil
-	} else {
-		req.Header.Set("Content-Type", ctype)
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
 	}
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -12772,25 +21527,31 @@ func (c *ThumbnailsSetCall) Do() (*ThumbnailSetResponse, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	if c.protocol_ == "resumable" {
-		loc := res.Header.Get("Location")
-		rx := &googleapi.ResumableUpload{
-			Client:        c.s.client,
-			UserAgent:     c.s.userAgent(),
-			URI:           loc,
-			Media:         c.resumable_,
-			MediaType:     c.mediaType_,
-			ContentLength: c.resumable_.Size(),
-			Callback:      progressUpdater_,
+	rx := c.mediaInfo_.ResumableUpload(res.Header.Get("Location"))
+	if rx != nil {
+		rx.Client = c.s.client
+		rx.UserAgent = c.s.userAgent()
+		ctx := c.ctx_
+		if ctx == nil {
+			ctx = context.TODO()
 		}
-		res, err = rx.Upload(c.ctx_)
+		res, err = rx.Upload(ctx)
 		if err != nil {
 			return nil, err
 		}
 		defer res.Body.Close()
+		if err := googleapi.CheckResponse(res); err != nil {
+			return nil, err
+		}
 	}
-	var ret *ThumbnailSetResponse
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &ThumbnailSetResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -12850,51 +21611,101 @@ func (c *ThumbnailsSetCall) Do() (*ThumbnailSetResponse, error) {
 // method id "youtube.videoAbuseReportReasons.list":
 
 type VideoAbuseReportReasonsListCall struct {
-	s    *Service
-	part string
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Returns a list of abuse reasons that can be used for reporting
 // abusive videos.
 func (r *VideoAbuseReportReasonsService) List(part string) *VideoAbuseReportReasonsListCall {
-	c := &VideoAbuseReportReasonsListCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &VideoAbuseReportReasonsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	return c
 }
 
 // Hl sets the optional parameter "hl": The hl parameter specifies the
 // language that should be used for text values in the API response.
 func (c *VideoAbuseReportReasonsListCall) Hl(hl string) *VideoAbuseReportReasonsListCall {
-	c.opt_["hl"] = hl
+	c.urlParams_.Set("hl", hl)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *VideoAbuseReportReasonsListCall) Fields(s ...googleapi.Field) *VideoAbuseReportReasonsListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *VideoAbuseReportReasonsListCall) Do() (*VideoAbuseReportReasonListResponse, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *VideoAbuseReportReasonsListCall) IfNoneMatch(entityTag string) *VideoAbuseReportReasonsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *VideoAbuseReportReasonsListCall) Context(ctx context.Context) *VideoAbuseReportReasonsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *VideoAbuseReportReasonsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *VideoAbuseReportReasonsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["hl"]; ok {
-		params.Set("hl", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "videoAbuseReportReasons")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.videoAbuseReportReasons.list" call.
+// Exactly one of *VideoAbuseReportReasonListResponse or error will be
+// non-nil. Any non-2xx status code is an error. Response headers are in
+// either *VideoAbuseReportReasonListResponse.ServerResponse.Header or
+// (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was
+// returned.
+func (c *VideoAbuseReportReasonsListCall) Do(opts ...googleapi.CallOption) (*VideoAbuseReportReasonListResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -12902,8 +21713,14 @@ func (c *VideoAbuseReportReasonsListCall) Do() (*VideoAbuseReportReasonListRespo
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *VideoAbuseReportReasonListResponse
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &VideoAbuseReportReasonListResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -12944,23 +21761,25 @@ func (c *VideoAbuseReportReasonsListCall) Do() (*VideoAbuseReportReasonListRespo
 // method id "youtube.videoCategories.list":
 
 type VideoCategoriesListCall struct {
-	s    *Service
-	part string
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Returns a list of categories that can be associated with
 // YouTube videos.
 func (r *VideoCategoriesService) List(part string) *VideoCategoriesListCall {
-	c := &VideoCategoriesListCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &VideoCategoriesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	return c
 }
 
 // Hl sets the optional parameter "hl": The hl parameter specifies the
 // language that should be used for text values in the API response.
 func (c *VideoCategoriesListCall) Hl(hl string) *VideoCategoriesListCall {
-	c.opt_["hl"] = hl
+	c.urlParams_.Set("hl", hl)
 	return c
 }
 
@@ -12968,7 +21787,7 @@ func (c *VideoCategoriesListCall) Hl(hl string) *VideoCategoriesListCall {
 // comma-separated list of video category IDs for the resources that you
 // are retrieving.
 func (c *VideoCategoriesListCall) Id(id string) *VideoCategoriesListCall {
-	c.opt_["id"] = id
+	c.urlParams_.Set("id", id)
 	return c
 }
 
@@ -12977,41 +21796,82 @@ func (c *VideoCategoriesListCall) Id(id string) *VideoCategoriesListCall {
 // available in the specified country. The parameter value is an ISO
 // 3166-1 alpha-2 country code.
 func (c *VideoCategoriesListCall) RegionCode(regionCode string) *VideoCategoriesListCall {
-	c.opt_["regionCode"] = regionCode
+	c.urlParams_.Set("regionCode", regionCode)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *VideoCategoriesListCall) Fields(s ...googleapi.Field) *VideoCategoriesListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *VideoCategoriesListCall) Do() (*VideoCategoryListResponse, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *VideoCategoriesListCall) IfNoneMatch(entityTag string) *VideoCategoriesListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *VideoCategoriesListCall) Context(ctx context.Context) *VideoCategoriesListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *VideoCategoriesListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *VideoCategoriesListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["hl"]; ok {
-		params.Set("hl", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["id"]; ok {
-		params.Set("id", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["regionCode"]; ok {
-		params.Set("regionCode", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "videoCategories")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.videoCategories.list" call.
+// Exactly one of *VideoCategoryListResponse or error will be non-nil.
+// Any non-2xx status code is an error. Response headers are in either
+// *VideoCategoryListResponse.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *VideoCategoriesListCall) Do(opts ...googleapi.CallOption) (*VideoCategoryListResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -13019,8 +21879,14 @@ func (c *VideoCategoriesListCall) Do() (*VideoCategoryListResponse, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *VideoCategoryListResponse
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &VideoCategoryListResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -13072,15 +21938,16 @@ func (c *VideoCategoriesListCall) Do() (*VideoCategoryListResponse, error) {
 // method id "youtube.videos.delete":
 
 type VideosDeleteCall struct {
-	s    *Service
-	id   string
-	opt_ map[string]interface{}
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Delete: Deletes a YouTube video.
 func (r *VideosService) Delete(id string) *VideosDeleteCall {
-	c := &VideosDeleteCall{s: r.s, opt_: make(map[string]interface{})}
-	c.id = id
+	c := &VideosDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("id", id)
 	return c
 }
 
@@ -13099,35 +21966,54 @@ func (r *VideosService) Delete(id string) *VideosDeleteCall {
 // authenticates with must be linked to the specified YouTube content
 // owner.
 func (c *VideosDeleteCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *VideosDeleteCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *VideosDeleteCall) Fields(s ...googleapi.Field) *VideosDeleteCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *VideosDeleteCall) Do() error {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *VideosDeleteCall) Context(ctx context.Context) *VideosDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *VideosDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *VideosDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("id", fmt.Sprintf("%v", c.id))
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "videos")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.videos.delete" call.
+func (c *VideosDeleteCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
 	if err != nil {
 		return err
 	}
@@ -13169,16 +22055,18 @@ func (c *VideosDeleteCall) Do() error {
 // method id "youtube.videos.getRating":
 
 type VideosGetRatingCall struct {
-	s    *Service
-	id   string
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // GetRating: Retrieves the ratings that the authorized user gave to a
 // list of specified videos.
 func (r *VideosService) GetRating(id string) *VideosGetRatingCall {
-	c := &VideosGetRatingCall{s: r.s, opt_: make(map[string]interface{})}
-	c.id = id
+	c := &VideosGetRatingCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("id", id)
 	return c
 }
 
@@ -13196,35 +22084,82 @@ func (r *VideosService) GetRating(id string) *VideosGetRatingCall {
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *VideosGetRatingCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *VideosGetRatingCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *VideosGetRatingCall) Fields(s ...googleapi.Field) *VideosGetRatingCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *VideosGetRatingCall) Do() (*VideoGetRatingResponse, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *VideosGetRatingCall) IfNoneMatch(entityTag string) *VideosGetRatingCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *VideosGetRatingCall) Context(ctx context.Context) *VideosGetRatingCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *VideosGetRatingCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *VideosGetRatingCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("id", fmt.Sprintf("%v", c.id))
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "videos/getRating")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.videos.getRating" call.
+// Exactly one of *VideoGetRatingResponse or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *VideoGetRatingResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *VideosGetRatingCall) Do(opts ...googleapi.CallOption) (*VideoGetRatingResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -13232,8 +22167,14 @@ func (c *VideosGetRatingCall) Do() (*VideoGetRatingResponse, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *VideoGetRatingResponse
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &VideoGetRatingResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -13274,21 +22215,18 @@ func (c *VideosGetRatingCall) Do() (*VideoGetRatingResponse, error) {
 
 type VideosInsertCall struct {
 	s          *Service
-	part       string
 	video      *Video
-	opt_       map[string]interface{}
-	media_     io.Reader
-	resumable_ googleapi.SizeReaderAt
-	mediaType_ string
+	urlParams_ gensupport.URLParams
+	mediaInfo_ *gensupport.MediaInfo
 	ctx_       context.Context
-	protocol_  string
+	header_    http.Header
 }
 
 // Insert: Uploads a video to YouTube and optionally sets the video's
 // metadata.
 func (r *VideosService) Insert(part string, video *Video) *VideosInsertCall {
-	c := &VideosInsertCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &VideosInsertCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	c.video = video
 	return c
 }
@@ -13297,7 +22235,7 @@ func (r *VideosService) Insert(part string, video *Video) *VideosInsertCall {
 // parameter indicates whether YouTube should automatically enhance the
 // video's lighting and color.
 func (c *VideosInsertCall) AutoLevels(autoLevels bool) *VideosInsertCall {
-	c.opt_["autoLevels"] = autoLevels
+	c.urlParams_.Set("autoLevels", fmt.Sprint(autoLevels))
 	return c
 }
 
@@ -13310,7 +22248,7 @@ func (c *VideosInsertCall) AutoLevels(autoLevels bool) *VideosInsertCall {
 // to avoid sending a notification about each new video to the channel's
 // subscribers.
 func (c *VideosInsertCall) NotifySubscribers(notifySubscribers bool) *VideosInsertCall {
-	c.opt_["notifySubscribers"] = notifySubscribers
+	c.urlParams_.Set("notifySubscribers", fmt.Sprint(notifySubscribers))
 	return c
 }
 
@@ -13328,7 +22266,7 @@ func (c *VideosInsertCall) NotifySubscribers(notifySubscribers bool) *VideosInse
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *VideosInsertCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *VideosInsertCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
@@ -13354,7 +22292,7 @@ func (c *VideosInsertCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string)
 // specified in the parameter value, without having to provide
 // authentication credentials for each separate channel.
 func (c *VideosInsertCall) OnBehalfOfContentOwnerChannel(onBehalfOfContentOwnerChannel string) *VideosInsertCall {
-	c.opt_["onBehalfOfContentOwnerChannel"] = onBehalfOfContentOwnerChannel
+	c.urlParams_.Set("onBehalfOfContentOwnerChannel", onBehalfOfContentOwnerChannel)
 	return c
 }
 
@@ -13362,107 +22300,123 @@ func (c *VideosInsertCall) OnBehalfOfContentOwnerChannel(onBehalfOfContentOwnerC
 // parameter indicates whether YouTube should adjust the video to remove
 // shaky camera motions.
 func (c *VideosInsertCall) Stabilize(stabilize bool) *VideosInsertCall {
-	c.opt_["stabilize"] = stabilize
+	c.urlParams_.Set("stabilize", fmt.Sprint(stabilize))
 	return c
 }
 
-// Media specifies the media to upload in a single chunk.
+// Media specifies the media to upload in one or more chunks. The chunk
+// size may be controlled by supplying a MediaOption generated by
+// googleapi.ChunkSize. The chunk size defaults to
+// googleapi.DefaultUploadChunkSize.The Content-Type header used in the
+// upload request will be determined by sniffing the contents of r,
+// unless a MediaOption generated by googleapi.ContentType is
+// supplied.
 // At most one of Media and ResumableMedia may be set.
-func (c *VideosInsertCall) Media(r io.Reader) *VideosInsertCall {
-	c.media_ = r
-	c.protocol_ = "multipart"
+func (c *VideosInsertCall) Media(r io.Reader, options ...googleapi.MediaOption) *VideosInsertCall {
+	c.mediaInfo_ = gensupport.NewInfoFromMedia(r, options)
 	return c
 }
 
-// ResumableMedia specifies the media to upload in chunks and can be cancelled with ctx.
-// At most one of Media and ResumableMedia may be set.
-// mediaType identifies the MIME media type of the upload, such as "image/png".
-// If mediaType is "", it will be auto-detected.
+// ResumableMedia specifies the media to upload in chunks and can be
+// canceled with ctx.
+//
+// Deprecated: use Media instead.
+//
+// At most one of Media and ResumableMedia may be set. mediaType
+// identifies the MIME media type of the upload, such as "image/png". If
+// mediaType is "", it will be auto-detected. The provided ctx will
+// supersede any context previously provided to the Context method.
 func (c *VideosInsertCall) ResumableMedia(ctx context.Context, r io.ReaderAt, size int64, mediaType string) *VideosInsertCall {
 	c.ctx_ = ctx
-	c.resumable_ = io.NewSectionReader(r, 0, size)
-	c.mediaType_ = mediaType
-	c.protocol_ = "resumable"
+	c.mediaInfo_ = gensupport.NewInfoFromResumableMedia(r, size, mediaType)
 	return c
 }
 
-// ProgressUpdater provides a callback function that will be called after every chunk.
-// It should be a low-latency function in order to not slow down the upload operation.
-// This should only be called when using ResumableMedia (as opposed to Media).
+// ProgressUpdater provides a callback function that will be called
+// after every chunk. It should be a low-latency function in order to
+// not slow down the upload operation. This should only be called when
+// using ResumableMedia (as opposed to Media).
 func (c *VideosInsertCall) ProgressUpdater(pu googleapi.ProgressUpdater) *VideosInsertCall {
-	c.opt_["progressUpdater"] = pu
+	c.mediaInfo_.SetProgressUpdater(pu)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *VideosInsertCall) Fields(s ...googleapi.Field) *VideosInsertCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *VideosInsertCall) Do() (*Video, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+// This context will supersede any context previously provided to the
+// ResumableMedia method.
+func (c *VideosInsertCall) Context(ctx context.Context) *VideosInsertCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *VideosInsertCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *VideosInsertCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.video)
 	if err != nil {
 		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["autoLevels"]; ok {
-		params.Set("autoLevels", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["notifySubscribers"]; ok {
-		params.Set("notifySubscribers", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwnerChannel"]; ok {
-		params.Set("onBehalfOfContentOwnerChannel", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["stabilize"]; ok {
-		params.Set("stabilize", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "videos")
-	var progressUpdater_ googleapi.ProgressUpdater
-	if v, ok := c.opt_["progressUpdater"]; ok {
-		if pu, ok := v.(googleapi.ProgressUpdater); ok {
-			progressUpdater_ = pu
-		}
-	}
-	if c.media_ != nil || c.resumable_ != nil {
+	if c.mediaInfo_ != nil {
 		urls = strings.Replace(urls, "https://www.googleapis.com/", "https://www.googleapis.com/upload/", 1)
-		params.Set("uploadType", c.protocol_)
+		c.urlParams_.Set("uploadType", c.mediaInfo_.UploadType())
 	}
-	urls += "?" + params.Encode()
-	if c.protocol_ != "resumable" {
-		var cancel func()
-		cancel, _ = googleapi.ConditionallyIncludeMedia(c.media_, &body, &ctype)
-		if cancel != nil {
-			defer cancel()
-		}
+	if body == nil {
+		body = new(bytes.Buffer)
+		reqHeaders.Set("Content-Type", "application/json")
 	}
+	body, cleanup := c.mediaInfo_.UploadRequest(reqHeaders, body)
+	defer cleanup()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	if c.protocol_ == "resumable" {
-		req.ContentLength = 0
-		if c.mediaType_ == "" {
-			c.mediaType_ = googleapi.DetectMediaType(c.resumable_)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.videos.insert" call.
+// Exactly one of *Video or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Video.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *VideosInsertCall) Do(opts ...googleapi.CallOption) (*Video, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
 		}
-		req.Header.Set("X-Upload-Content-Type", c.mediaType_)
-		req.Body = nil
-	} else {
-		req.Header.Set("Content-Type", ctype)
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
 	}
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -13470,25 +22424,31 @@ func (c *VideosInsertCall) Do() (*Video, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	if c.protocol_ == "resumable" {
-		loc := res.Header.Get("Location")
-		rx := &googleapi.ResumableUpload{
-			Client:        c.s.client,
-			UserAgent:     c.s.userAgent(),
-			URI:           loc,
-			Media:         c.resumable_,
-			MediaType:     c.mediaType_,
-			ContentLength: c.resumable_.Size(),
-			Callback:      progressUpdater_,
+	rx := c.mediaInfo_.ResumableUpload(res.Header.Get("Location"))
+	if rx != nil {
+		rx.Client = c.s.client
+		rx.UserAgent = c.s.userAgent()
+		ctx := c.ctx_
+		if ctx == nil {
+			ctx = context.TODO()
 		}
-		res, err = rx.Upload(c.ctx_)
+		res, err = rx.Upload(ctx)
 		if err != nil {
 			return nil, err
 		}
 		defer res.Body.Close()
+		if err := googleapi.CheckResponse(res); err != nil {
+			return nil, err
+		}
 	}
-	var ret *Video
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Video{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -13571,15 +22531,17 @@ func (c *VideosInsertCall) Do() (*Video, error) {
 // method id "youtube.videos.list":
 
 type VideosListCall struct {
-	s    *Service
-	part string
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Returns a list of videos that match the API request parameters.
 func (r *VideosService) List(part string) *VideosListCall {
-	c := &VideosListCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &VideosListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	return c
 }
 
@@ -13590,15 +22552,7 @@ func (r *VideosService) List(part string) *VideosListCall {
 //   "mostPopular" - Return the most popular videos for the specified
 // content region and video category.
 func (c *VideosListCall) Chart(chart string) *VideosListCall {
-	c.opt_["chart"] = chart
-	return c
-}
-
-// DebugProjectIdOverride sets the optional parameter
-// "debugProjectIdOverride": The debugProjectIdOverride parameter should
-// be used for mimicking a request for a certain project ID
-func (c *VideosListCall) DebugProjectIdOverride(debugProjectIdOverride int64) *VideosListCall {
-	c.opt_["debugProjectIdOverride"] = debugProjectIdOverride
+	c.urlParams_.Set("chart", chart)
 	return c
 }
 
@@ -13614,7 +22568,7 @@ func (c *VideosListCall) DebugProjectIdOverride(debugProjectIdOverride int64) *V
 // snippet.localized object will contain resource details in the
 // resource's default language.
 func (c *VideosListCall) Hl(hl string) *VideosListCall {
-	c.opt_["hl"] = hl
+	c.urlParams_.Set("hl", hl)
 	return c
 }
 
@@ -13623,13 +22577,22 @@ func (c *VideosListCall) Hl(hl string) *VideosListCall {
 // that are being retrieved. In a video resource, the id property
 // specifies the video's ID.
 func (c *VideosListCall) Id(id string) *VideosListCall {
-	c.opt_["id"] = id
+	c.urlParams_.Set("id", id)
 	return c
 }
 
 // Locale sets the optional parameter "locale": DEPRECATED
 func (c *VideosListCall) Locale(locale string) *VideosListCall {
-	c.opt_["locale"] = locale
+	c.urlParams_.Set("locale", locale)
+	return c
+}
+
+// MaxHeight sets the optional parameter "maxHeight": The maxHeight
+// parameter specifies a maximum height of the embedded player. If
+// maxWidth is provided, maxHeight may not be reached in order to not
+// violate the width request.
+func (c *VideosListCall) MaxHeight(maxHeight int64) *VideosListCall {
+	c.urlParams_.Set("maxHeight", fmt.Sprint(maxHeight))
 	return c
 }
 
@@ -13638,10 +22601,19 @@ func (c *VideosListCall) Locale(locale string) *VideosListCall {
 // returned in the result set.
 //
 // Note: This parameter is supported for use in conjunction with the
-// myRating parameter, but it is not supported for use in conjunction
-// with the id parameter.
+// myRating and chart parameters, but it is not supported for use in
+// conjunction with the id parameter.
 func (c *VideosListCall) MaxResults(maxResults int64) *VideosListCall {
-	c.opt_["maxResults"] = maxResults
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
+	return c
+}
+
+// MaxWidth sets the optional parameter "maxWidth": The maxWidth
+// parameter specifies a maximum width of the embedded player. If
+// maxHeight is provided, maxWidth may not be reached in order to not
+// violate the height request.
+func (c *VideosListCall) MaxWidth(maxWidth int64) *VideosListCall {
+	c.urlParams_.Set("maxWidth", fmt.Sprint(maxWidth))
 	return c
 }
 
@@ -13653,7 +22625,7 @@ func (c *VideosListCall) MaxResults(maxResults int64) *VideosListCall {
 //   "dislike" - Returns only videos disliked by the authenticated user.
 //   "like" - Returns only video liked by the authenticated user.
 func (c *VideosListCall) MyRating(myRating string) *VideosListCall {
-	c.opt_["myRating"] = myRating
+	c.urlParams_.Set("myRating", myRating)
 	return c
 }
 
@@ -13671,7 +22643,7 @@ func (c *VideosListCall) MyRating(myRating string) *VideosListCall {
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *VideosListCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *VideosListCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
@@ -13681,10 +22653,10 @@ func (c *VideosListCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *
 // properties identify other pages that could be retrieved.
 //
 // Note: This parameter is supported for use in conjunction with the
-// myRating parameter, but it is not supported for use in conjunction
-// with the id parameter.
+// myRating and chart parameters, but it is not supported for use in
+// conjunction with the id parameter.
 func (c *VideosListCall) PageToken(pageToken string) *VideosListCall {
-	c.opt_["pageToken"] = pageToken
+	c.urlParams_.Set("pageToken", pageToken)
 	return c
 }
 
@@ -13694,7 +22666,7 @@ func (c *VideosListCall) PageToken(pageToken string) *VideosListCall {
 // the chart parameter. The parameter value is an ISO 3166-1 alpha-2
 // country code.
 func (c *VideosListCall) RegionCode(regionCode string) *VideosListCall {
-	c.opt_["regionCode"] = regionCode
+	c.urlParams_.Set("regionCode", regionCode)
 	return c
 }
 
@@ -13704,65 +22676,82 @@ func (c *VideosListCall) RegionCode(regionCode string) *VideosListCall {
 // conjunction with the chart parameter. By default, charts are not
 // restricted to a particular category.
 func (c *VideosListCall) VideoCategoryId(videoCategoryId string) *VideosListCall {
-	c.opt_["videoCategoryId"] = videoCategoryId
+	c.urlParams_.Set("videoCategoryId", videoCategoryId)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *VideosListCall) Fields(s ...googleapi.Field) *VideosListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *VideosListCall) Do() (*VideoListResponse, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *VideosListCall) IfNoneMatch(entityTag string) *VideosListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *VideosListCall) Context(ctx context.Context) *VideosListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *VideosListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *VideosListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["chart"]; ok {
-		params.Set("chart", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["debugProjectIdOverride"]; ok {
-		params.Set("debugProjectIdOverride", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["hl"]; ok {
-		params.Set("hl", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["id"]; ok {
-		params.Set("id", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["locale"]; ok {
-		params.Set("locale", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["maxResults"]; ok {
-		params.Set("maxResults", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["myRating"]; ok {
-		params.Set("myRating", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["pageToken"]; ok {
-		params.Set("pageToken", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["regionCode"]; ok {
-		params.Set("regionCode", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["videoCategoryId"]; ok {
-		params.Set("videoCategoryId", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "videos")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.videos.list" call.
+// Exactly one of *VideoListResponse or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *VideoListResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *VideosListCall) Do(opts ...googleapi.CallOption) (*VideoListResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -13770,8 +22759,14 @@ func (c *VideosListCall) Do() (*VideoListResponse, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *VideoListResponse
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &VideoListResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -13794,12 +22789,6 @@ func (c *VideosListCall) Do() (*VideoListResponse, error) {
 	//       "location": "query",
 	//       "type": "string"
 	//     },
-	//     "debugProjectIdOverride": {
-	//       "description": "The debugProjectIdOverride parameter should be used for mimicking a request for a certain project ID",
-	//       "format": "int64",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
 	//     "hl": {
 	//       "description": "The hl parameter instructs the API to retrieve localized resource metadata for a specific application language that the YouTube website supports. The parameter value must be a language code included in the list returned by the i18nLanguages.list method.\n\nIf localized resource details are available in that language, the resource's snippet.localized object will contain the localized values. However, if localized details are not available, the snippet.localized object will contain resource details in the resource's default language.",
 	//       "location": "query",
@@ -13815,13 +22804,29 @@ func (c *VideosListCall) Do() (*VideoListResponse, error) {
 	//       "location": "query",
 	//       "type": "string"
 	//     },
+	//     "maxHeight": {
+	//       "description": "The maxHeight parameter specifies a maximum height of the embedded player. If maxWidth is provided, maxHeight may not be reached in order to not violate the width request.",
+	//       "format": "uint32",
+	//       "location": "query",
+	//       "maximum": "8192",
+	//       "minimum": "72",
+	//       "type": "integer"
+	//     },
 	//     "maxResults": {
 	//       "default": "5",
-	//       "description": "The maxResults parameter specifies the maximum number of items that should be returned in the result set.\n\nNote: This parameter is supported for use in conjunction with the myRating parameter, but it is not supported for use in conjunction with the id parameter.",
+	//       "description": "The maxResults parameter specifies the maximum number of items that should be returned in the result set.\n\nNote: This parameter is supported for use in conjunction with the myRating and chart parameters, but it is not supported for use in conjunction with the id parameter.",
 	//       "format": "uint32",
 	//       "location": "query",
 	//       "maximum": "50",
 	//       "minimum": "1",
+	//       "type": "integer"
+	//     },
+	//     "maxWidth": {
+	//       "description": "The maxWidth parameter specifies a maximum width of the embedded player. If maxHeight is provided, maxWidth may not be reached in order to not violate the height request.",
+	//       "format": "uint32",
+	//       "location": "query",
+	//       "maximum": "8192",
+	//       "minimum": "72",
 	//       "type": "integer"
 	//     },
 	//     "myRating": {
@@ -13843,7 +22848,7 @@ func (c *VideosListCall) Do() (*VideoListResponse, error) {
 	//       "type": "string"
 	//     },
 	//     "pageToken": {
-	//       "description": "The pageToken parameter identifies a specific page in the result set that should be returned. In an API response, the nextPageToken and prevPageToken properties identify other pages that could be retrieved.\n\nNote: This parameter is supported for use in conjunction with the myRating parameter, but it is not supported for use in conjunction with the id parameter.",
+	//       "description": "The pageToken parameter identifies a specific page in the result set that should be returned. In an API response, the nextPageToken and prevPageToken properties identify other pages that could be retrieved.\n\nNote: This parameter is supported for use in conjunction with the myRating and chart parameters, but it is not supported for use in conjunction with the id parameter.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -13879,47 +22884,89 @@ func (c *VideosListCall) Do() (*VideoListResponse, error) {
 
 }
 
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *VideosListCall) Pages(ctx context.Context, f func(*VideoListResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
 // method id "youtube.videos.rate":
 
 type VideosRateCall struct {
-	s      *Service
-	id     string
-	rating string
-	opt_   map[string]interface{}
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Rate: Add a like or dislike rating to a video or remove a rating from
 // a video.
 func (r *VideosService) Rate(id string, rating string) *VideosRateCall {
-	c := &VideosRateCall{s: r.s, opt_: make(map[string]interface{})}
-	c.id = id
-	c.rating = rating
+	c := &VideosRateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("id", id)
+	c.urlParams_.Set("rating", rating)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *VideosRateCall) Fields(s ...googleapi.Field) *VideosRateCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *VideosRateCall) Do() error {
-	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("id", fmt.Sprintf("%v", c.id))
-	params.Set("rating", fmt.Sprintf("%v", c.rating))
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *VideosRateCall) Context(ctx context.Context) *VideosRateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *VideosRateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
 	}
+	return c.header_
+}
+
+func (c *VideosRateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "videos/rate")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.videos.rate" call.
+func (c *VideosRateCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
 	if err != nil {
 		return err
 	}
@@ -13975,12 +23022,14 @@ func (c *VideosRateCall) Do() error {
 type VideosReportAbuseCall struct {
 	s                *Service
 	videoabusereport *VideoAbuseReport
-	opt_             map[string]interface{}
+	urlParams_       gensupport.URLParams
+	ctx_             context.Context
+	header_          http.Header
 }
 
 // ReportAbuse: Report abuse for a video.
 func (r *VideosService) ReportAbuse(videoabusereport *VideoAbuseReport) *VideosReportAbuseCall {
-	c := &VideosReportAbuseCall{s: r.s, opt_: make(map[string]interface{})}
+	c := &VideosReportAbuseCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.videoabusereport = videoabusereport
 	return c
 }
@@ -13999,40 +23048,59 @@ func (r *VideosService) ReportAbuse(videoabusereport *VideoAbuseReport) *VideosR
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *VideosReportAbuseCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *VideosReportAbuseCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *VideosReportAbuseCall) Fields(s ...googleapi.Field) *VideosReportAbuseCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *VideosReportAbuseCall) Do() error {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *VideosReportAbuseCall) Context(ctx context.Context) *VideosReportAbuseCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *VideosReportAbuseCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *VideosReportAbuseCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.videoabusereport)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "videos/reportAbuse")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("Content-Type", ctype)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.videos.reportAbuse" call.
+func (c *VideosReportAbuseCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
 	if err != nil {
 		return err
 	}
@@ -14068,16 +23136,17 @@ func (c *VideosReportAbuseCall) Do() error {
 // method id "youtube.videos.update":
 
 type VideosUpdateCall struct {
-	s     *Service
-	part  string
-	video *Video
-	opt_  map[string]interface{}
+	s          *Service
+	video      *Video
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Update: Updates a video's metadata.
 func (r *VideosService) Update(part string, video *Video) *VideosUpdateCall {
-	c := &VideosUpdateCall{s: r.s, opt_: make(map[string]interface{})}
-	c.part = part
+	c := &VideosUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("part", part)
 	c.video = video
 	return c
 }
@@ -14097,41 +23166,74 @@ func (r *VideosService) Update(part string, video *Video) *VideosUpdateCall {
 // authenticates with must be linked to the specified YouTube content
 // owner.
 func (c *VideosUpdateCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *VideosUpdateCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *VideosUpdateCall) Fields(s ...googleapi.Field) *VideosUpdateCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *VideosUpdateCall) Do() (*Video, error) {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *VideosUpdateCall) Context(ctx context.Context) *VideosUpdateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *VideosUpdateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *VideosUpdateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.video)
 	if err != nil {
 		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("part", fmt.Sprintf("%v", c.part))
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "videos")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PUT", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("Content-Type", ctype)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.videos.update" call.
+// Exactly one of *Video or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Video.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *VideosUpdateCall) Do(opts ...googleapi.CallOption) (*Video, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -14139,8 +23241,14 @@ func (c *VideosUpdateCall) Do() (*Video, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Video
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Video{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -14184,20 +23292,17 @@ func (c *VideosUpdateCall) Do() (*Video, error) {
 
 type WatermarksSetCall struct {
 	s               *Service
-	channelId       string
 	invideobranding *InvideoBranding
-	opt_            map[string]interface{}
-	media_          io.Reader
-	resumable_      googleapi.SizeReaderAt
-	mediaType_      string
+	urlParams_      gensupport.URLParams
+	mediaInfo_      *gensupport.MediaInfo
 	ctx_            context.Context
-	protocol_       string
+	header_         http.Header
 }
 
 // Set: Uploads a watermark image to YouTube and sets it for a channel.
 func (r *WatermarksService) Set(channelId string, invideobranding *InvideoBranding) *WatermarksSetCall {
-	c := &WatermarksSetCall{s: r.s, opt_: make(map[string]interface{})}
-	c.channelId = channelId
+	c := &WatermarksSetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("channelId", channelId)
 	c.invideobranding = invideobranding
 	return c
 }
@@ -14216,95 +23321,108 @@ func (r *WatermarksService) Set(channelId string, invideobranding *InvideoBrandi
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *WatermarksSetCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *WatermarksSetCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
-// Media specifies the media to upload in a single chunk.
+// Media specifies the media to upload in one or more chunks. The chunk
+// size may be controlled by supplying a MediaOption generated by
+// googleapi.ChunkSize. The chunk size defaults to
+// googleapi.DefaultUploadChunkSize.The Content-Type header used in the
+// upload request will be determined by sniffing the contents of r,
+// unless a MediaOption generated by googleapi.ContentType is
+// supplied.
 // At most one of Media and ResumableMedia may be set.
-func (c *WatermarksSetCall) Media(r io.Reader) *WatermarksSetCall {
-	c.media_ = r
-	c.protocol_ = "multipart"
+func (c *WatermarksSetCall) Media(r io.Reader, options ...googleapi.MediaOption) *WatermarksSetCall {
+	c.mediaInfo_ = gensupport.NewInfoFromMedia(r, options)
 	return c
 }
 
-// ResumableMedia specifies the media to upload in chunks and can be cancelled with ctx.
-// At most one of Media and ResumableMedia may be set.
-// mediaType identifies the MIME media type of the upload, such as "image/png".
-// If mediaType is "", it will be auto-detected.
+// ResumableMedia specifies the media to upload in chunks and can be
+// canceled with ctx.
+//
+// Deprecated: use Media instead.
+//
+// At most one of Media and ResumableMedia may be set. mediaType
+// identifies the MIME media type of the upload, such as "image/png". If
+// mediaType is "", it will be auto-detected. The provided ctx will
+// supersede any context previously provided to the Context method.
 func (c *WatermarksSetCall) ResumableMedia(ctx context.Context, r io.ReaderAt, size int64, mediaType string) *WatermarksSetCall {
 	c.ctx_ = ctx
-	c.resumable_ = io.NewSectionReader(r, 0, size)
-	c.mediaType_ = mediaType
-	c.protocol_ = "resumable"
+	c.mediaInfo_ = gensupport.NewInfoFromResumableMedia(r, size, mediaType)
 	return c
 }
 
-// ProgressUpdater provides a callback function that will be called after every chunk.
-// It should be a low-latency function in order to not slow down the upload operation.
-// This should only be called when using ResumableMedia (as opposed to Media).
+// ProgressUpdater provides a callback function that will be called
+// after every chunk. It should be a low-latency function in order to
+// not slow down the upload operation. This should only be called when
+// using ResumableMedia (as opposed to Media).
 func (c *WatermarksSetCall) ProgressUpdater(pu googleapi.ProgressUpdater) *WatermarksSetCall {
-	c.opt_["progressUpdater"] = pu
+	c.mediaInfo_.SetProgressUpdater(pu)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *WatermarksSetCall) Fields(s ...googleapi.Field) *WatermarksSetCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *WatermarksSetCall) Do() error {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+// This context will supersede any context previously provided to the
+// ResumableMedia method.
+func (c *WatermarksSetCall) Context(ctx context.Context) *WatermarksSetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *WatermarksSetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *WatermarksSetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.invideobranding)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	ctype := "application/json"
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("channelId", fmt.Sprintf("%v", c.channelId))
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "watermarks/set")
-	var progressUpdater_ googleapi.ProgressUpdater
-	if v, ok := c.opt_["progressUpdater"]; ok {
-		if pu, ok := v.(googleapi.ProgressUpdater); ok {
-			progressUpdater_ = pu
-		}
-	}
-	if c.media_ != nil || c.resumable_ != nil {
+	if c.mediaInfo_ != nil {
 		urls = strings.Replace(urls, "https://www.googleapis.com/", "https://www.googleapis.com/upload/", 1)
-		params.Set("uploadType", c.protocol_)
+		c.urlParams_.Set("uploadType", c.mediaInfo_.UploadType())
 	}
-	urls += "?" + params.Encode()
-	if c.protocol_ != "resumable" {
-		var cancel func()
-		cancel, _ = googleapi.ConditionallyIncludeMedia(c.media_, &body, &ctype)
-		if cancel != nil {
-			defer cancel()
-		}
+	if body == nil {
+		body = new(bytes.Buffer)
+		reqHeaders.Set("Content-Type", "application/json")
 	}
+	body, cleanup := c.mediaInfo_.UploadRequest(reqHeaders, body)
+	defer cleanup()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	if c.protocol_ == "resumable" {
-		req.ContentLength = 0
-		if c.mediaType_ == "" {
-			c.mediaType_ = googleapi.DetectMediaType(c.resumable_)
-		}
-		req.Header.Set("X-Upload-Content-Type", c.mediaType_)
-		req.Body = nil
-	} else {
-		req.Header.Set("Content-Type", ctype)
-	}
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.watermarks.set" call.
+func (c *WatermarksSetCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
 	if err != nil {
 		return err
 	}
@@ -14312,22 +23430,22 @@ func (c *WatermarksSetCall) Do() error {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return err
 	}
-	if c.protocol_ == "resumable" {
-		loc := res.Header.Get("Location")
-		rx := &googleapi.ResumableUpload{
-			Client:        c.s.client,
-			UserAgent:     c.s.userAgent(),
-			URI:           loc,
-			Media:         c.resumable_,
-			MediaType:     c.mediaType_,
-			ContentLength: c.resumable_.Size(),
-			Callback:      progressUpdater_,
+	rx := c.mediaInfo_.ResumableUpload(res.Header.Get("Location"))
+	if rx != nil {
+		rx.Client = c.s.client
+		rx.UserAgent = c.s.userAgent()
+		ctx := c.ctx_
+		if ctx == nil {
+			ctx = context.TODO()
 		}
-		res, err = rx.Upload(c.ctx_)
+		res, err = rx.Upload(ctx)
 		if err != nil {
 			return err
 		}
 		defer res.Body.Close()
+		if err := googleapi.CheckResponse(res); err != nil {
+			return err
+		}
 	}
 	return nil
 	// {
@@ -14386,15 +23504,16 @@ func (c *WatermarksSetCall) Do() error {
 // method id "youtube.watermarks.unset":
 
 type WatermarksUnsetCall struct {
-	s         *Service
-	channelId string
-	opt_      map[string]interface{}
+	s          *Service
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Unset: Deletes a channel's watermark image.
 func (r *WatermarksService) Unset(channelId string) *WatermarksUnsetCall {
-	c := &WatermarksUnsetCall{s: r.s, opt_: make(map[string]interface{})}
-	c.channelId = channelId
+	c := &WatermarksUnsetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("channelId", channelId)
 	return c
 }
 
@@ -14412,35 +23531,54 @@ func (r *WatermarksService) Unset(channelId string) *WatermarksUnsetCall {
 // individual channel. The CMS account that the user authenticates with
 // must be linked to the specified YouTube content owner.
 func (c *WatermarksUnsetCall) OnBehalfOfContentOwner(onBehalfOfContentOwner string) *WatermarksUnsetCall {
-	c.opt_["onBehalfOfContentOwner"] = onBehalfOfContentOwner
+	c.urlParams_.Set("onBehalfOfContentOwner", onBehalfOfContentOwner)
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *WatermarksUnsetCall) Fields(s ...googleapi.Field) *WatermarksUnsetCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *WatermarksUnsetCall) Do() error {
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *WatermarksUnsetCall) Context(ctx context.Context) *WatermarksUnsetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *WatermarksUnsetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *WatermarksUnsetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("channelId", fmt.Sprintf("%v", c.channelId))
-	if v, ok := c.opt_["onBehalfOfContentOwner"]; ok {
-		params.Set("onBehalfOfContentOwner", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "watermarks/unset")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "youtube.watermarks.unset" call.
+func (c *WatermarksUnsetCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
 	if err != nil {
 		return err
 	}

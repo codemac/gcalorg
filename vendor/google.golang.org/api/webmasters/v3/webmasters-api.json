@@ -1,13 +1,13 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"ye6orv2F-1npMW3u9suM3a7C5Bo/oVMwgswco7f8lULS5GJUo6vfqkQ\"",
+ "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/FoVh6eGZkMB0Z1f3X5375o8tLXY\"",
  "discoveryVersion": "v1",
  "id": "webmasters:v3",
  "name": "webmasters",
  "version": "v3",
- "revision": "20150624",
- "title": "Webmaster Tools API",
- "description": "Lets you view Google Webmaster Tools data for your verified sites.",
+ "revision": "20170528",
+ "title": "Search Console API",
+ "description": "View Google Search Console data for your verified sites.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "icons": {
@@ -20,7 +20,7 @@
  "basePath": "/webmasters/v3/",
  "rootUrl": "https://www.googleapis.com/",
  "servicePath": "webmasters/v3/",
- "batchPath": "batch",
+ "batchPath": "batch/webmasters/v3",
  "parameters": {
   "alt": {
    "type": "string",
@@ -70,10 +70,10 @@
   "oauth2": {
    "scopes": {
     "https://www.googleapis.com/auth/webmasters": {
-     "description": "View and modify Webmaster Tools data for your verified sites"
+     "description": "View and manage Search Console data for your verified sites"
     },
     "https://www.googleapis.com/auth/webmasters.readonly": {
-     "description": "View Webmaster Tools data for your verified sites"
+     "description": "View Search Console data for your verified sites"
     }
    }
   }
@@ -143,11 +143,11 @@
    "properties": {
     "aggregationType": {
      "type": "string",
-     "description": "[Optional; Default is AUTO] How data is aggregated. If aggregated by property, all data for the same property is aggregated; if aggregated by page, all data is aggregated by canonical URI. If you filter or group by page, choose AUTO; otherwise you can aggregate either by property or by page, depending on how you want your data calculated; see  the help documentation to learn how data is calculated differently by site versus by page.\n\nNote: If you group or filter by page, you cannot aggregate by property.\n\nIf you specify any value other than AUTO, the aggregation type in the result will match the requested type, or if you request an invalid type, you will get an error. The API will never change your aggregation type if the requested type is invalid."
+     "description": "[Optional; Default is \"auto\"] How data is aggregated. If aggregated by property, all data for the same property is aggregated; if aggregated by page, all data is aggregated by canonical URI. If you filter or group by page, choose AUTO; otherwise you can aggregate either by property or by page, depending on how you want your data calculated; see  the help documentation to learn how data is calculated differently by site versus by page.\n\nNote: If you group or filter by page, you cannot aggregate by property.\n\nIf you specify any value other than AUTO, the aggregation type in the result will match the requested type, or if you request an invalid type, you will get an error. The API will never change your aggregation type if the requested type is invalid."
     },
     "dimensionFilterGroups": {
      "type": "array",
-     "description": "[Optional] Zero or more filters to apply to the dimension grouping values; for example, 'Country CONTAINS \"Guinea\"' to see only data where the country contains the substring \"Guinea\". You can filter by a dimension without grouping by it.",
+     "description": "[Optional] Zero or more filters to apply to the dimension grouping values; for example, 'query contains \"buy\"' to see only data where the query string contains the substring \"buy\" (not case-sensitive). You can filter by a dimension without grouping by it.",
      "items": {
       "$ref": "ApiDimensionFilterGroup"
      }
@@ -165,16 +165,21 @@
     },
     "rowLimit": {
      "type": "integer",
-     "description": "[Optional; Default is 1000] The maximum number of rows to return. Must be a number from 1 to 1,000 (inclusive).",
+     "description": "[Optional; Default is 1000] The maximum number of rows to return. Must be a number from 1 to 5,000 (inclusive).",
      "format": "int32"
     },
     "searchType": {
      "type": "string",
-     "description": "[Optional; Default is WEB] The search type to filter for."
+     "description": "[Optional; Default is \"web\"] The search type to filter for."
     },
     "startDate": {
      "type": "string",
      "description": "[Required] Start date of the requested date range, in YYYY-MM-DD format, in PST time (UTC - 8:00). Must be less than or equal to the end date. This value is included in the range."
+    },
+    "startRow": {
+     "type": "integer",
+     "description": "[Optional; Default is 0] Zero-based index of the first row in the response. Must be a non-negative number.",
+     "format": "int32"
     }
    }
   },
@@ -217,7 +222,7 @@
    "properties": {
     "siteEntry": {
      "type": "array",
-     "description": "Contains permission level information about a Webmaster Tools site. For more information, see Permissions in Webmaster Tools.",
+     "description": "Contains permission level information about a Search Console site. For more information, see Permissions in Search Console.",
      "items": {
       "$ref": "WmxSite"
      }
@@ -345,7 +350,7 @@
   "WmxSite": {
    "id": "WmxSite",
    "type": "object",
-   "description": "Contains permission level information about a Webmaster Tools site. For more information, see  Permissions in Webmaster Tools.",
+   "description": "Contains permission level information about a Search Console site. For more information, see  Permissions in Search Console.",
    "properties": {
     "permissionLevel": {
      "type": "string",
@@ -436,7 +441,7 @@
      "id": "webmasters.searchanalytics.query",
      "path": "sites/{siteUrl}/searchAnalytics/query",
      "httpMethod": "POST",
-     "description": "[LIMITED ACCESS]\n\nQuery your data with filters and parameters that you define. Returns zero or more rows grouped by the row keys that you define. You must define a date range of one or more days.\n\nWhen date is one of the group by values, any days without data are omitted from the result list. If you need to know which days have data, issue a broad date range query grouped by date for any metric, and see which day rows are returned.",
+     "description": "Query your data with filters and parameters that you define. Returns zero or more rows grouped by the row keys that you define. You must define a date range of one or more days.\n\nWhen date is one of the group by values, any days without data are omitted from the result list. If you need to know which days have data, issue a broad date range query grouped by date for any metric, and see which day rows are returned.",
      "parameters": {
       "siteUrl": {
        "type": "string",
@@ -585,7 +590,7 @@
      "id": "webmasters.sites.add",
      "path": "sites/{siteUrl}",
      "httpMethod": "PUT",
-     "description": "Adds a site to the set of the user's sites in Webmaster Tools.",
+     "description": "Adds a site to the set of the user's sites in Search Console.",
      "parameters": {
       "siteUrl": {
        "type": "string",
@@ -605,7 +610,7 @@
      "id": "webmasters.sites.delete",
      "path": "sites/{siteUrl}",
      "httpMethod": "DELETE",
-     "description": "Removes a site from the set of the user's Webmaster Tools sites.",
+     "description": "Removes a site from the set of the user's Search Console sites.",
      "parameters": {
       "siteUrl": {
        "type": "string",
@@ -649,7 +654,7 @@
      "id": "webmasters.sites.list",
      "path": "sites",
      "httpMethod": "GET",
-     "description": "Lists the user's Webmaster Tools sites.",
+     "description": "Lists the user's Search Console sites.",
      "response": {
       "$ref": "SitesListResponse"
      },
@@ -673,6 +678,7 @@
        "description": "The crawl error category. For example: serverError. If not specified, returns results for all categories.",
        "enum": [
         "authPermissions",
+        "flashContent",
         "manyToOneRedirect",
         "notFollowed",
         "notFound",
@@ -682,6 +688,7 @@
         "soft404"
        ],
        "enumDescriptions": [
+        "",
         "",
         "",
         "",
@@ -748,6 +755,7 @@
        "required": true,
        "enum": [
         "authPermissions",
+        "flashContent",
         "manyToOneRedirect",
         "notFollowed",
         "notFound",
@@ -757,6 +765,7 @@
         "soft404"
        ],
        "enumDescriptions": [
+        "",
         "",
         "",
         "",
@@ -823,6 +832,7 @@
        "required": true,
        "enum": [
         "authPermissions",
+        "flashContent",
         "manyToOneRedirect",
         "notFollowed",
         "notFound",
@@ -832,6 +842,7 @@
         "soft404"
        ],
        "enumDescriptions": [
+        "",
         "",
         "",
         "",
@@ -891,6 +902,7 @@
        "required": true,
        "enum": [
         "authPermissions",
+        "flashContent",
         "manyToOneRedirect",
         "notFollowed",
         "notFound",
@@ -900,6 +912,7 @@
         "soft404"
        ],
        "enumDescriptions": [
+        "",
         "",
         "",
         "",

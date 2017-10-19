@@ -1,14 +1,14 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"ye6orv2F-1npMW3u9suM3a7C5Bo/yoGXlEwGPLEAr1fmq3U4dFpyoyQ\"",
+ "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/HzRIN4Gi3jUuNGWAsKKaxu4tH4k\"",
  "discoveryVersion": "v1",
  "id": "adsensehost:v4.1",
  "name": "adsensehost",
  "canonicalName": "AdSense Host",
  "version": "v4.1",
- "revision": "20141229",
+ "revision": "20170912",
  "title": "AdSense Host API",
- "description": "Gives AdSense Hosts access to report generation, ad code generation, and publisher management capabilities.",
+ "description": "Generates performance reports, generates ad codes, and provides publisher management capabilities for AdSense Hosts.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "icons": {
@@ -24,7 +24,7 @@
  "basePath": "/adsensehost/v4.1/",
  "rootUrl": "https://www.googleapis.com/",
  "servicePath": "adsensehost/v4.1/",
- "batchPath": "batch",
+ "batchPath": "batch/adsensehost/v4.1",
  "parameters": {
   "alt": {
    "type": "string",
@@ -227,7 +227,7 @@
     },
     "corners": {
      "type": "string",
-     "description": "The style of the corners in the ad. Possible values are SQUARE, SLIGHTLY_ROUNDED and VERY_ROUNDED."
+     "description": "The style of the corners in the ad (deprecated: never populated, ignored)."
     },
     "font": {
      "type": "object",
@@ -260,7 +260,7 @@
     },
     "contentAdsSettings": {
      "type": "object",
-     "description": "Settings specific to content ads (AFC) and highend mobile content ads (AFMC).",
+     "description": "Settings specific to content ads (AFC) and highend mobile content ads (AFMC - deprecated).",
      "properties": {
       "backupOption": {
        "type": "object",
@@ -305,7 +305,7 @@
     },
     "mobileContentAdsSettings": {
      "type": "object",
-     "description": "Settings specific to WAP mobile content ads (AFMC).",
+     "description": "Settings specific to WAP mobile content ads (AFMC - deprecated).",
      "properties": {
       "markupLanguage": {
        "type": "string",
@@ -380,7 +380,7 @@
     },
     "productCodes": {
      "type": "array",
-     "description": "The products to associate with the user. Options: AFC, AFF, AFS, AFMC",
+     "description": "The products to associate with the user. Options: AFC, AFG, AFV, AFS (deprecated), AFMC (deprecated)",
      "items": {
       "type": "string"
      }
@@ -1138,8 +1138,8 @@
        "enumDescriptions": [
         "AdSense For Content",
         "AdSense For Games",
-        "AdSense For Mobile Content",
-        "AdSense For Search",
+        "AdSense For Mobile Content - deprecated",
+        "AdSense For Search - deprecated",
         "AdSense For Video"
        ],
        "repeated": true,

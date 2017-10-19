@@ -7,15 +7,17 @@
 //   import "google.golang.org/api/customsearch/v1"
 //   ...
 //   customsearchService, err := customsearch.New(oauthHttpClient)
-package customsearch
+package customsearch // import "google.golang.org/api/customsearch/v1"
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"golang.org/x/net/context"
-	"google.golang.org/api/googleapi"
+	context "golang.org/x/net/context"
+	ctxhttp "golang.org/x/net/context/ctxhttp"
+	gensupport "google.golang.org/api/gensupport"
+	googleapi "google.golang.org/api/googleapi"
 	"io"
 	"net/http"
 	"net/url"
@@ -31,10 +33,12 @@ var _ = fmt.Sprintf
 var _ = json.NewDecoder
 var _ = io.Copy
 var _ = url.Parse
+var _ = gensupport.MarshalJSON
 var _ = googleapi.Version
 var _ = errors.New
 var _ = strings.Replace
-var _ = context.Background
+var _ = context.Canceled
+var _ = ctxhttp.Do
 
 const apiId = "customsearch:v1"
 const apiName = "customsearch"
@@ -78,6 +82,28 @@ type Context struct {
 	Facets [][]*ContextFacetsItem `json:"facets,omitempty"`
 
 	Title string `json:"title,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Facets") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Facets") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Context) MarshalJSON() ([]byte, error) {
+	type noMethod Context
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type ContextFacetsItem struct {
@@ -86,6 +112,28 @@ type ContextFacetsItem struct {
 	Label string `json:"label,omitempty"`
 
 	LabelWithOp string `json:"label_with_op,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Anchor") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Anchor") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ContextFacetsItem) MarshalJSON() ([]byte, error) {
+	type noMethod ContextFacetsItem
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Promotion struct {
@@ -100,6 +148,28 @@ type Promotion struct {
 	Link string `json:"link,omitempty"`
 
 	Title string `json:"title,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "BodyLines") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BodyLines") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Promotion) MarshalJSON() ([]byte, error) {
+	type noMethod Promotion
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type PromotionBodyLines struct {
@@ -110,6 +180,28 @@ type PromotionBodyLines struct {
 	Title string `json:"title,omitempty"`
 
 	Url string `json:"url,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "HtmlTitle") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "HtmlTitle") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *PromotionBodyLines) MarshalJSON() ([]byte, error) {
+	type noMethod PromotionBodyLines
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type PromotionImage struct {
@@ -118,14 +210,34 @@ type PromotionImage struct {
 	Source string `json:"source,omitempty"`
 
 	Width int64 `json:"width,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Height") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Height") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *PromotionImage) MarshalJSON() ([]byte, error) {
+	type noMethod PromotionImage
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Query struct {
 	Count int64 `json:"count,omitempty"`
 
 	Cr string `json:"cr,omitempty"`
-
-	Cref string `json:"cref,omitempty"`
 
 	Cx string `json:"cx,omitempty"`
 
@@ -194,6 +306,28 @@ type Query struct {
 	Title string `json:"title,omitempty"`
 
 	TotalResults int64 `json:"totalResults,omitempty,string"`
+
+	// ForceSendFields is a list of field names (e.g. "Count") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Count") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Query) MarshalJSON() ([]byte, error) {
+	type noMethod Query
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Result struct {
@@ -221,11 +355,33 @@ type Result struct {
 
 	Mime string `json:"mime,omitempty"`
 
-	Pagemap *ResultPagemap `json:"pagemap,omitempty"`
+	Pagemap map[string][]googleapi.RawMessage `json:"pagemap,omitempty"`
 
 	Snippet string `json:"snippet,omitempty"`
 
 	Title string `json:"title,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "CacheId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CacheId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Result) MarshalJSON() ([]byte, error) {
+	type noMethod Result
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type ResultImage struct {
@@ -242,6 +398,28 @@ type ResultImage struct {
 	ThumbnailWidth int64 `json:"thumbnailWidth,omitempty"`
 
 	Width int64 `json:"width,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ByteSize") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ByteSize") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ResultImage) MarshalJSON() ([]byte, error) {
+	type noMethod ResultImage
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type ResultLabels struct {
@@ -250,9 +428,28 @@ type ResultLabels struct {
 	LabelWithOp string `json:"label_with_op,omitempty"`
 
 	Name string `json:"name,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "DisplayName") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DisplayName") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
-type ResultPagemap struct {
+func (s *ResultLabels) MarshalJSON() ([]byte, error) {
+	type noMethod ResultLabels
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Search struct {
@@ -271,6 +468,32 @@ type Search struct {
 	Spelling *SearchSpelling `json:"spelling,omitempty"`
 
 	Url *SearchUrl `json:"url,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Context") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Context") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Search) MarshalJSON() ([]byte, error) {
+	type noMethod Search
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type SearchSearchInformation struct {
@@ -281,74 +504,151 @@ type SearchSearchInformation struct {
 	SearchTime float64 `json:"searchTime,omitempty"`
 
 	TotalResults int64 `json:"totalResults,omitempty,string"`
+
+	// ForceSendFields is a list of field names (e.g. "FormattedSearchTime")
+	// to unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "FormattedSearchTime") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *SearchSearchInformation) MarshalJSON() ([]byte, error) {
+	type noMethod SearchSearchInformation
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *SearchSearchInformation) UnmarshalJSON(data []byte) error {
+	type noMethod SearchSearchInformation
+	var s1 struct {
+		SearchTime gensupport.JSONFloat64 `json:"searchTime"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.SearchTime = float64(s1.SearchTime)
+	return nil
 }
 
 type SearchSpelling struct {
 	CorrectedQuery string `json:"correctedQuery,omitempty"`
 
 	HtmlCorrectedQuery string `json:"htmlCorrectedQuery,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "CorrectedQuery") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CorrectedQuery") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *SearchSpelling) MarshalJSON() ([]byte, error) {
+	type noMethod SearchSpelling
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type SearchUrl struct {
 	Template string `json:"template,omitempty"`
 
 	Type string `json:"type,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Template") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Template") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *SearchUrl) MarshalJSON() ([]byte, error) {
+	type noMethod SearchUrl
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // method id "search.cse.list":
 
 type CseListCall struct {
-	s    *Service
-	q    string
-	opt_ map[string]interface{}
+	s            *Service
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Returns metadata about the search performed, metadata about the
 // custom search engine used for the search, and the search results.
 func (r *CseService) List(q string) *CseListCall {
-	c := &CseListCall{s: r.s, opt_: make(map[string]interface{})}
-	c.q = q
+	c := &CseListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.urlParams_.Set("q", q)
 	return c
 }
 
 // C2coff sets the optional parameter "c2coff": Turns off the
 // translation between zh-CN and zh-TW.
 func (c *CseListCall) C2coff(c2coff string) *CseListCall {
-	c.opt_["c2coff"] = c2coff
+	c.urlParams_.Set("c2coff", c2coff)
 	return c
 }
 
 // Cr sets the optional parameter "cr": Country restrict(s).
 func (c *CseListCall) Cr(cr string) *CseListCall {
-	c.opt_["cr"] = cr
-	return c
-}
-
-// Cref sets the optional parameter "cref": The URL of a linked custom
-// search engine
-func (c *CseListCall) Cref(cref string) *CseListCall {
-	c.opt_["cref"] = cref
+	c.urlParams_.Set("cr", cr)
 	return c
 }
 
 // Cx sets the optional parameter "cx": The custom search engine ID to
 // scope this search query
 func (c *CseListCall) Cx(cx string) *CseListCall {
-	c.opt_["cx"] = cx
+	c.urlParams_.Set("cx", cx)
 	return c
 }
 
 // DateRestrict sets the optional parameter "dateRestrict": Specifies
 // all search results are from a time period
 func (c *CseListCall) DateRestrict(dateRestrict string) *CseListCall {
-	c.opt_["dateRestrict"] = dateRestrict
+	c.urlParams_.Set("dateRestrict", dateRestrict)
 	return c
 }
 
 // ExactTerms sets the optional parameter "exactTerms": Identifies a
 // phrase that all documents in the search results must contain
 func (c *CseListCall) ExactTerms(exactTerms string) *CseListCall {
-	c.opt_["exactTerms"] = exactTerms
+	c.urlParams_.Set("exactTerms", exactTerms)
 	return c
 }
 
@@ -356,7 +656,7 @@ func (c *CseListCall) ExactTerms(exactTerms string) *CseListCall {
 // word or phrase that should not appear in any documents in the search
 // results
 func (c *CseListCall) ExcludeTerms(excludeTerms string) *CseListCall {
-	c.opt_["excludeTerms"] = excludeTerms
+	c.urlParams_.Set("excludeTerms", excludeTerms)
 	return c
 }
 
@@ -364,7 +664,7 @@ func (c *CseListCall) ExcludeTerms(excludeTerms string) *CseListCall {
 // specified type. Some of the allowed values are: bmp, gif, png, jpg,
 // svg, pdf, ...
 func (c *CseListCall) FileType(fileType string) *CseListCall {
-	c.opt_["fileType"] = fileType
+	c.urlParams_.Set("fileType", fileType)
 	return c
 }
 
@@ -375,41 +675,41 @@ func (c *CseListCall) FileType(fileType string) *CseListCall {
 //   "0" - Turns off duplicate content filter.
 //   "1" - Turns on duplicate content filter.
 func (c *CseListCall) Filter(filter string) *CseListCall {
-	c.opt_["filter"] = filter
+	c.urlParams_.Set("filter", filter)
 	return c
 }
 
 // Gl sets the optional parameter "gl": Geolocation of end user.
 func (c *CseListCall) Gl(gl string) *CseListCall {
-	c.opt_["gl"] = gl
+	c.urlParams_.Set("gl", gl)
 	return c
 }
 
 // Googlehost sets the optional parameter "googlehost": The local Google
 // domain to use to perform the search.
 func (c *CseListCall) Googlehost(googlehost string) *CseListCall {
-	c.opt_["googlehost"] = googlehost
+	c.urlParams_.Set("googlehost", googlehost)
 	return c
 }
 
 // HighRange sets the optional parameter "highRange": Creates a range in
 // form as_nlo value..as_nhi value and attempts to append it to query
 func (c *CseListCall) HighRange(highRange string) *CseListCall {
-	c.opt_["highRange"] = highRange
+	c.urlParams_.Set("highRange", highRange)
 	return c
 }
 
 // Hl sets the optional parameter "hl": Sets the user interface
 // language.
 func (c *CseListCall) Hl(hl string) *CseListCall {
-	c.opt_["hl"] = hl
+	c.urlParams_.Set("hl", hl)
 	return c
 }
 
 // Hq sets the optional parameter "hq": Appends the extra query terms to
 // the query.
 func (c *CseListCall) Hq(hq string) *CseListCall {
-	c.opt_["hq"] = hq
+	c.urlParams_.Set("hq", hq)
 	return c
 }
 
@@ -421,7 +721,7 @@ func (c *CseListCall) Hq(hq string) *CseListCall {
 //   "gray" - gray
 //   "mono" - mono
 func (c *CseListCall) ImgColorType(imgColorType string) *CseListCall {
-	c.opt_["imgColorType"] = imgColorType
+	c.urlParams_.Set("imgColorType", imgColorType)
 	return c
 }
 
@@ -441,7 +741,7 @@ func (c *CseListCall) ImgColorType(imgColorType string) *CseListCall {
 //   "white" - white
 //   "yellow" - yellow
 func (c *CseListCall) ImgDominantColor(imgDominantColor string) *CseListCall {
-	c.opt_["imgDominantColor"] = imgDominantColor
+	c.urlParams_.Set("imgDominantColor", imgDominantColor)
 	return c
 }
 
@@ -458,7 +758,7 @@ func (c *CseListCall) ImgDominantColor(imgDominantColor string) *CseListCall {
 //   "xlarge" - xlarge
 //   "xxlarge" - xxlarge
 func (c *CseListCall) ImgSize(imgSize string) *CseListCall {
-	c.opt_["imgSize"] = imgSize
+	c.urlParams_.Set("imgSize", imgSize)
 	return c
 }
 
@@ -472,21 +772,21 @@ func (c *CseListCall) ImgSize(imgSize string) *CseListCall {
 //   "news" - news
 //   "photo" - photo
 func (c *CseListCall) ImgType(imgType string) *CseListCall {
-	c.opt_["imgType"] = imgType
+	c.urlParams_.Set("imgType", imgType)
 	return c
 }
 
 // LinkSite sets the optional parameter "linkSite": Specifies that all
 // search results should contain a link to a particular URL
 func (c *CseListCall) LinkSite(linkSite string) *CseListCall {
-	c.opt_["linkSite"] = linkSite
+	c.urlParams_.Set("linkSite", linkSite)
 	return c
 }
 
 // LowRange sets the optional parameter "lowRange": Creates a range in
 // form as_nlo value..as_nhi value and attempts to append it to query
 func (c *CseListCall) LowRange(lowRange string) *CseListCall {
-	c.opt_["lowRange"] = lowRange
+	c.urlParams_.Set("lowRange", lowRange)
 	return c
 }
 
@@ -530,14 +830,14 @@ func (c *CseListCall) LowRange(lowRange string) *CseListCall {
 //   "lang_zh-CN" - Chinese (Simplified)
 //   "lang_zh-TW" - Chinese (Traditional)
 func (c *CseListCall) Lr(lr string) *CseListCall {
-	c.opt_["lr"] = lr
+	c.urlParams_.Set("lr", lr)
 	return c
 }
 
 // Num sets the optional parameter "num": Number of search results to
 // return
 func (c *CseListCall) Num(num int64) *CseListCall {
-	c.opt_["num"] = num
+	c.urlParams_.Set("num", fmt.Sprint(num))
 	return c
 }
 
@@ -546,7 +846,7 @@ func (c *CseListCall) Num(num int64) *CseListCall {
 // search results must contain at least one of the additional search
 // terms
 func (c *CseListCall) OrTerms(orTerms string) *CseListCall {
-	c.opt_["orTerms"] = orTerms
+	c.urlParams_.Set("orTerms", orTerms)
 	return c
 }
 
@@ -554,7 +854,7 @@ func (c *CseListCall) OrTerms(orTerms string) *CseListCall {
 // all search results should be pages that are related to the specified
 // URL
 func (c *CseListCall) RelatedSite(relatedSite string) *CseListCall {
-	c.opt_["relatedSite"] = relatedSite
+	c.urlParams_.Set("relatedSite", relatedSite)
 	return c
 }
 
@@ -563,7 +863,7 @@ func (c *CseListCall) RelatedSite(relatedSite string) *CseListCall {
 // cc_sharealike, cc_noncommercial, cc_nonderived and combinations of
 // these.
 func (c *CseListCall) Rights(rights string) *CseListCall {
-	c.opt_["rights"] = rights
+	c.urlParams_.Set("rights", rights)
 	return c
 }
 
@@ -574,7 +874,7 @@ func (c *CseListCall) Rights(rights string) *CseListCall {
 //   "medium" - Enables moderate safe search filtering.
 //   "off" (default) - Disables safe search filtering.
 func (c *CseListCall) Safe(safe string) *CseListCall {
-	c.opt_["safe"] = safe
+	c.urlParams_.Set("safe", safe)
 	return c
 }
 
@@ -584,14 +884,14 @@ func (c *CseListCall) Safe(safe string) *CseListCall {
 // Possible values:
 //   "image" - custom image search
 func (c *CseListCall) SearchType(searchType string) *CseListCall {
-	c.opt_["searchType"] = searchType
+	c.urlParams_.Set("searchType", searchType)
 	return c
 }
 
 // SiteSearch sets the optional parameter "siteSearch": Specifies all
 // search results should be pages from a given site
 func (c *CseListCall) SiteSearch(siteSearch string) *CseListCall {
-	c.opt_["siteSearch"] = siteSearch
+	c.urlParams_.Set("siteSearch", siteSearch)
 	return c
 }
 
@@ -603,139 +903,96 @@ func (c *CseListCall) SiteSearch(siteSearch string) *CseListCall {
 //   "e" - exclude
 //   "i" - include
 func (c *CseListCall) SiteSearchFilter(siteSearchFilter string) *CseListCall {
-	c.opt_["siteSearchFilter"] = siteSearchFilter
+	c.urlParams_.Set("siteSearchFilter", siteSearchFilter)
 	return c
 }
 
 // Sort sets the optional parameter "sort": The sort expression to apply
 // to the results
 func (c *CseListCall) Sort(sort string) *CseListCall {
-	c.opt_["sort"] = sort
+	c.urlParams_.Set("sort", sort)
 	return c
 }
 
 // Start sets the optional parameter "start": The index of the first
 // result to return
 func (c *CseListCall) Start(start int64) *CseListCall {
-	c.opt_["start"] = start
+	c.urlParams_.Set("start", fmt.Sprint(start))
 	return c
 }
 
-// Fields allows partial responses to be retrieved.
-// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
 func (c *CseListCall) Fields(s ...googleapi.Field) *CseListCall {
-	c.opt_["fields"] = googleapi.CombineFields(s)
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
 	return c
 }
 
-func (c *CseListCall) Do() (*Search, error) {
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *CseListCall) IfNoneMatch(entityTag string) *CseListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *CseListCall) Context(ctx context.Context) *CseListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CseListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *CseListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
 	var body io.Reader = nil
-	params := make(url.Values)
-	params.Set("alt", "json")
-	params.Set("q", fmt.Sprintf("%v", c.q))
-	if v, ok := c.opt_["c2coff"]; ok {
-		params.Set("c2coff", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["cr"]; ok {
-		params.Set("cr", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["cref"]; ok {
-		params.Set("cref", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["cx"]; ok {
-		params.Set("cx", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["dateRestrict"]; ok {
-		params.Set("dateRestrict", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["exactTerms"]; ok {
-		params.Set("exactTerms", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["excludeTerms"]; ok {
-		params.Set("excludeTerms", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fileType"]; ok {
-		params.Set("fileType", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["filter"]; ok {
-		params.Set("filter", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["gl"]; ok {
-		params.Set("gl", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["googlehost"]; ok {
-		params.Set("googlehost", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["highRange"]; ok {
-		params.Set("highRange", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["hl"]; ok {
-		params.Set("hl", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["hq"]; ok {
-		params.Set("hq", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["imgColorType"]; ok {
-		params.Set("imgColorType", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["imgDominantColor"]; ok {
-		params.Set("imgDominantColor", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["imgSize"]; ok {
-		params.Set("imgSize", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["imgType"]; ok {
-		params.Set("imgType", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["linkSite"]; ok {
-		params.Set("linkSite", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["lowRange"]; ok {
-		params.Set("lowRange", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["lr"]; ok {
-		params.Set("lr", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["num"]; ok {
-		params.Set("num", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["orTerms"]; ok {
-		params.Set("orTerms", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["relatedSite"]; ok {
-		params.Set("relatedSite", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["rights"]; ok {
-		params.Set("rights", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["safe"]; ok {
-		params.Set("safe", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["searchType"]; ok {
-		params.Set("searchType", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["siteSearch"]; ok {
-		params.Set("siteSearch", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["siteSearchFilter"]; ok {
-		params.Set("siteSearchFilter", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["sort"]; ok {
-		params.Set("sort", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["start"]; ok {
-		params.Set("start", fmt.Sprintf("%v", v))
-	}
-	if v, ok := c.opt_["fields"]; ok {
-		params.Set("fields", fmt.Sprintf("%v", v))
-	}
+	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1")
-	urls += "?" + params.Encode()
+	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	googleapi.SetOpaque(req.URL)
-	req.Header.Set("User-Agent", c.s.userAgent())
-	res, err := c.s.client.Do(req)
+	req.Header = reqHeaders
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "search.cse.list" call.
+// Exactly one of *Search or error will be non-nil. Any non-2xx status
+// code is an error. Response headers are in either
+// *Search.ServerResponse.Header or (if a response was returned at all)
+// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
+// check whether the returned error was because http.StatusNotModified
+// was returned.
+func (c *CseListCall) Do(opts ...googleapi.CallOption) (*Search, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -743,8 +1000,14 @@ func (c *CseListCall) Do() (*Search, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	var ret *Search
-	if err := json.NewDecoder(res.Body).Decode(&ret); err != nil {
+	ret := &Search{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -763,11 +1026,6 @@ func (c *CseListCall) Do() (*Search, error) {
 	//     },
 	//     "cr": {
 	//       "description": "Country restrict(s).",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
-	//     "cref": {
-	//       "description": "The URL of a linked custom search engine",
 	//       "location": "query",
 	//       "type": "string"
 	//     },

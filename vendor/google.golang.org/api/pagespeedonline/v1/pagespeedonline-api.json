@@ -1,13 +1,13 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"ye6orv2F-1npMW3u9suM3a7C5Bo/53c1pDum-m_4xRbboeMr9HDsJSk\"",
+ "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/FkGdm1NgZtAvow-TudpcDpRNyE0\"",
  "discoveryVersion": "v1",
  "id": "pagespeedonline:v1",
  "name": "pagespeedonline",
  "version": "v1",
- "revision": "20150317",
+ "revision": "20161204",
  "title": "PageSpeed Insights API",
- "description": "Lets you analyze the performance of a web page and get tailored suggestions to make that page faster.",
+ "description": "Analyzes the performance of a web page and provides tailored suggestions to make that page faster.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "icons": {
@@ -20,7 +20,7 @@
  "basePath": "/pagespeedonline/v1/",
  "rootUrl": "https://www.googleapis.com/",
  "servicePath": "pagespeedonline/v1/",
- "batchPath": "batch",
+ "batchPath": "batch/pagespeedonline/v1",
  "parameters": {
   "alt": {
    "type": "string",
@@ -398,7 +398,7 @@
        "type": "string",
        "description": "The URL to fetch and analyze",
        "required": true,
-       "pattern": "http(s)?://.*",
+       "pattern": "(?i)http(s)?://.*",
        "location": "query"
       }
      },

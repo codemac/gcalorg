@@ -1,14 +1,14 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"ye6orv2F-1npMW3u9suM3a7C5Bo/5TTY6r0-PYSt0CWEoJ_c6u0feAs\"",
+ "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/lOQeocShB0dxGwrtxzB56jZ95Xk\"",
  "discoveryVersion": "v1",
  "id": "clouduseraccounts:alpha",
  "name": "clouduseraccounts",
  "canonicalName": "Cloud User Accounts",
  "version": "alpha",
- "revision": "20150622",
+ "revision": "20160316",
  "title": "Cloud User Accounts API",
- "description": "API for the Google Cloud User Accounts service.",
+ "description": "Creates and manages users and groups for accessing Google Compute Engine virtual machines.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "icons": {
@@ -21,7 +21,7 @@
  "basePath": "/clouduseraccounts/alpha/projects/",
  "rootUrl": "https://www.googleapis.com/",
  "servicePath": "clouduseraccounts/alpha/projects/",
- "batchPath": "batch",
+ "batchPath": "batch/clouduseraccounts/alpha",
  "parameters": {
   "alt": {
    "type": "string",
@@ -73,22 +73,37 @@
     "https://www.googleapis.com/auth/cloud-platform": {
      "description": "View and manage your data across Google Cloud Platform services"
     },
+    "https://www.googleapis.com/auth/cloud-platform.read-only": {
+     "description": "View your data across Google Cloud Platform services"
+    },
     "https://www.googleapis.com/auth/cloud.useraccounts": {
      "description": "Manage your Google Cloud User Accounts"
     },
     "https://www.googleapis.com/auth/cloud.useraccounts.readonly": {
      "description": "View your Google Cloud User Accounts"
-    },
-    "https://www.googleapis.com/auth/computeaccounts": {
-     "description": "Manage your Google Compute Accounts"
-    },
-    "https://www.googleapis.com/auth/computeaccounts.readonly": {
-     "description": "View your Google Compute Accounts"
     }
    }
   }
  },
  "schemas": {
+  "AuditConfig": {
+   "id": "AuditConfig",
+   "type": "object",
+   "description": "Enables \"data access\" audit logging for a service and specifies a list of members that are log-exempted.",
+   "properties": {
+    "exemptedMembers": {
+     "type": "array",
+     "description": "Specifies the identities that are exempted from \"data access\" audit logging for the `service` specified above. Follows the same format of Binding.members.",
+     "items": {
+      "type": "string"
+     }
+    },
+    "service": {
+     "type": "string",
+     "description": "Specifies a service that will be enabled for \"data access\" audit logging. For example, `resourcemanager`, `storage`, `compute`. `allServices` is a special value that covers all services."
+    }
+   }
+  },
   "AuthorizedKeysView": {
    "id": "AuthorizedKeysView",
    "type": "object",
@@ -97,6 +112,102 @@
     "keys": {
      "type": "array",
      "description": "[Output Only] The list of authorized public keys in SSH format.",
+     "items": {
+      "type": "string"
+     }
+    },
+    "sudoer": {
+     "type": "boolean",
+     "description": "[Output Only] Whether the user has the ability to elevate on the instance that requested the authorized keys."
+    }
+   }
+  },
+  "Binding": {
+   "id": "Binding",
+   "type": "object",
+   "description": "Associates `members` with a `role`.",
+   "properties": {
+    "members": {
+     "type": "array",
+     "description": "Specifies the identities requesting access for a Cloud Platform resource. `members` can have the following values:\n\n* `allUsers`: A special identifier that represents anyone who is on the internet; with or without a Google account.\n\n* `allAuthenticatedUsers`: A special identifier that represents anyone who is authenticated with a Google account or a service account.\n\n* `user:{emailid}`: An email address that represents a specific Google account. For example, `alice@gmail.com` or `joe@example.com`.\n\n* `serviceAccount:{emailid}`: An email address that represents a service account. For example, `my-other-app@appspot.gserviceaccount.com`.\n\n* `group:{emailid}`: An email address that represents a Google group. For example, `admins@example.com`.\n\n* `domain:{domain}`: A Google Apps domain name that represents all the users of that domain. For example, `google.com` or `example.com`.",
+     "items": {
+      "type": "string"
+     }
+    },
+    "role": {
+     "type": "string",
+     "description": "Role that is assigned to `members`. For example, `roles/viewer`, `roles/editor`, or `roles/owner`."
+    }
+   }
+  },
+  "Condition": {
+   "id": "Condition",
+   "type": "object",
+   "description": "A condition to be met.",
+   "properties": {
+    "iam": {
+     "type": "string",
+     "description": "Trusted attributes supplied by the IAM system.",
+     "enum": [
+      "ATTRIBUTION",
+      "AUTHORITY",
+      "NO_ATTR"
+     ],
+     "enumDescriptions": [
+      "",
+      "",
+      ""
+     ]
+    },
+    "op": {
+     "type": "string",
+     "description": "An operator to apply the subject with.",
+     "enum": [
+      "DISCHARGED",
+      "EQUALS",
+      "IN",
+      "NOT_EQUALS",
+      "NOT_IN",
+      "NO_OP"
+     ],
+     "enumDescriptions": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+     ]
+    },
+    "svc": {
+     "type": "string",
+     "description": "Trusted attributes discharged by the service."
+    },
+    "sys": {
+     "type": "string",
+     "description": "Trusted attributes supplied by any service that owns resources and uses the IAM system for access control.",
+     "enum": [
+      "IP",
+      "NAME",
+      "NO_ATTR",
+      "REGION",
+      "SERVICE"
+     ],
+     "enumDescriptions": [
+      "",
+      "",
+      "",
+      "",
+      ""
+     ]
+    },
+    "value": {
+     "type": "string",
+     "description": "The object of the condition. Exactly one of these must be set."
+    },
+    "values": {
+     "type": "array",
+     "description": "The objects of the condition. This is mutually exclusive with 'value'.",
      "items": {
       "type": "string"
      }
@@ -307,6 +418,32 @@
     }
    }
   },
+  "LogConfig": {
+   "id": "LogConfig",
+   "type": "object",
+   "description": "Specifies what kind of log the caller must write",
+   "properties": {
+    "counter": {
+     "$ref": "LogConfigCounterOptions",
+     "description": "Counter options."
+    }
+   }
+  },
+  "LogConfigCounterOptions": {
+   "id": "LogConfigCounterOptions",
+   "type": "object",
+   "description": "Options for counters",
+   "properties": {
+    "field": {
+     "type": "string",
+     "description": "The field value to attribute."
+    },
+    "metric": {
+     "type": "string",
+     "description": "The metric to update."
+    }
+   }
+  },
   "Operation": {
    "id": "Operation",
    "type": "object",
@@ -314,15 +451,19 @@
    "properties": {
     "clientOperationId": {
      "type": "string",
-     "description": "[Output Only] An optional identifier specified by the client when the mutation was initiated. Must be unique for all Operation resources in the project."
+     "description": "[Output Only] Reserved for future use."
     },
     "creationTimestamp": {
      "type": "string",
      "description": "[Output Only] Creation timestamp in RFC3339 text format."
     },
+    "description": {
+     "type": "string",
+     "description": "[Output Only] A textual description of the operation, which is set when the operation is created."
+    },
     "endTime": {
      "type": "string",
-     "description": "[Output Only] The time that this operation was completed. This is in RFC3339 text format."
+     "description": "[Output Only] The time that this operation was completed. This value is in RFC3339 text format."
     },
     "error": {
      "type": "object",
@@ -340,7 +481,7 @@
          },
          "location": {
           "type": "string",
-          "description": "[Output Only] Indicates the field in the request which caused the error. This property is optional."
+          "description": "[Output Only] Indicates the field in the request that caused the error. This property is optional."
          },
          "message": {
           "type": "string",
@@ -357,21 +498,21 @@
     },
     "httpErrorStatusCode": {
      "type": "integer",
-     "description": "[Output Only] If the operation fails, this field contains the HTTP error message that was returned, such as 404.",
+     "description": "[Output Only] If the operation fails, this field contains the HTTP error status code that was returned. For example, a 404 means the resource was not found.",
      "format": "int32"
     },
     "id": {
      "type": "string",
-     "description": "[Output Only] Unique identifier for the resource; defined by the server.",
+     "description": "[Output Only] The unique identifier for the resource. This identifier is defined by the server.",
      "format": "uint64"
     },
     "insertTime": {
      "type": "string",
-     "description": "[Output Only] The time that this operation was requested. This is in RFC3339 text format."
+     "description": "[Output Only] The time that this operation was requested. This value is in RFC3339 text format."
     },
     "kind": {
      "type": "string",
-     "description": "[Output Only] Type of the resource. Always compute#Operation for Operation resources.",
+     "description": "[Output Only] Type of the resource. Always compute#operation for Operation resources.",
      "default": "clouduseraccounts#operation"
     },
     "name": {
@@ -380,28 +521,28 @@
     },
     "operationType": {
      "type": "string",
-     "description": "[Output Only] Type of the operation, such as insert, update, and delete."
+     "description": "[Output Only] The type of operation, such as insert, update, or delete, and so on."
     },
     "progress": {
      "type": "integer",
-     "description": "[Output Only] An optional progress indicator that ranges from 0 to 100. There is no requirement that this be linear or support any granularity of operations. This should not be used to guess at when the operation will be complete. This number should monotonically increase as the operation progresses.",
+     "description": "[Output Only] An optional progress indicator that ranges from 0 to 100. There is no requirement that this be linear or support any granularity of operations. This should not be used to guess when the operation will be complete. This number should monotonically increase as the operation progresses.",
      "format": "int32"
     },
     "region": {
      "type": "string",
-     "description": "[Output Only] URL of the region where the operation resides. Only applicable for regional resources."
+     "description": "[Output Only] The URL of the region where the operation resides. Only available when performing regional operations."
     },
     "selfLink": {
      "type": "string",
-     "description": "[Output Only] Server defined URL for the resource."
+     "description": "[Output Only] Server-defined URL for the resource."
     },
     "startTime": {
      "type": "string",
-     "description": "[Output Only] The time that this operation was started by the server. This is in RFC3339 text format."
+     "description": "[Output Only] The time that this operation was started by the server. This value is in RFC3339 text format."
     },
     "status": {
      "type": "string",
-     "description": "[Output Only] Status of the operation. Can be one of the following: PENDING, RUNNING, or DONE.",
+     "description": "[Output Only] The status of the operation, which can be one of the following: PENDING, RUNNING, or DONE.",
      "enum": [
       "DONE",
       "PENDING",
@@ -419,12 +560,12 @@
     },
     "targetId": {
      "type": "string",
-     "description": "[Output Only] Unique target ID which identifies a particular incarnation of the target.",
+     "description": "[Output Only] The unique target ID, which identifies a specific incarnation of the target resource.",
      "format": "uint64"
     },
     "targetLink": {
      "type": "string",
-     "description": "[Output Only] URL of the resource the operation is mutating."
+     "description": "[Output Only] The URL of the resource that the operation modifies."
     },
     "user": {
      "type": "string",
@@ -438,8 +579,9 @@
       "properties": {
        "code": {
         "type": "string",
-        "description": "[Output Only] The warning type identifier for this warning.",
+        "description": "[Output Only] A warning code, if applicable. For example, Compute Engine returns NO_RESULTS_ON_PAGE if there are no results in the response.",
         "enum": [
+         "CLEANUP_FAILED",
          "DEPRECATED_RESOURCE_USED",
          "DISK_SIZE_LARGER_THAN_IMAGE_SIZE",
          "INJECTED_KERNELS_DEPRECATED",
@@ -469,18 +611,19 @@
          "",
          "",
          "",
+         "",
          ""
         ]
        },
        "data": {
         "type": "array",
-        "description": "[Output Only] Metadata for this warning in key: value format.",
+        "description": "[Output Only] Metadata about this warning in key: value format. For example:\n\"data\": [ { \"key\": \"scope\", \"value\": \"zones/us-east1-d\" }",
         "items": {
          "type": "object",
          "properties": {
           "key": {
            "type": "string",
-           "description": "[Output Only] A key for the warning data."
+           "description": "[Output Only] A key that provides more detail on the warning being returned. For example, for warnings where there are no results in a list request for a particular zone, this key might be scope and the key value might be the zone name. Other examples might be a key indicating a deprecated resource and a suggested replacement, or a warning about invalid network settings (for example, if an instance attempts to perform IP forwarding but is not enabled for IP forwarding)."
           },
           "value": {
            "type": "string",
@@ -491,14 +634,14 @@
        },
        "message": {
         "type": "string",
-        "description": "[Output Only] Optional human-readable details for this warning."
+        "description": "[Output Only] A human-readable description of the warning code."
        }
       }
      }
     },
     "zone": {
      "type": "string",
-     "description": "[Output Only] URL of the zone where the operation resides."
+     "description": "[Output Only] The URL of the zone where the operation resides. Only available when performing per-zone operations."
     }
    }
   },
@@ -509,11 +652,11 @@
    "properties": {
     "id": {
      "type": "string",
-     "description": "[Output Only] Unique identifier for the resource; defined by the server."
+     "description": "[Output Only] The unique identifier for the resource. This identifier is defined by the server."
     },
     "items": {
      "type": "array",
-     "description": "[Output Only] The Operation resources.",
+     "description": "[Output Only] A list of Operation resources.",
      "items": {
       "$ref": "Operation"
      }
@@ -525,11 +668,53 @@
     },
     "nextPageToken": {
      "type": "string",
-     "description": "[Output Only] A token used to continue a truncate."
+     "description": "[Output Only] This token allows you to get the next page of results for list requests. If the number of results is larger than maxResults, use the nextPageToken as a value for the query parameter pageToken in the next list request. Subsequent list requests will have their own nextPageToken to continue paging through the results."
     },
     "selfLink": {
      "type": "string",
-     "description": "[Output Only] Server defined URL for this resource."
+     "description": "[Output Only] Server-defined URL for this resource."
+    }
+   }
+  },
+  "Policy": {
+   "id": "Policy",
+   "type": "object",
+   "description": "Defines an Identity and Access Management (IAM) policy. It is used to specify access control policies for Cloud Platform resources.\n\n\n\nA `Policy` consists of a list of `bindings`. A `Binding` binds a list of `members` to a `role`, where the members can be user accounts, Google groups, Google domains, and service accounts. A `role` is a named list of permissions defined by IAM.\n\n**Example**\n\n{ \"bindings\": [ { \"role\": \"roles/owner\", \"members\": [ \"user:mike@example.com\", \"group:admins@example.com\", \"domain:google.com\", \"serviceAccount:my-other-app@appspot.gserviceaccount.com\", ] }, { \"role\": \"roles/viewer\", \"members\": [\"user:sean@example.com\"] } ] }\n\nFor a description of IAM and its features, see the [IAM developer's guide](https://cloud.google.com/iam).",
+   "properties": {
+    "auditConfigs": {
+     "type": "array",
+     "description": "Specifies audit logging configs for \"data access\". \"data access\": generally refers to data reads/writes and admin reads. \"admin activity\": generally refers to admin writes.\n\nNote: `AuditConfig` doesn't apply to \"admin activity\", which always enables audit logging.",
+     "items": {
+      "$ref": "AuditConfig"
+     }
+    },
+    "bindings": {
+     "type": "array",
+     "description": "Associates a list of `members` to a `role`. Multiple `bindings` must not be specified for the same `role`. `bindings` with no members will result in an error.",
+     "items": {
+      "$ref": "Binding"
+     }
+    },
+    "etag": {
+     "type": "string",
+     "description": "`etag` is used for optimistic concurrency control as a way to help prevent simultaneous updates of a policy from overwriting each other. It is strongly suggested that systems make use of the `etag` in the read-modify-write cycle to perform policy updates in order to avoid race conditions: An `etag` is returned in the response to `getIamPolicy`, and systems are expected to put that etag in the request to `setIamPolicy` to ensure that their change will be applied to the same version of the policy.\n\nIf no `etag` is provided in the call to `setIamPolicy`, then the existing policy is overwritten blindly.",
+     "format": "byte"
+    },
+    "iamOwned": {
+     "type": "boolean",
+     "description": ""
+    },
+    "rules": {
+     "type": "array",
+     "description": "If more than one rule is specified, the rules are applied in the following manner: - All matching LOG rules are always applied. - If any DENY/DENY_WITH_LOG rule matches, permission is denied. Logging will be applied if one or more matching rule requires logging. - Otherwise, if any ALLOW/ALLOW_WITH_LOG rule matches, permission is granted. Logging will be applied if one or more matching rule requires logging. - Otherwise, if no rule applies, permission is denied.",
+     "items": {
+      "$ref": "Rule"
+     }
+    },
+    "version": {
+     "type": "integer",
+     "description": "Version of the `Policy`. The default version is 0.",
+     "format": "int32"
     }
    }
   },
@@ -557,6 +742,98 @@
     "key": {
      "type": "string",
      "description": "Public key text in SSH format, defined by RFC4253 section 6.6."
+    }
+   }
+  },
+  "Rule": {
+   "id": "Rule",
+   "type": "object",
+   "description": "A rule to be applied in a Policy.",
+   "properties": {
+    "action": {
+     "type": "string",
+     "description": "Required",
+     "enum": [
+      "ALLOW",
+      "ALLOW_WITH_LOG",
+      "DENY",
+      "DENY_WITH_LOG",
+      "LOG",
+      "NO_ACTION"
+     ],
+     "enumDescriptions": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+     ]
+    },
+    "conditions": {
+     "type": "array",
+     "description": "Additional restrictions that must be met",
+     "items": {
+      "$ref": "Condition"
+     }
+    },
+    "description": {
+     "type": "string",
+     "description": "Human-readable description of the rule."
+    },
+    "ins": {
+     "type": "array",
+     "description": "The rule matches if the PRINCIPAL/AUTHORITY_SELECTOR is in this set of entries.",
+     "items": {
+      "type": "string"
+     }
+    },
+    "logConfigs": {
+     "type": "array",
+     "description": "The config returned to callers of tech.iam.IAM.CheckPolicy for any entries that match the LOG action.",
+     "items": {
+      "$ref": "LogConfig"
+     }
+    },
+    "notIns": {
+     "type": "array",
+     "description": "The rule matches if the PRINCIPAL/AUTHORITY_SELECTOR is not in this set of entries.",
+     "items": {
+      "type": "string"
+     }
+    },
+    "permissions": {
+     "type": "array",
+     "description": "A permission is a string of form '..' (e.g., 'storage.buckets.list'). A value of '*' matches all permissions, and a verb part of '*' (e.g., 'storage.buckets.*') matches all verbs.",
+     "items": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "TestPermissionsRequest": {
+   "id": "TestPermissionsRequest",
+   "type": "object",
+   "properties": {
+    "permissions": {
+     "type": "array",
+     "description": "The set of permissions to check for the 'resource'. Permissions with wildcards (such as '*' or 'storage.*') are not allowed.",
+     "items": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "TestPermissionsResponse": {
+   "id": "TestPermissionsResponse",
+   "type": "object",
+   "properties": {
+    "permissions": {
+     "type": "array",
+     "description": "A subset of `TestPermissionsRequest.permissions` that the caller is allowed.",
+     "items": {
+      "type": "string"
+     }
     }
    }
   },
@@ -683,8 +960,7 @@
      ],
      "scopes": [
       "https://www.googleapis.com/auth/cloud-platform",
-      "https://www.googleapis.com/auth/cloud.useraccounts",
-      "https://www.googleapis.com/auth/computeaccounts"
+      "https://www.googleapis.com/auth/cloud.useraccounts"
      ]
     },
     "get": {
@@ -717,10 +993,9 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/cloud-platform",
+      "https://www.googleapis.com/auth/cloud-platform.read-only",
       "https://www.googleapis.com/auth/cloud.useraccounts",
-      "https://www.googleapis.com/auth/cloud.useraccounts.readonly",
-      "https://www.googleapis.com/auth/computeaccounts",
-      "https://www.googleapis.com/auth/computeaccounts.readonly"
+      "https://www.googleapis.com/auth/cloud.useraccounts.readonly"
      ]
     },
     "list": {
@@ -731,12 +1006,12 @@
      "parameters": {
       "filter": {
        "type": "string",
-       "description": "Sets a filter expression for filtering listed resources, in the form filter={expression}. Your {expression} must contain the following:\nFIELD_NAME COMPARISON_STRING LITERAL_STRING\n \n- FIELD_NAME: The name of the field you want to compare. The field name must be valid for the type of resource being filtered. Only atomic field types are supported (string, number, boolean). Array and object fields are not currently supported. \n- COMPARISON_STRING: The comparison string, either eq (equals) or ne (not equals). \n- LITERAL_STRING: The literal string value to filter to. The literal value must be valid for the type of field (string, number, boolean). For string fields, the literal value is interpreted as a regular expression using RE2 syntax. The literal value must match the entire field.  For example, you can filter by the name of a resource:\nfilter=name ne example-instance\nThe above filter returns only results whose name field does not equal example-instance. You can also enclose your literal string in single, double, or no quotes.",
+       "description": "Sets a filter expression for filtering listed resources, in the form filter={expression}. Your {expression} must be in the format: field_name comparison_string literal_string.\n\nThe field_name is the name of the field you want to compare. Only atomic field types are supported (string, number, boolean). The comparison_string must be either eq (equals) or ne (not equals). The literal_string is the string value to filter to. The literal value must be valid for the type of field you are filtering by (string, number, boolean). For string fields, the literal value is interpreted as a regular expression using RE2 syntax. The literal value must match the entire field.\n\nFor example, to filter for instances that do not have a name of example-instance, you would use filter=name ne example-instance.\n\nCompute Engine Beta API Only: If you use filtering in the Beta API, you can also filter on nested fields. For example, you could filter on instances that have set the scheduling.automaticRestart field to true. In particular, use filtering on nested fields to take advantage of instance labels to organize and filter results based on label values.\n\nThe Beta API also supports filtering on multiple expressions by providing each separate expression within parentheses. For example, (scheduling.automaticRestart eq true) (zone eq us-central1-f). Multiple expressions are treated as AND expressions, meaning that resources must match all expressions to pass the filters.",
        "location": "query"
       },
       "maxResults": {
        "type": "integer",
-       "description": "Maximum count of results to be returned.",
+       "description": "The maximum number of results per page that should be returned. If the number of available results is larger than maxResults, Compute Engine returns a nextPageToken that can be used to get the next page of results in subsequent list requests.",
        "default": "500",
        "format": "uint32",
        "minimum": "0",
@@ -750,7 +1025,7 @@
       },
       "pageToken": {
        "type": "string",
-       "description": "Specifies a page token to use. Use this parameter if you want to list the next page of results. Set pageToken to the nextPageToken returned by a previous list request.",
+       "description": "Specifies a page token to use. Set pageToken to the nextPageToken returned by a previous list request to get the next page of results.",
        "location": "query"
       },
       "project": {
@@ -769,10 +1044,9 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/cloud-platform",
+      "https://www.googleapis.com/auth/cloud-platform.read-only",
       "https://www.googleapis.com/auth/cloud.useraccounts",
-      "https://www.googleapis.com/auth/cloud.useraccounts.readonly",
-      "https://www.googleapis.com/auth/computeaccounts",
-      "https://www.googleapis.com/auth/computeaccounts.readonly"
+      "https://www.googleapis.com/auth/cloud.useraccounts.readonly"
      ]
     }
    }
@@ -812,8 +1086,7 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/cloud-platform",
-      "https://www.googleapis.com/auth/cloud.useraccounts",
-      "https://www.googleapis.com/auth/computeaccounts"
+      "https://www.googleapis.com/auth/cloud.useraccounts"
      ]
     },
     "delete": {
@@ -846,8 +1119,7 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/cloud-platform",
-      "https://www.googleapis.com/auth/cloud.useraccounts",
-      "https://www.googleapis.com/auth/computeaccounts"
+      "https://www.googleapis.com/auth/cloud.useraccounts"
      ]
     },
     "get": {
@@ -880,10 +1152,44 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/cloud-platform",
+      "https://www.googleapis.com/auth/cloud-platform.read-only",
       "https://www.googleapis.com/auth/cloud.useraccounts",
-      "https://www.googleapis.com/auth/cloud.useraccounts.readonly",
-      "https://www.googleapis.com/auth/computeaccounts",
-      "https://www.googleapis.com/auth/computeaccounts.readonly"
+      "https://www.googleapis.com/auth/cloud.useraccounts.readonly"
+     ]
+    },
+    "getIamPolicy": {
+     "id": "clouduseraccounts.groups.getIamPolicy",
+     "path": "{project}/global/groups/{resource}/getIamPolicy",
+     "httpMethod": "GET",
+     "description": "Gets the access control policy for a resource. May be empty if no such policy or resource exists.",
+     "parameters": {
+      "project": {
+       "type": "string",
+       "description": "Project ID for this request.",
+       "required": true,
+       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+       "location": "path"
+      },
+      "resource": {
+       "type": "string",
+       "description": "Name of the resource for this request.",
+       "required": true,
+       "pattern": "[a-z](?:[-a-z0-9_]{0,61}[a-z0-9])?",
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "project",
+      "resource"
+     ],
+     "response": {
+      "$ref": "Policy"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/cloud-platform",
+      "https://www.googleapis.com/auth/cloud-platform.read-only",
+      "https://www.googleapis.com/auth/cloud.useraccounts",
+      "https://www.googleapis.com/auth/cloud.useraccounts.readonly"
      ]
     },
     "insert": {
@@ -911,8 +1217,7 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/cloud-platform",
-      "https://www.googleapis.com/auth/cloud.useraccounts",
-      "https://www.googleapis.com/auth/computeaccounts"
+      "https://www.googleapis.com/auth/cloud.useraccounts"
      ]
     },
     "list": {
@@ -923,12 +1228,12 @@
      "parameters": {
       "filter": {
        "type": "string",
-       "description": "Sets a filter expression for filtering listed resources, in the form filter={expression}. Your {expression} must contain the following:\nFIELD_NAME COMPARISON_STRING LITERAL_STRING\n \n- FIELD_NAME: The name of the field you want to compare. The field name must be valid for the type of resource being filtered. Only atomic field types are supported (string, number, boolean). Array and object fields are not currently supported. \n- COMPARISON_STRING: The comparison string, either eq (equals) or ne (not equals). \n- LITERAL_STRING: The literal string value to filter to. The literal value must be valid for the type of field (string, number, boolean). For string fields, the literal value is interpreted as a regular expression using RE2 syntax. The literal value must match the entire field.  For example, you can filter by the name of a resource:\nfilter=name ne example-instance\nThe above filter returns only results whose name field does not equal example-instance. You can also enclose your literal string in single, double, or no quotes.",
+       "description": "Sets a filter expression for filtering listed resources, in the form filter={expression}. Your {expression} must be in the format: field_name comparison_string literal_string.\n\nThe field_name is the name of the field you want to compare. Only atomic field types are supported (string, number, boolean). The comparison_string must be either eq (equals) or ne (not equals). The literal_string is the string value to filter to. The literal value must be valid for the type of field you are filtering by (string, number, boolean). For string fields, the literal value is interpreted as a regular expression using RE2 syntax. The literal value must match the entire field.\n\nFor example, to filter for instances that do not have a name of example-instance, you would use filter=name ne example-instance.\n\nCompute Engine Beta API Only: If you use filtering in the Beta API, you can also filter on nested fields. For example, you could filter on instances that have set the scheduling.automaticRestart field to true. In particular, use filtering on nested fields to take advantage of instance labels to organize and filter results based on label values.\n\nThe Beta API also supports filtering on multiple expressions by providing each separate expression within parentheses. For example, (scheduling.automaticRestart eq true) (zone eq us-central1-f). Multiple expressions are treated as AND expressions, meaning that resources must match all expressions to pass the filters.",
        "location": "query"
       },
       "maxResults": {
        "type": "integer",
-       "description": "Maximum count of results to be returned.",
+       "description": "The maximum number of results per page that should be returned. If the number of available results is larger than maxResults, Compute Engine returns a nextPageToken that can be used to get the next page of results in subsequent list requests.",
        "default": "500",
        "format": "uint32",
        "minimum": "0",
@@ -942,7 +1247,7 @@
       },
       "pageToken": {
        "type": "string",
-       "description": "Specifies a page token to use. Use this parameter if you want to list the next page of results. Set pageToken to the nextPageToken returned by a previous list request.",
+       "description": "Specifies a page token to use. Set pageToken to the nextPageToken returned by a previous list request to get the next page of results.",
        "location": "query"
       },
       "project": {
@@ -961,10 +1266,9 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/cloud-platform",
+      "https://www.googleapis.com/auth/cloud-platform.read-only",
       "https://www.googleapis.com/auth/cloud.useraccounts",
-      "https://www.googleapis.com/auth/cloud.useraccounts.readonly",
-      "https://www.googleapis.com/auth/computeaccounts",
-      "https://www.googleapis.com/auth/computeaccounts.readonly"
+      "https://www.googleapis.com/auth/cloud.useraccounts.readonly"
      ]
     },
     "removeMember": {
@@ -1000,8 +1304,83 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/cloud-platform",
+      "https://www.googleapis.com/auth/cloud.useraccounts"
+     ]
+    },
+    "setIamPolicy": {
+     "id": "clouduseraccounts.groups.setIamPolicy",
+     "path": "{project}/global/groups/{resource}/setIamPolicy",
+     "httpMethod": "POST",
+     "description": "Sets the access control policy on the specified resource. Replaces any existing policy.",
+     "parameters": {
+      "project": {
+       "type": "string",
+       "description": "Project ID for this request.",
+       "required": true,
+       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+       "location": "path"
+      },
+      "resource": {
+       "type": "string",
+       "description": "Name of the resource for this request.",
+       "required": true,
+       "pattern": "[a-z](?:[-a-z0-9_]{0,61}[a-z0-9])?",
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "project",
+      "resource"
+     ],
+     "request": {
+      "$ref": "Policy"
+     },
+     "response": {
+      "$ref": "Policy"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/cloud-platform",
+      "https://www.googleapis.com/auth/cloud-platform.read-only",
       "https://www.googleapis.com/auth/cloud.useraccounts",
-      "https://www.googleapis.com/auth/computeaccounts"
+      "https://www.googleapis.com/auth/cloud.useraccounts.readonly"
+     ]
+    },
+    "testIamPermissions": {
+     "id": "clouduseraccounts.groups.testIamPermissions",
+     "path": "{project}/global/groups/{resource}/testIamPermissions",
+     "httpMethod": "POST",
+     "description": "Returns permissions that a caller has on the specified resource.",
+     "parameters": {
+      "project": {
+       "type": "string",
+       "description": "Project ID for this request.",
+       "required": true,
+       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+       "location": "path"
+      },
+      "resource": {
+       "type": "string",
+       "description": "Name of the resource for this request.",
+       "required": true,
+       "pattern": "[a-z](?:[-a-z0-9_]{0,61}[a-z0-9])?",
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "project",
+      "resource"
+     ],
+     "request": {
+      "$ref": "TestPermissionsRequest"
+     },
+     "response": {
+      "$ref": "TestPermissionsResponse"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/cloud-platform",
+      "https://www.googleapis.com/auth/cloud-platform.read-only",
+      "https://www.googleapis.com/auth/cloud.useraccounts",
+      "https://www.googleapis.com/auth/cloud.useraccounts.readonly"
      ]
     }
    }
@@ -1018,6 +1397,11 @@
        "type": "string",
        "description": "The fully-qualified URL of the virtual machine requesting the view.",
        "required": true,
+       "location": "query"
+      },
+      "login": {
+       "type": "boolean",
+       "description": "Whether the view was requested as part of a user-initiated login.",
        "location": "query"
       },
       "project": {
@@ -1053,10 +1437,9 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/cloud-platform",
+      "https://www.googleapis.com/auth/cloud-platform.read-only",
       "https://www.googleapis.com/auth/cloud.useraccounts",
-      "https://www.googleapis.com/auth/cloud.useraccounts.readonly",
-      "https://www.googleapis.com/auth/computeaccounts",
-      "https://www.googleapis.com/auth/computeaccounts.readonly"
+      "https://www.googleapis.com/auth/cloud.useraccounts.readonly"
      ]
     },
     "getLinuxAccountViews": {
@@ -1067,7 +1450,7 @@
      "parameters": {
       "filter": {
        "type": "string",
-       "description": "Sets a filter expression for filtering listed resources, in the form filter={expression}. Your {expression} must contain the following:\nFIELD_NAME COMPARISON_STRING LITERAL_STRING\n \n- FIELD_NAME: The name of the field you want to compare. The field name must be valid for the type of resource being filtered. Only atomic field types are supported (string, number, boolean). Array and object fields are not currently supported. \n- COMPARISON_STRING: The comparison string, either eq (equals) or ne (not equals). \n- LITERAL_STRING: The literal string value to filter to. The literal value must be valid for the type of field (string, number, boolean). For string fields, the literal value is interpreted as a regular expression using RE2 syntax. The literal value must match the entire field.  For example, you can filter by the name of a resource:\nfilter=name ne example-instance\nThe above filter returns only results whose name field does not equal example-instance. You can also enclose your literal string in single, double, or no quotes.",
+       "description": "Sets a filter expression for filtering listed resources, in the form filter={expression}. Your {expression} must be in the format: field_name comparison_string literal_string.\n\nThe field_name is the name of the field you want to compare. Only atomic field types are supported (string, number, boolean). The comparison_string must be either eq (equals) or ne (not equals). The literal_string is the string value to filter to. The literal value must be valid for the type of field you are filtering by (string, number, boolean). For string fields, the literal value is interpreted as a regular expression using RE2 syntax. The literal value must match the entire field.\n\nFor example, to filter for instances that do not have a name of example-instance, you would use filter=name ne example-instance.\n\nCompute Engine Beta API Only: If you use filtering in the Beta API, you can also filter on nested fields. For example, you could filter on instances that have set the scheduling.automaticRestart field to true. In particular, use filtering on nested fields to take advantage of instance labels to organize and filter results based on label values.\n\nThe Beta API also supports filtering on multiple expressions by providing each separate expression within parentheses. For example, (scheduling.automaticRestart eq true) (zone eq us-central1-f). Multiple expressions are treated as AND expressions, meaning that resources must match all expressions to pass the filters.",
        "location": "query"
       },
       "instance": {
@@ -1078,7 +1461,7 @@
       },
       "maxResults": {
        "type": "integer",
-       "description": "Maximum count of results to be returned.",
+       "description": "The maximum number of results per page that should be returned. If the number of available results is larger than maxResults, Compute Engine returns a nextPageToken that can be used to get the next page of results in subsequent list requests.",
        "default": "500",
        "format": "uint32",
        "minimum": "0",
@@ -1092,7 +1475,7 @@
       },
       "pageToken": {
        "type": "string",
-       "description": "Specifies a page token to use. Use this parameter if you want to list the next page of results. Set pageToken to the nextPageToken returned by a previous list request.",
+       "description": "Specifies a page token to use. Set pageToken to the nextPageToken returned by a previous list request to get the next page of results.",
        "location": "query"
       },
       "project": {
@@ -1101,12 +1484,6 @@
        "required": true,
        "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?))",
        "location": "path"
-      },
-      "user": {
-       "type": "string",
-       "description": "If provided, the user requesting the views. If left blank, the system is requesting the views, instead of a particular user.",
-       "pattern": "[a-z][-a-z0-9_]{0,31}",
-       "location": "query"
       },
       "zone": {
        "type": "string",
@@ -1126,10 +1503,9 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/cloud-platform",
+      "https://www.googleapis.com/auth/cloud-platform.read-only",
       "https://www.googleapis.com/auth/cloud.useraccounts",
-      "https://www.googleapis.com/auth/cloud.useraccounts.readonly",
-      "https://www.googleapis.com/auth/computeaccounts",
-      "https://www.googleapis.com/auth/computeaccounts.readonly"
+      "https://www.googleapis.com/auth/cloud.useraccounts.readonly"
      ]
     }
    }
@@ -1169,8 +1545,7 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/cloud-platform",
-      "https://www.googleapis.com/auth/cloud.useraccounts",
-      "https://www.googleapis.com/auth/computeaccounts"
+      "https://www.googleapis.com/auth/cloud.useraccounts"
      ]
     },
     "delete": {
@@ -1203,8 +1578,7 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/cloud-platform",
-      "https://www.googleapis.com/auth/cloud.useraccounts",
-      "https://www.googleapis.com/auth/computeaccounts"
+      "https://www.googleapis.com/auth/cloud.useraccounts"
      ]
     },
     "get": {
@@ -1237,10 +1611,44 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/cloud-platform",
+      "https://www.googleapis.com/auth/cloud-platform.read-only",
       "https://www.googleapis.com/auth/cloud.useraccounts",
-      "https://www.googleapis.com/auth/cloud.useraccounts.readonly",
-      "https://www.googleapis.com/auth/computeaccounts",
-      "https://www.googleapis.com/auth/computeaccounts.readonly"
+      "https://www.googleapis.com/auth/cloud.useraccounts.readonly"
+     ]
+    },
+    "getIamPolicy": {
+     "id": "clouduseraccounts.users.getIamPolicy",
+     "path": "{project}/global/users/{resource}/getIamPolicy",
+     "httpMethod": "GET",
+     "description": "Gets the access control policy for a resource. May be empty if no such policy or resource exists.",
+     "parameters": {
+      "project": {
+       "type": "string",
+       "description": "Project ID for this request.",
+       "required": true,
+       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+       "location": "path"
+      },
+      "resource": {
+       "type": "string",
+       "description": "Name of the resource for this request.",
+       "required": true,
+       "pattern": "[a-z](?:[-a-z0-9_]{0,61}[a-z0-9])?",
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "project",
+      "resource"
+     ],
+     "response": {
+      "$ref": "Policy"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/cloud-platform",
+      "https://www.googleapis.com/auth/cloud-platform.read-only",
+      "https://www.googleapis.com/auth/cloud.useraccounts",
+      "https://www.googleapis.com/auth/cloud.useraccounts.readonly"
      ]
     },
     "insert": {
@@ -1268,8 +1676,7 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/cloud-platform",
-      "https://www.googleapis.com/auth/cloud.useraccounts",
-      "https://www.googleapis.com/auth/computeaccounts"
+      "https://www.googleapis.com/auth/cloud.useraccounts"
      ]
     },
     "list": {
@@ -1280,12 +1687,12 @@
      "parameters": {
       "filter": {
        "type": "string",
-       "description": "Sets a filter expression for filtering listed resources, in the form filter={expression}. Your {expression} must contain the following:\nFIELD_NAME COMPARISON_STRING LITERAL_STRING\n \n- FIELD_NAME: The name of the field you want to compare. The field name must be valid for the type of resource being filtered. Only atomic field types are supported (string, number, boolean). Array and object fields are not currently supported. \n- COMPARISON_STRING: The comparison string, either eq (equals) or ne (not equals). \n- LITERAL_STRING: The literal string value to filter to. The literal value must be valid for the type of field (string, number, boolean). For string fields, the literal value is interpreted as a regular expression using RE2 syntax. The literal value must match the entire field.  For example, you can filter by the name of a resource:\nfilter=name ne example-instance\nThe above filter returns only results whose name field does not equal example-instance. You can also enclose your literal string in single, double, or no quotes.",
+       "description": "Sets a filter expression for filtering listed resources, in the form filter={expression}. Your {expression} must be in the format: field_name comparison_string literal_string.\n\nThe field_name is the name of the field you want to compare. Only atomic field types are supported (string, number, boolean). The comparison_string must be either eq (equals) or ne (not equals). The literal_string is the string value to filter to. The literal value must be valid for the type of field you are filtering by (string, number, boolean). For string fields, the literal value is interpreted as a regular expression using RE2 syntax. The literal value must match the entire field.\n\nFor example, to filter for instances that do not have a name of example-instance, you would use filter=name ne example-instance.\n\nCompute Engine Beta API Only: If you use filtering in the Beta API, you can also filter on nested fields. For example, you could filter on instances that have set the scheduling.automaticRestart field to true. In particular, use filtering on nested fields to take advantage of instance labels to organize and filter results based on label values.\n\nThe Beta API also supports filtering on multiple expressions by providing each separate expression within parentheses. For example, (scheduling.automaticRestart eq true) (zone eq us-central1-f). Multiple expressions are treated as AND expressions, meaning that resources must match all expressions to pass the filters.",
        "location": "query"
       },
       "maxResults": {
        "type": "integer",
-       "description": "Maximum count of results to be returned.",
+       "description": "The maximum number of results per page that should be returned. If the number of available results is larger than maxResults, Compute Engine returns a nextPageToken that can be used to get the next page of results in subsequent list requests.",
        "default": "500",
        "format": "uint32",
        "minimum": "0",
@@ -1299,7 +1706,7 @@
       },
       "pageToken": {
        "type": "string",
-       "description": "Specifies a page token to use. Use this parameter if you want to list the next page of results. Set pageToken to the nextPageToken returned by a previous list request.",
+       "description": "Specifies a page token to use. Set pageToken to the nextPageToken returned by a previous list request to get the next page of results.",
        "location": "query"
       },
       "project": {
@@ -1318,10 +1725,9 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/cloud-platform",
+      "https://www.googleapis.com/auth/cloud-platform.read-only",
       "https://www.googleapis.com/auth/cloud.useraccounts",
-      "https://www.googleapis.com/auth/cloud.useraccounts.readonly",
-      "https://www.googleapis.com/auth/computeaccounts",
-      "https://www.googleapis.com/auth/computeaccounts.readonly"
+      "https://www.googleapis.com/auth/cloud.useraccounts.readonly"
      ]
     },
     "removePublicKey": {
@@ -1362,8 +1768,83 @@
      },
      "scopes": [
       "https://www.googleapis.com/auth/cloud-platform",
+      "https://www.googleapis.com/auth/cloud.useraccounts"
+     ]
+    },
+    "setIamPolicy": {
+     "id": "clouduseraccounts.users.setIamPolicy",
+     "path": "{project}/global/users/{resource}/setIamPolicy",
+     "httpMethod": "POST",
+     "description": "Sets the access control policy on the specified resource. Replaces any existing policy.",
+     "parameters": {
+      "project": {
+       "type": "string",
+       "description": "Project ID for this request.",
+       "required": true,
+       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+       "location": "path"
+      },
+      "resource": {
+       "type": "string",
+       "description": "Name of the resource for this request.",
+       "required": true,
+       "pattern": "[a-z](?:[-a-z0-9_]{0,61}[a-z0-9])?",
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "project",
+      "resource"
+     ],
+     "request": {
+      "$ref": "Policy"
+     },
+     "response": {
+      "$ref": "Policy"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/cloud-platform",
+      "https://www.googleapis.com/auth/cloud-platform.read-only",
       "https://www.googleapis.com/auth/cloud.useraccounts",
-      "https://www.googleapis.com/auth/computeaccounts"
+      "https://www.googleapis.com/auth/cloud.useraccounts.readonly"
+     ]
+    },
+    "testIamPermissions": {
+     "id": "clouduseraccounts.users.testIamPermissions",
+     "path": "{project}/global/users/{resource}/testIamPermissions",
+     "httpMethod": "POST",
+     "description": "Returns permissions that a caller has on the specified resource.",
+     "parameters": {
+      "project": {
+       "type": "string",
+       "description": "Project ID for this request.",
+       "required": true,
+       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+       "location": "path"
+      },
+      "resource": {
+       "type": "string",
+       "description": "Name of the resource for this request.",
+       "required": true,
+       "pattern": "[a-z](?:[-a-z0-9_]{0,61}[a-z0-9])?",
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "project",
+      "resource"
+     ],
+     "request": {
+      "$ref": "TestPermissionsRequest"
+     },
+     "response": {
+      "$ref": "TestPermissionsResponse"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/cloud-platform",
+      "https://www.googleapis.com/auth/cloud-platform.read-only",
+      "https://www.googleapis.com/auth/cloud.useraccounts",
+      "https://www.googleapis.com/auth/cloud.useraccounts.readonly"
      ]
     }
    }

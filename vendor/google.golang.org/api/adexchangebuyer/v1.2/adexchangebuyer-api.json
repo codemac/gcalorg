@@ -1,12 +1,12 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"ye6orv2F-1npMW3u9suM3a7C5Bo/wrqAKwp6S3TrJmyaUelgRJAKaL0\"",
+ "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/-1DKqIhPUpLfO8DBj8P3gNrIPtE\"",
  "discoveryVersion": "v1",
  "id": "adexchangebuyer:v1.2",
  "name": "adexchangebuyer",
  "canonicalName": "Ad Exchange Buyer",
  "version": "v1.2",
- "revision": "20150326",
+ "revision": "20170810",
  "title": "Ad Exchange Buyer API",
  "description": "Accesses your bidding-account information, submits creatives for validation, finds available direct deals, and retrieves performance reports.",
  "ownerDomain": "google.com",
@@ -21,7 +21,7 @@
  "basePath": "/adexchangebuyer/v1.2/",
  "rootUrl": "https://www.googleapis.com/",
  "servicePath": "adexchangebuyer/v1.2/",
- "batchPath": "batch",
+ "batchPath": "batch/adexchangebuyer/v1.2",
  "parameters": {
   "alt": {
    "type": "string",
@@ -199,6 +199,11 @@
      "description": "The agency id for this creative.",
      "format": "int64"
     },
+    "apiUploadTimestamp": {
+     "type": "string",
+     "description": "The last upload timestamp of this creative if it was uploaded via API. Read-only. The value of this field is generated, and will be ignored for uploads. (formatted RFC 3339 timestamp).",
+     "format": "date-time"
+    },
     "attribute": {
      "type": "array",
      "description": "All attributes for the ads that may be shown from this snippet.",
@@ -307,6 +312,13 @@
       ]
      }
     },
+    "impressionTrackingUrl": {
+     "type": "array",
+     "description": "The set of urls to be called to record an impression.",
+     "items": {
+      "type": "string"
+     }
+    },
     "kind": {
      "type": "string",
      "description": "Resource type.",
@@ -347,6 +359,11 @@
       "type": "integer",
       "format": "int32"
      }
+    },
+    "version": {
+     "type": "integer",
+     "description": "The version for this creative. Read-only. This field should not be set in requests.",
+     "format": "int32"
     },
     "videoURL": {
      "type": "string",

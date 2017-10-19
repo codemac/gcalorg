@@ -1,19 +1,19 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"ye6orv2F-1npMW3u9suM3a7C5Bo/gwo7J97ILJAQ8gO-rmiOBs_ZkKc\"",
+ "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/lsRSA9rF-4KQu4xYN0id-kYxBtA\"",
  "discoveryVersion": "v1",
  "id": "sqladmin:v1beta3",
  "name": "sqladmin",
  "canonicalName": "SQL Admin",
  "version": "v1beta3",
- "revision": "20150330",
+ "revision": "20170807",
  "title": "Cloud SQL Administration API",
- "description": "API for Cloud SQL database instance management.",
+ "description": "Creates and configures Cloud SQL instances, which provide fully-managed MySQL databases.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "icons": {
-  "x16": "http://www.google.com/images/icons/product/search-16.gif",
-  "x32": "http://www.google.com/images/icons/product/search-32.gif"
+  "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+  "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
  },
  "documentationLink": "https://cloud.google.com/sql/docs/reference/latest",
  "protocol": "rest",
@@ -21,7 +21,7 @@
  "basePath": "/sql/v1beta3/",
  "rootUrl": "https://www.googleapis.com/",
  "servicePath": "sql/v1beta3/",
- "batchPath": "batch",
+ "batchPath": "batch/sqladmin/v1beta3",
  "parameters": {
   "alt": {
    "type": "string",
@@ -244,6 +244,10 @@
    "type": "object",
    "description": "A Cloud SQL instance resource.",
    "properties": {
+    "connectionName": {
+     "type": "string",
+     "description": "Connection name of the Cloud SQL instance used in connection strings."
+    },
     "currentDiskSize": {
      "type": "string",
      "description": "The current disk usage of the instance in bytes.",
@@ -779,7 +783,7 @@
     },
     "requireSsl": {
      "type": "boolean",
-     "description": "Whether the mysqld should default to 'REQUIRE X509' for users connecting over IP."
+     "description": "Whether SSL connections over IP should be enforced or not."
     }
    }
   },
@@ -1096,7 +1100,7 @@
     },
     "region": {
      "type": "array",
-     "description": "The applicable regions for this tier. Can be us-east1, europe-west1, or asia-east1.",
+     "description": "The applicable regions for this tier.",
      "items": {
       "type": "string"
      }

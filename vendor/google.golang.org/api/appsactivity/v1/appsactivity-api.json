@@ -1,18 +1,18 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"ye6orv2F-1npMW3u9suM3a7C5Bo/ZeC-oWzDKj1E5_H69LVDW5wAByE\"",
+ "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/pDZ7o52oB1KPiP4jc8rmQ24ThMo\"",
  "discoveryVersion": "v1",
  "id": "appsactivity:v1",
  "name": "appsactivity",
  "version": "v1",
- "revision": "20150326",
- "title": "Google Apps Activity API",
+ "revision": "20170619",
+ "title": "G Suite Activity API",
  "description": "Provides a historical view of activity.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "icons": {
-  "x16": "http://www.google.com/images/icons/product/search-16.gif",
-  "x32": "http://www.google.com/images/icons/product/search-32.gif"
+  "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+  "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
  },
  "documentationLink": "https://developers.google.com/google-apps/activity/",
  "protocol": "rest",
@@ -20,7 +20,7 @@
  "basePath": "/appsactivity/v1/",
  "rootUrl": "https://www.googleapis.com/",
  "servicePath": "appsactivity/v1/",
- "batchPath": "batch",
+ "batchPath": "batch/appsactivity/v1",
  "parameters": {
   "alt": {
    "type": "string",
@@ -70,7 +70,7 @@
   "oauth2": {
    "scopes": {
     "https://www.googleapis.com/auth/activity": {
-     "description": "View the activity history of your Google Apps"
+     "description": "View the activity history of your Google apps"
     },
     "https://www.googleapis.com/auth/drive": {
      "description": "View and manage the files in your Google Drive"
@@ -392,13 +392,25 @@
    "type": "object",
    "description": "A representation of a user.",
    "properties": {
+    "isDeleted": {
+     "type": "boolean",
+     "description": "A boolean which indicates whether the specified User was deleted. If true, name, photo and permission_id will be omitted."
+    },
+    "isMe": {
+     "type": "boolean",
+     "description": "Whether the user is the authenticated user."
+    },
     "name": {
      "type": "string",
      "description": "The displayable name of the user."
     },
+    "permissionId": {
+     "type": "string",
+     "description": "The permission ID associated with this user. Equivalent to the Drive API's permission ID for this user, returned as part of the Drive Permissions resource."
+    },
     "photo": {
      "$ref": "Photo",
-     "description": "The profile photo of the user."
+     "description": "The profile photo of the user. Not present if the user has no profile photo."
     }
    }
   }

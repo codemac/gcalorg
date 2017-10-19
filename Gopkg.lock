@@ -2,36 +2,40 @@
 
 
 [[projects]]
+  name = "cloud.google.com/go"
+  packages = ["compute/metadata"]
+  revision = "eaddaf6dd7ee35fd3c2420c8d27478db176b0485"
+  version = "v0.15.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
   revision = "130e6b02ab059e7b717a096f397c5b60111cae74"
 
 [[projects]]
+  branch = "master"
   name = "golang.org/x/net"
-  packages = ["context"]
-  revision = "d9558e5c97f85372afee28cf2b6059d7d3818919"
+  packages = ["context","context/ctxhttp"]
+  revision = "1087133bc4af3073e18add999345c6ae75918503"
 
 [[projects]]
+  branch = "master"
   name = "golang.org/x/oauth2"
   packages = [".","google","internal","jws","jwt"]
-  revision = "8914e5017ca260f2a3a1575b1e6868874050d95e"
+  revision = "bb50c06baba3d0c76f9d125c0719093e315b5b44"
 
 [[projects]]
+  branch = "master"
   name = "google.golang.org/api"
-  packages = ["calendar/v3","googleapi","googleapi/internal/uritemplates"]
-  revision = "a09229c13c2f13bbdedf7b31b506cad4c83ef3bf"
+  packages = ["calendar/v3","gensupport","googleapi","googleapi/internal/uritemplates"]
+  revision = "425ca37925f1cb7dcbdac2e5fbad56b7c95b7c0c"
 
 [[projects]]
   name = "google.golang.org/appengine"
   packages = [".","internal","internal/app_identity","internal/base","internal/datastore","internal/log","internal/modules","internal/remote_api","internal/urlfetch","urlfetch"]
   revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
   version = "v1.0.0"
-
-[[projects]]
-  name = "google.golang.org/cloud"
-  packages = ["compute/metadata","internal"]
-  revision = "feda659df33f28fe2d0524fad496b4d01a2015af"
 
 [solve-meta]
   analyzer-name = "dep"

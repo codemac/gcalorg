@@ -1,18 +1,18 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"FrPV2U6xXFUq8eRv_PO3IoAURkc/KsgpNVP8dzFmgPzAjDdH7uBJP_M\"",
+ "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/vjsLOntBAplI6gHuETouIyrKBJI\"",
  "discoveryVersion": "v1",
  "id": "customsearch:v1",
  "name": "customsearch",
  "version": "v1",
- "revision": "20131205",
+ "revision": "20170615",
  "title": "CustomSearch API",
- "description": "Lets you search over a website or collection of websites",
+ "description": "Searches over a website or collection of websites",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "icons": {
-  "x16": "http://www.google.com/images/icons/product/search-16.gif",
-  "x32": "http://www.google.com/images/icons/product/search-32.gif"
+  "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+  "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
  },
  "documentationLink": "https://developers.google.com/custom-search/v1/using_rest",
  "protocol": "rest",
@@ -20,7 +20,7 @@
  "basePath": "/customsearch/",
  "rootUrl": "https://www.googleapis.com/",
  "servicePath": "customsearch/",
- "batchPath": "batch",
+ "batchPath": "batch/customsearch/v1",
  "parameters": {
   "alt": {
    "type": "string",
@@ -161,9 +161,6 @@
      "format": "int32"
     },
     "cr": {
-     "type": "string"
-    },
-    "cref": {
      "type": "string"
     },
     "cx": {
@@ -443,7 +440,7 @@
      "properties": {
       "template": {
        "type": "string",
-       "default": "https://www.googleapis.com/customsearch/v1?q={searchTerms}&num={count?}&start={startIndex?}&lr={language?}&safe={safe?}&cx={cx?}&cref={cref?}&sort={sort?}&filter={filter?}&gl={gl?}&cr={cr?}&googlehost={googleHost?}&c2coff={disableCnTwTranslation?}&hq={hq?}&hl={hl?}&siteSearch={siteSearch?}&siteSearchFilter={siteSearchFilter?}&exactTerms={exactTerms?}&excludeTerms={excludeTerms?}&linkSite={linkSite?}&orTerms={orTerms?}&relatedSite={relatedSite?}&dateRestrict={dateRestrict?}&lowRange={lowRange?}&highRange={highRange?}&searchType={searchType}&fileType={fileType?}&rights={rights?}&imgSize={imgSize?}&imgType={imgType?}&imgColorType={imgColorType?}&imgDominantColor={imgDominantColor?}&alt=json"
+       "default": "https://www.googleapis.com/customsearch/v1?q={searchTerms}&num={count?}&start={startIndex?}&lr={language?}&safe={safe?}&cx={cx?}&sort={sort?}&filter={filter?}&gl={gl?}&cr={cr?}&googlehost={googleHost?}&c2coff={disableCnTwTranslation?}&hq={hq?}&hl={hl?}&siteSearch={siteSearch?}&siteSearchFilter={siteSearchFilter?}&exactTerms={exactTerms?}&excludeTerms={excludeTerms?}&linkSite={linkSite?}&orTerms={orTerms?}&relatedSite={relatedSite?}&dateRestrict={dateRestrict?}&lowRange={lowRange?}&highRange={highRange?}&searchType={searchType}&fileType={fileType?}&rights={rights?}&imgSize={imgSize?}&imgType={imgType?}&imgColorType={imgColorType?}&imgDominantColor={imgDominantColor?}&alt=json"
       },
       "type": {
        "type": "string",
@@ -471,11 +468,6 @@
       "cr": {
        "type": "string",
        "description": "Country restrict(s).",
-       "location": "query"
-      },
-      "cref": {
-       "type": "string",
-       "description": "The URL of a linked custom search engine",
        "location": "query"
       },
       "cx": {
