@@ -148,7 +148,7 @@ func cleanString(s string) string {
 	return s
 }
 
-func printOrg(e *calendar.Event) {
+func printOrg(e *calendar.Event, tagname string) {
 	var fullentry string
 	print_entry := true
 	fullentry += fmt.Sprintf("** ")
@@ -159,6 +159,13 @@ func printOrg(e *calendar.Event) {
 	if summary == "" {
 		summary = "busy"
 	}
+	// if tagname != "" {
+	// 	filllen := 90 - (len(summary) + len(tagname) + 3)
+	// 	if filllen > 0 {
+	// 		summary += strings.Repeat(" ", filllen)
+	// 	}
+	// 	summary += " :" + tagname + ":"
+	// }
 	fullentry += fmt.Sprintf("%s\n", summary)
 	fullentry += fmt.Sprintf("   :PROPERTIES:\n")
 	fullentry += fmt.Sprintf("   :ID:       %s\n", e.ICalUID)
@@ -236,23 +243,27 @@ func printOrg(e *calendar.Event) {
 	}
 
 	to_p := fmt.Sprintf("\n%s\n", e.Description)
-	esc_desc := cleanString(to_p)
-	fullentry += fmt.Sprintf(esc_desc)
-	fullentry += fmt.Sprintf("\n")
-	fullentry += fmt.Sprintf("\nAttachments:\n")
+	fullentry += cleanString(to_p)
+	fullentry += "\n"
+	attachment_title := "\nAttachments:\n"
+	attachment_entries := ""
 	for _, a := range e.Attachments {
 		if a == nil {
 			continue
 		}
 
-		fullentry += fmt.Sprintf("- [[%s][%s]]\n", a.FileUrl, cleanString(a.Title))
+		attachment_entries += fmt.Sprintf("- [[%s][%s]]\n", a.FileUrl,
+			cleanString(a.Title))
+	}
+	if len(attachment_entries) > 0 {
+		fullentry += attachment_title + attachment_entries
 	}
 	if print_entry {
 		fmt.Printf(fullentry)
 	}
 }
 
-func printCalendars(client *http.Client, approvedCals []string) {
+func printCalendars(client *http.Client, approvedCals []string, tagname string) {
 
 	srv, err := calendar.New(client)
 	if err != nil {
@@ -282,7 +293,7 @@ func printCalendars(client *http.Client, approvedCals []string) {
 		if !ok {
 			continue
 		}
-		fmt.Printf("* %s\n", c.Summary)
+		fmt.Printf("* %s :%s:\n", c.Summary, tagname)
 		fmt.Printf("  :PROPERTIES:\n")
 		fmt.Printf("  :ID:         %s\n", c.Id)
 		fmt.Printf("  :END:\n")
@@ -331,7 +342,7 @@ func printCalendars(client *http.Client, approvedCals []string) {
 					continue itemloop
 				}
 			}
-			printOrg(i)
+			printOrg(i, tagname)
 		}
 	}
 }
@@ -355,12 +366,21 @@ func genClient(filename string) *http.Client {
 func main() {
 	home := os.Getenv("HOME")
 	type caldata struct {
-		name string
-		cals []string
+		name    string
+		cals    []string
+		tagname string
 	}
 	secrets := []caldata{
-		{home + "/src/gcalorg/jmickeygoogle_secret.json", workCals},
-		{home + "/src/gcalorg/codemacgmail_secret.json", gmailCals},
+		{
+			home + "/go/src/github.com/codemac/gcalorg/jmickeygoogle_secret.json",
+			workCals,
+			"WORK",
+		},
+		{
+			home + "/go/src/github.com/codemac/gcalorg/codemacgmail_secret.json",
+			gmailCals,
+			"HOME",
+		},
 	}
 
 	// we need to sort before we do much of anything, so things show up in a
@@ -368,6 +388,6 @@ func main() {
 	for _, v := range secrets {
 		fmt.Fprintf(os.Stderr, "Getting client for: %s", v.name)
 		cl := genClient(v.name)
-		printCalendars(cl, v.cals)
+		printCalendars(cl, v.cals, v.tagname)
 	}
 }
