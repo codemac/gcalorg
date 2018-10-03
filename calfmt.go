@@ -54,6 +54,24 @@ func datesToOrg(start, end *calendar.EventDateTime) string {
 	return final + fmt.Sprintf("-%s>", tef)
 }
 
+func noTodoKwds(s string) string {
+	states := []string{"TODO", "NEXT", "STARTED", "WAITING", "PROJECT", "DONE", "NVM"}
+	for _, state := range states {
+		// We essentially reimplement TrimPrefix, so we don't waste time
+		// running HasPrefix multiple times. We also don't remove the
+		// space in the prefix.
+		if strings.HasPrefix(s, state + " ") {
+			s = s[len(state):]
+			s = "/" + state + "/" + s
+
+			// Only the actual prefix matters, we don't need to
+			// check the remaining keywords.
+			return s
+		}
+	}
+	return s
+}
+
 // cleanString removes special characters for org-mode, as almost no one will be
 // using org-mode formatting.
 func cleanString(s string) string {
@@ -83,17 +101,17 @@ func fmtOrgHeader(e *calendar.Event) string {
 		summary = "busy"
 	}
 
-	buf += fmt.Sprintf("%s\n", summary)
-	buf += fmt.Sprintf("   :PROPERTIES:\n")
-	buf += fmt.Sprintf("   :ID:       %s\n", e.ICalUID)
-	buf += fmt.Sprintf("   :GCALLINK: %s\n", e.HtmlLink)
+	buf += fmt.Sprintf("%s\n", noTodoKwds(summary))
+	buf += fmt.Sprintf(":PROPERTIES:\n")
+	buf += fmt.Sprintf(":ID:       %s\n", e.ICalUID)
+	buf += fmt.Sprintf(":GCALLINK: %s\n", e.HtmlLink)
 	if e.Creator != nil {
-		buf += fmt.Sprintf("   :CREATOR: [[mailto:%s][%s]]\n", e.Creator.Email, cleanString(e.Creator.DisplayName))
+		buf += fmt.Sprintf(":CREATOR: [[mailto:%s][%s]]\n", e.Creator.Email, cleanString(e.Creator.DisplayName))
 	}
 	if e.Organizer != nil {
-		buf += fmt.Sprintf("   :ORGANIZER: [[mailto:%s][%s]]\n", e.Organizer.Email, cleanString(e.Organizer.DisplayName))
+		buf += fmt.Sprintf(":ORGANIZER: [[mailto:%s][%s]]\n", e.Organizer.Email, cleanString(e.Organizer.DisplayName))
 	}
-	buf += fmt.Sprintf("   :END:\n\n")
+	buf += fmt.Sprintf(":END:\n\n")
 
 	return buf
 }

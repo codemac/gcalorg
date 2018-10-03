@@ -41,7 +41,7 @@ func printCalendars(client *http.Client, approvedCals []string, tagname string) 
 		if !ok {
 			continue
 		}
-		fmt.Printf("* %s :%s:\n", c.Summary, tagname)
+		fmt.Printf("* %s :%s:\n", noTodoKwds(c.Summary), tagname)
 		fmt.Printf("  :PROPERTIES:\n")
 		fmt.Printf("  :ID:         %s\n", c.Id)
 		fmt.Printf("  :END:\n")
