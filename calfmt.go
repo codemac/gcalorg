@@ -120,9 +120,13 @@ func fmtOrgDate(e *calendar.Event) string {
 	return fmt.Sprintf("%s\n", datesToOrg(e.Start, e.End))
 }
 
-func fmtOrgBody(e *calendar.Event) string {
+func fmtOrgAttendees(e *calendar.Event) string {
 	var buf string
 	attendees := e.Attendees
+	if len(attendees) == 0 {
+		return ""
+	}
+
 	canonical_id := func(ea *calendar.EventAttendee) string {
 		if ea.Id != "" {
 			return ea.Id
@@ -137,46 +141,51 @@ func fmtOrgBody(e *calendar.Event) string {
 	sort.SliceStable(attendees, func(i, j int) bool {
 		return canonical_id(attendees[i]) < canonical_id(attendees[j])
 	})
-	if len(attendees) > 0 {
-		buf += fmt.Sprintf("Attendees:\n")
-	}
+
 	if len(attendees) > 20 {
-		buf += fmt.Sprintf("... Many\n")
-	} else {
-		for _, a := range attendees {
-			if a != nil {
-
-				// ResponseStatus: The attendee's response status. Possible values are:
-				//
-				// - "needsAction" - The attendee has not responded to the invitation.
-				//
-				// - "declined" - The attendee has declined the invitation.
-				// - "tentative" - The attendee has tentatively accepted the invitation.
-				//
-				// - "accepted" - The attendee has accepted the invitation.
-				//  ResponseStatus string `json:"responseStatus,omitempty"`
-				statuschar := " "
-				switch a.ResponseStatus {
-				case "":
-				case "NeedsAction":
-				case "declined":
-					statuschar = "✗"
-				case "tenative":
-					statuschar = "☐"
-				case "accepted":
-					statuschar = "✓"
-				}
-
-				linkname := cleanString(a.DisplayName)
-				if linkname == "" {
-					linkname = a.Email
-				}
-				buf += fmt.Sprintf(" %s [[mailto:%s][%s]]\n", statuschar, a.Email, linkname)
-			}
-		}
+		buf += fmt.Sprintf("Attendees: ... Many\n")
+		return buf
 	}
 
-	to_p := fmt.Sprintf("\n%s\n", e.Description)
+	buf += fmt.Sprintf("Attendees:\n")
+	for _, a := range attendees {
+		if a == nil {
+			continue
+		}
+
+		// ResponseStatus: The attendee's response status. Possible values are:
+		//
+		// - "needsAction" - The attendee has not responded to the invitation.
+		//
+		// - "declined" - The attendee has declined the invitation.
+		// - "tentative" - The attendee has tentatively accepted the invitation.
+		//
+		// - "accepted" - The attendee has accepted the invitation.
+		//  ResponseStatus string `json:"responseStatus,omitempty"`
+		statuschar := " "
+		switch a.ResponseStatus {
+		case "":
+		case "NeedsAction":
+		case "declined":
+			statuschar = "✗"
+		case "tenative":
+			statuschar = "☐"
+		case "accepted":
+			statuschar = "✓"
+		}
+
+		linkname := cleanString(a.DisplayName)
+		if linkname == "" {
+			linkname = a.Email
+		}
+		buf += fmt.Sprintf(" %s [[mailto:%s][%s]]\n", statuschar, a.Email, linkname)
+	}
+	return buf
+}
+
+func fmtOrgBody(e *calendar.Event) string {
+	var buf string
+	to_p := fmt.Sprintf("\nSummary: %s\n%s\n", e.Summary, e.Description)
 	buf += cleanString(to_p)
 	buf += "\n"
 	attachment_title := "\nAttachments:\n"
@@ -189,6 +198,7 @@ func fmtOrgBody(e *calendar.Event) string {
 		attachment_entries += fmt.Sprintf("- [[%s][%s]]\n", a.FileUrl,
 			cleanString(a.Title))
 	}
+
 	if len(attachment_entries) > 0 {
 		buf += attachment_title + attachment_entries
 	}
@@ -198,15 +208,31 @@ func fmtOrgBody(e *calendar.Event) string {
 
 func fmtEventGroup(events []*calendar.Event) string {
 	var buf string
-	bodies := make(map[string]struct{})
-	buf = fmtOrgHeader(events[0])
+
+	// take the last header of the set, has the most recent summary info.
+	buf = fmtOrgHeader(events[len(events) - 1])
+
+	// Put the dates from each event repeat
+	unique_attendees := make(map[string]struct{})
 	for _, i := range events {
 		buf += fmtOrgDate(i)
-		bodies[fmtOrgBody(i)] = struct{}{}
+		attendee := fmtOrgAttendees(i)
+		if _, ok := unique_attendees[attendee]; !ok {
+			unique_attendees[attendee] = struct{}{}
+			buf += attendee
+		}
 	}
-	for k, _ := range bodies {
-		buf += k
+
+	unique_bodies := make(map[string]struct{})
+	// Remove duplicate bodies
+	for _, i := range events {
+		body := fmtOrgBody(i)
+		if _, ok := unique_bodies[body]; !ok {
+			unique_bodies[body] = struct{}{}
+			buf += body
+		}
 	}
+
 	return buf
 }
 
