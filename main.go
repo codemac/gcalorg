@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
@@ -77,7 +78,24 @@ func printCalendars(client *http.Client, approvedCals []string, tagname string) 
 			events_by_id[recur_id] = append(events_by_id[recur_id], v)
 		}
 
-		for _, events := range events_by_id {
+		type eventWithId struct {
+			id string
+			events []*calendar.Event
+		}
+
+		// sorted events
+		sorted_by_id := make([]eventWithId, 0, len(events_by_id))
+		for id, events := range events_by_id {
+			sorted_by_id = append(sorted_by_id,
+				eventWithId{id, events})
+		}
+
+		sort.Slice(sorted_by_id, func (i, j int) bool {
+			return sorted_by_id[i].id < sorted_by_id[j].id
+		})
+
+		for _, e := range sorted_by_id {
+			events := e.events
 			if len(events) == 0 {
 				continue
 			}
@@ -89,6 +107,7 @@ func printCalendars(client *http.Client, approvedCals []string, tagname string) 
 			if filteredEvent(c.Id, events[0].Summary) {
 				continue
 			}
+
 			fmt.Println(fmtEventGroup(events))
 		}
 	}
