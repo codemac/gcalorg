@@ -28,3 +28,12 @@ package main
 // 		"Status Report",
 // 	},
 // }
+
+// This is a map of calendar id to attendee id so we don't show calendar events
+// I've said no to.
+//
+// var attendeeFilters = map[string][]string{
+// 	"jmickey@workplace.com": []string{
+// 		"jmickey@workplace.com",
+// 	},
+// }

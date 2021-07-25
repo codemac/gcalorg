@@ -79,7 +79,7 @@ func printCalendars(client *http.Client, approvedCals []string, tagname string) 
 		}
 
 		type eventWithId struct {
-			id string
+			id     string
 			events []*calendar.Event
 		}
 
@@ -90,7 +90,7 @@ func printCalendars(client *http.Client, approvedCals []string, tagname string) 
 				eventWithId{id, events})
 		}
 
-		sort.Slice(sorted_by_id, func (i, j int) bool {
+		sort.Slice(sorted_by_id, func(i, j int) bool {
 			return sorted_by_id[i].id < sorted_by_id[j].id
 		})
 
@@ -108,7 +108,7 @@ func printCalendars(client *http.Client, approvedCals []string, tagname string) 
 				continue
 			}
 
-			fmt.Println(fmtEventGroup(events))
+			fmt.Println(fmtEventGroup(c.Id, events))
 		}
 	}
 }

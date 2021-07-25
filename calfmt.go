@@ -54,13 +54,19 @@ func datesToOrg(start, end *calendar.EventDateTime) string {
 	return final + fmt.Sprintf("-%s>", tef)
 }
 
+func datesToInactiveOrg(start, end *calendar.EventDateTime) string {
+	datestr := datesToOrg(start, end)
+	left := strings.ReplaceAll(datestr, "<", "[")
+	return strings.ReplaceAll(left, ">", "]")
+}
+
 func noTodoKwds(s string) string {
 	states := []string{"TODO", "NEXT", "STARTED", "WAITING", "PROJECT", "DONE", "NVM"}
 	for _, state := range states {
 		// We essentially reimplement TrimPrefix, so we don't waste time
 		// running HasPrefix multiple times. We also don't remove the
 		// space in the prefix.
-		if strings.HasPrefix(s, state + " ") {
+		if strings.HasPrefix(s, state+" ") {
 			s = s[len(state):]
 			s = "/" + state + "/" + s
 
@@ -118,6 +124,10 @@ func fmtOrgHeader(e *calendar.Event) string {
 
 func fmtOrgDate(e *calendar.Event) string {
 	return fmt.Sprintf("%s\n", datesToOrg(e.Start, e.End))
+}
+
+func fmtInactiveOrgDate(e *calendar.Event) string {
+	return fmt.Sprintf("%s\n", datesToInactiveOrg(e.Start, e.End))
 }
 
 func fmtOrgAttendees(e *calendar.Event) string {
@@ -206,16 +216,20 @@ func fmtOrgBody(e *calendar.Event) string {
 	return buf
 }
 
-func fmtEventGroup(events []*calendar.Event) string {
+func fmtEventGroup(calid string, events []*calendar.Event) string {
 	var buf string
 
 	// take the last header of the set, has the most recent summary info.
-	buf = fmtOrgHeader(events[len(events) - 1])
+	buf = fmtOrgHeader(events[len(events)-1])
 
 	// Put the dates from each event repeat
 	unique_attendees := make(map[string]struct{})
 	for _, i := range events {
-		buf += fmtOrgDate(i)
+		if attendingEvent(calid, *i) {
+			buf += fmtOrgDate(i)
+		} else {
+			buf += fmtInactiveOrgDate(i)
+		}
 		attendee := fmtOrgAttendees(i)
 		if _, ok := unique_attendees[attendee]; !ok {
 			unique_attendees[attendee] = struct{}{}
@@ -242,5 +256,21 @@ func filteredEvent(calid, summary string) bool {
 			return true
 		}
 	}
+
 	return false
+}
+
+func attendingEvent(calid string, event calendar.Event) bool {
+	for _, email := range attendeeFilters[calid] {
+		for _, att := range event.Attendees {
+			if (att.Email == email ||
+				att.Id == email ||
+				att.DisplayName == email) &&
+				att.ResponseStatus == "declined" {
+				return false
+			}
+		}
+	}
+	// include by default rather than not include.
+	return true
 }
