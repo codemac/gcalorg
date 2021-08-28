@@ -5,56 +5,41 @@ import (
 	"sort"
 	"strings"
 	"time"
-
-	"google.golang.org/api/calendar/v3"
 )
 
-func datesToOrg(start, end *calendar.EventDateTime) string {
-	final := ""
+func datesToOrg(start, end *time.Time) string {
 	if start == nil { // this event has dates! hurrah!
 		return "\n"
 	}
 
-	if start.Date != "" { // all day event!
-		ts, _ := time.Parse("2006-01-02", start.Date)
-		tsf := ts.Format("2006-01-02")
-		final = final + fmt.Sprintf("<%s", tsf)
-		if end == nil {
-			return final + ">"
+	//	debug := fmt.Sprintf("s: %s e: %s Δ: %s", start.Format("2006-01-02 Mon 15:04"), end.Format("2006-01-02 Mon 15:04"), end.Sub(*start))
+	debug := ""
+	// Figuring out all day events:
+	// - see that they start & end at 00:00 and 23:59 or 00:00
+	if start.Hour() == 0 && start.Minute() == 0 && end.Hour() == 23 && end.Minute() == 59 {
+		delta := end.Sub(*start)
+		if delta <= time.Duration(time.Hour*24) && delta > (time.Duration(time.Hour*23)+time.Duration(time.Minute*59)) {
+			return fmt.Sprintf("<%s>", start.Format("2006-01-02"))
 		}
 
-		te, _ := time.Parse("2006-01-02", end.Date)
-		te = te.AddDate(0, 0, -1)
-		// The end date is "exclusive", so we should subtract a day, and
-		// if the day is equivalent to start, then we should just print
-		// start.
-		if te.Equal(ts) {
-			return final + ">"
-		}
-		tef := te.Format("2006-01-02")
-		return final + fmt.Sprintf(">--<%s>", tef)
+		// else this is whole days, just not 1 day
+		return fmt.Sprintf("<%s>--<%s>", start.Format("2006-01-02"), end.Format("2006-01-02")) + " " + debug
 	}
 
-	ts, _ := time.Parse(time.RFC3339, start.DateTime)
-	ts = ts.In(time.Local)
-	tsf := ts.Format("2006-01-02 Mon 15:04")
-	final = final + fmt.Sprintf("<%s", tsf)
+	final := fmt.Sprintf("<%s", start.Format("2006-01-02 Mon 15:04"))
 
 	if end == nil {
-		return final + fmt.Sprintf(">")
+		return final + "> " + debug
 	}
 
-	te, _ := time.Parse(time.RFC3339, end.DateTime)
-	te = te.In(time.Local)
-	if te.Day() != ts.Day() {
-		tef := te.Format("2006-01-02 Mon 15:04")
-		return final + fmt.Sprintf(">--<%s>", tef)
+	if end.Day() != start.Day() {
+		return final + ">--<" + end.Format("2006-01-02 Mon 15:04") + "> " + debug
 	}
-	tef := te.Format("15:04")
-	return final + fmt.Sprintf("-%s>", tef)
+
+	return final + "-" + end.Format("15:04") + "> " + debug
 }
 
-func datesToInactiveOrg(start, end *calendar.EventDateTime) string {
+func datesToInactiveOrg(start, end *time.Time) string {
 	datestr := datesToOrg(start, end)
 	left := strings.ReplaceAll(datestr, "<", "[")
 	return strings.ReplaceAll(left, ">", "]")
@@ -87,63 +72,44 @@ func cleanString(s string) string {
 	return s
 }
 
-func isDeclinedByMe(e *calendar.Event) bool {
-	for _, a := range e.Attendees {
-		if a != nil && a.Self && a.ResponseStatus == "declined" {
-			return true
-		}
-	}
-	return false
-}
-
-func fmtOrgHeader(e *calendar.Event) string {
+func fmtOrgHeader(e *Event) string {
 	var buf string
 	buf += fmt.Sprintf("** ")
-	if e.Status == "tenative" || e.Status == "cancelled" {
-		buf += fmt.Sprintf("(%s) ", e.Status)
-	}
-	summary := e.Summary
+	summary := e.Name
 	if summary == "" {
 		summary = "busy"
 	}
 
 	buf += fmt.Sprintf("%s\n", noTodoKwds(summary))
 	buf += fmt.Sprintf(":PROPERTIES:\n")
-	buf += fmt.Sprintf(":ID:       %s\n", e.ICalUID)
-	buf += fmt.Sprintf(":GCALLINK: %s\n", e.HtmlLink)
-	if e.Creator != nil {
-		buf += fmt.Sprintf(":CREATOR: [[mailto:%s][%s]]\n", e.Creator.Email, cleanString(e.Creator.DisplayName))
-	}
-	if e.Organizer != nil {
-		buf += fmt.Sprintf(":ORGANIZER: [[mailto:%s][%s]]\n", e.Organizer.Email, cleanString(e.Organizer.DisplayName))
-	}
+	buf += fmt.Sprintf(":ID:       %s\n", e.UID)
+	buf += fmt.Sprintf(":GCALLINK: %s\n", e.URL)
+	buf += fmt.Sprintf(":ORGANIZER: [[mailto:%s][%s]]\n", e.OrganizerMail, cleanString(e.OrganizerMail))
 	buf += fmt.Sprintf(":END:\n\n")
 
 	return buf
 }
 
-func fmtOrgDate(e *calendar.Event) string {
+func fmtOrgDate(e *Event) string {
 	return fmt.Sprintf("%s\n", datesToOrg(e.Start, e.End))
 }
 
-func fmtInactiveOrgDate(e *calendar.Event) string {
+func fmtInactiveOrgDate(e *Event) string {
 	return fmt.Sprintf("%s\n", datesToInactiveOrg(e.Start, e.End))
 }
 
-func fmtOrgAttendees(e *calendar.Event) string {
+func fmtOrgAttendees(e *Event) string {
 	var buf string
 	attendees := e.Attendees
 	if len(attendees) == 0 {
 		return ""
 	}
 
-	canonical_id := func(ea *calendar.EventAttendee) string {
-		if ea.Id != "" {
-			return ea.Id
-		} else if ea.Email != "" {
+	canonical_id := func(ea *Attendee) string {
+		if ea.Email != "" {
 			return ea.Email
-		} else if ea.DisplayName != "" {
-			return cleanString(ea.DisplayName)
+		} else if ea.Name != "" {
+			return cleanString(ea.Name)
 		}
 		return "sadness"
 	}
@@ -163,28 +129,17 @@ func fmtOrgAttendees(e *calendar.Event) string {
 			continue
 		}
 
-		// ResponseStatus: The attendee's response status. Possible values are:
-		//
-		// - "needsAction" - The attendee has not responded to the invitation.
-		//
-		// - "declined" - The attendee has declined the invitation.
-		// - "tentative" - The attendee has tentatively accepted the invitation.
-		//
-		// - "accepted" - The attendee has accepted the invitation.
-		//  ResponseStatus string `json:"responseStatus,omitempty"`
 		statuschar := " "
 		switch a.ResponseStatus {
-		case "":
-		case "NeedsAction":
-		case "declined":
+		case ResponseDeclined:
 			statuschar = "✗"
-		case "tenative":
+		case ResponseTentative:
 			statuschar = "☐"
-		case "accepted":
+		case ResponseAccepted:
 			statuschar = "✓"
 		}
 
-		linkname := cleanString(a.DisplayName)
+		linkname := cleanString(a.Name)
 		if linkname == "" {
 			linkname = a.Email
 		}
@@ -193,9 +148,9 @@ func fmtOrgAttendees(e *calendar.Event) string {
 	return buf
 }
 
-func fmtOrgBody(e *calendar.Event) string {
+func fmtOrgBody(e *Event) string {
 	var buf string
-	to_p := fmt.Sprintf("\nSummary: %s\n%s\n", e.Summary, e.Description)
+	to_p := fmt.Sprintf("\nSummary: %s\n%s\n", e.Name, e.Description)
 	buf += cleanString(to_p)
 	buf += "\n"
 	attachment_title := "\nAttachments:\n"
@@ -216,7 +171,7 @@ func fmtOrgBody(e *calendar.Event) string {
 	return buf
 }
 
-func fmtEventGroup(calid string, events []*calendar.Event) string {
+func fmtEventGroup(calid string, events []*Event) string {
 	var buf string
 
 	// take the last header of the set, has the most recent summary info.
@@ -224,9 +179,14 @@ func fmtEventGroup(calid string, events []*calendar.Event) string {
 
 	// Put the dates from each event repeat
 	unique_attendees := make(map[string]struct{})
+	unique_dates := make(map[string]struct{})
 	for _, i := range events {
 		if attendingEvent(calid, *i) {
-			buf += fmtOrgDate(i)
+			formatted_date := fmtOrgDate(i)
+			if _, ok := unique_dates[formatted_date]; !ok {
+				unique_dates[formatted_date] = struct{}{}
+				buf += formatted_date
+			}
 		} else {
 			buf += fmtInactiveOrgDate(i)
 		}
@@ -260,17 +220,70 @@ func filteredEvent(calid, summary string) bool {
 	return false
 }
 
-func attendingEvent(calid string, event calendar.Event) bool {
+func attendingEvent(calid string, event Event) bool {
 	for _, email := range attendeeFilters[calid] {
 		for _, att := range event.Attendees {
 			if (att.Email == email ||
-				att.Id == email ||
-				att.DisplayName == email) &&
-				att.ResponseStatus == "declined" {
+				att.Name == email) &&
+				att.ResponseStatus == ResponseDeclined {
 				return false
 			}
 		}
 	}
 	// include by default rather than not include.
 	return true
+}
+
+func fmtEvents(c *Calendar, events []*Event) {
+	events_by_uid := make(map[string][]*Event)
+	for _, v := range events {
+		recur_id := strings.Split(v.UID, "_R")[0]
+		events_by_uid[recur_id] = append(events_by_uid[recur_id], v)
+	}
+
+	type eventWithUid struct {
+		uid    string
+		events []*Event
+	}
+
+	// sorted events
+	sorted_by_uid := make([]eventWithUid, 0, len(events_by_uid))
+	for uid, events := range events_by_uid {
+		sorted_by_uid = append(sorted_by_uid,
+			eventWithUid{uid, events})
+	}
+
+	sort.Slice(sorted_by_uid, func(i, j int) bool {
+		return sorted_by_uid[i].uid < sorted_by_uid[j].uid
+	})
+
+	for _, e := range sorted_by_uid {
+		events := e.events
+		if len(events) == 0 {
+			continue
+		}
+		// skip things that are chatty (repeating calendar
+		// events -> org-mode has been difficult, manually
+		// manage those for now. There is probably a way of
+		// getting them, but converting the ical format to the
+		// org format would be a significant piece of logic)
+		if filteredEvent(c.Id, events[0].Name) {
+			continue
+		}
+
+		fmt.Println(fmtEventGroup(c.Id, events))
+	}
+}
+
+func fmtCalendar(c *Calendar) {
+	fmt.Printf("* %s :%s:\n", noTodoKwds(c.Name), c.Tag)
+	fmt.Printf("  :PROPERTIES:\n")
+	fmt.Printf("  :ID:         %s\n", c.Id)
+	fmt.Printf("  :END:\n")
+	fmt.Printf("\n%s\n\n", c.Description)
+}
+
+func fmtFile() {
+	fmt.Printf("# -*- eval: (auto-revert-mode 1); -*-\n")
+	fmt.Printf("#+category: cal\n")
 }

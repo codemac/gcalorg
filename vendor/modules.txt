@@ -1,0 +1,43 @@
+# cloud.google.com/go v0.15.0
+## explicit
+cloud.google.com/go/compute/metadata
+# github.com/ChannelMeter/iso8601duration v0.0.0-20150204201828-8da3af7a2a61
+github.com/ChannelMeter/iso8601duration
+# github.com/apognu/gocal v0.9.0
+## explicit
+github.com/apognu/gocal
+github.com/apognu/gocal/parser
+# github.com/golang/protobuf v0.0.0-20170920220647-130e6b02ab05
+## explicit
+github.com/golang/protobuf/proto
+# golang.org/x/net v0.0.0-20171016235512-1087133bc4af
+## explicit
+golang.org/x/net/context
+golang.org/x/net/context/ctxhttp
+# golang.org/x/oauth2 v0.0.0-20170928010508-bb50c06baba3
+## explicit
+golang.org/x/oauth2
+golang.org/x/oauth2/google
+golang.org/x/oauth2/internal
+golang.org/x/oauth2/jws
+golang.org/x/oauth2/jwt
+# golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
+## explicit
+# google.golang.org/api v0.0.0-20171018000315-425ca37925f1
+## explicit
+google.golang.org/api/calendar/v3
+google.golang.org/api/gensupport
+google.golang.org/api/googleapi
+google.golang.org/api/googleapi/internal/uritemplates
+# google.golang.org/appengine v1.0.0
+## explicit
+google.golang.org/appengine
+google.golang.org/appengine/internal
+google.golang.org/appengine/internal/app_identity
+google.golang.org/appengine/internal/base
+google.golang.org/appengine/internal/datastore
+google.golang.org/appengine/internal/log
+google.golang.org/appengine/internal/modules
+google.golang.org/appengine/internal/remote_api
+google.golang.org/appengine/internal/urlfetch
+google.golang.org/appengine/urlfetch
