@@ -13,7 +13,7 @@ const YmdHis = "2006-01-02 15:04:05"
 func (gc *Gocal) ExpandRecurringEvent(buf *Event) []Event {
 	freq := buf.RecurrenceRule["FREQ"]
 
-	until, err := parser.ParseTime(buf.RecurrenceRule["UNTIL"], map[string]string{}, parser.TimeEnd, false)
+	until, err := parser.ParseTime(buf.RecurrenceRule["UNTIL"], map[string]string{}, parser.TimeEnd, false, gc.AllDayEventsTZ)
 	hasUntil := err == nil
 
 	count, err := strconv.Atoi(buf.RecurrenceRule["COUNT"])
@@ -69,7 +69,7 @@ func (gc *Gocal) ExpandRecurringEvent(buf *Event) []Event {
 
 		if !hasByMonth || strings.Contains(fmt.Sprintf("%d", byMonth), weekDaysStart.Format("1")) {
 			if hasByDay {
-				for i := 0; i < 7; i++ {
+				for i := 0; i < 7 && count != 0; i++ {
 					excluded := false
 					for _, ex := range buf.ExcludeDates {
 						if ex.Equal(*weekDaysStart) {

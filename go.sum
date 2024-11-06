@@ -4,6 +4,8 @@ github.com/ChannelMeter/iso8601duration v0.0.0-20150204201828-8da3af7a2a61 h1:N5
 github.com/ChannelMeter/iso8601duration v0.0.0-20150204201828-8da3af7a2a61/go.mod h1:GnKXcK+7DYNy/8w2Ex//Uql4IgfaU82Cd5rWKb7ah00=
 github.com/apognu/gocal v0.9.0 h1:2lGdZprjYs9A6l1RTEmapmpE1PiDbXNX8bUVqZt3vm4=
 github.com/apognu/gocal v0.9.0/go.mod h1:ZOJfNOqpz8aasi3uqzDu+eWTT6VuEa/TvQWiYYWlb80=
+github.com/apognu/gocal v0.9.1-0.20211114124633-94524ad2f4b2 h1:P/EINg6SUIi9IP6TKNhXqrTcwAbJ1W5RqYtsMjpZZRM=
+github.com/apognu/gocal v0.9.1-0.20211114124633-94524ad2f4b2/go.mod h1:ZOJfNOqpz8aasi3uqzDu+eWTT6VuEa/TvQWiYYWlb80=
 github.com/channelmeter/iso8601duration v0.0.0-20150204201828-8da3af7a2a61/go.mod h1:Rp8e0DCtEKwXFOC6JPJQVTz8tuGoGvw6Xfexggh/ed0=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/golang/protobuf v0.0.0-20170920220647-130e6b02ab05 h1:Kesru7U6Mhpf/x7rthxAKnr586VFmoE2NdEvkOKvfjg=

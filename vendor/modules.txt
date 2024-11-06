@@ -3,7 +3,7 @@
 cloud.google.com/go/compute/metadata
 # github.com/ChannelMeter/iso8601duration v0.0.0-20150204201828-8da3af7a2a61
 github.com/ChannelMeter/iso8601duration
-# github.com/apognu/gocal v0.9.0
+# github.com/apognu/gocal v0.9.1-0.20211114124633-94524ad2f4b2
 ## explicit
 github.com/apognu/gocal
 github.com/apognu/gocal/parser

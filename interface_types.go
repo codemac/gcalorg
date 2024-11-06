@@ -168,6 +168,7 @@ func NewEventFromIcs(e *gocal.Event) *Event {
 			Email:          a.Value,
 		})
 	}
+
 	var orgmail string
 	if e.Organizer != nil {
 		orgmail = strings.TrimPrefix(e.Organizer.Value, "mailto:")
@@ -175,6 +176,16 @@ func NewEventFromIcs(e *gocal.Event) *Event {
 
 	description := strings.ReplaceAll(e.Description, "\\n", "\n")
 
+	var start, end time.Time
+	// Convert timestamps to local time if they aren't on a day boundary.
+	if !(e.Start.Hour() == 0 && e.Start.Minute() == 0 && e.End.Hour() == 23 && e.End.Minute() == 59) {
+		start = e.Start.In(time.Local)
+		end = e.End.In(time.Local)
+	} else {
+		start = *e.Start
+		end = *e.End
+	}
+	
 	return &Event{
 		UID:           e.Uid,
 		Name:          e.Summary,
@@ -183,7 +194,7 @@ func NewEventFromIcs(e *gocal.Event) *Event {
 		Attendees:     attendees,
 		URL:           e.URL,
 		OrganizerMail: orgmail,
-		Start:         e.Start,
-		End:           e.End,
+		Start:         &start,
+		End:           &end,
 	}
 }

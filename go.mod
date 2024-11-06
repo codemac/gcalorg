@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	cloud.google.com/go v0.15.0 // indirect
-	github.com/apognu/gocal v0.9.0
+	github.com/apognu/gocal v0.9.1-0.20211114124633-94524ad2f4b2
 	github.com/golang/protobuf v0.0.0-20170920220647-130e6b02ab05 // indirect
 	golang.org/x/net v0.0.0-20171016235512-1087133bc4af
 	golang.org/x/oauth2 v0.0.0-20170928010508-bb50c06baba3

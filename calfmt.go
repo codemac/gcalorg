@@ -12,14 +12,14 @@ func datesToOrg(start, end *time.Time) string {
 		return "\n"
 	}
 
-	//	debug := fmt.Sprintf("s: %s e: %s Δ: %s", start.Format("2006-01-02 Mon 15:04"), end.Format("2006-01-02 Mon 15:04"), end.Sub(*start))
+	// debug := fmt.Sprintf("s: %s e: %s Δ: %s", start.Format("2006-01-02 Mon 15:04"), end.Format("2006-01-02 Mon 15:04"), end.Sub(*start))
 	debug := ""
 	// Figuring out all day events:
 	// - see that they start & end at 00:00 and 23:59 or 00:00
 	if start.Hour() == 0 && start.Minute() == 0 && end.Hour() == 23 && end.Minute() == 59 {
 		delta := end.Sub(*start)
 		if delta <= time.Duration(time.Hour*24) && delta > (time.Duration(time.Hour*23)+time.Duration(time.Minute*59)) {
-			return fmt.Sprintf("<%s>", start.Format("2006-01-02"))
+			return fmt.Sprintf("<%s>", start.Format("2006-01-02")) + debug
 		}
 
 		// else this is whole days, just not 1 day
@@ -91,6 +91,7 @@ func fmtOrgHeader(e *Event) string {
 }
 
 func fmtOrgDate(e *Event) string {
+
 	return fmt.Sprintf("%s\n", datesToOrg(e.Start, e.End))
 }
 
@@ -181,6 +182,7 @@ func fmtEventGroup(calid string, events []*Event) string {
 	unique_attendees := make(map[string]struct{})
 	unique_dates := make(map[string]struct{})
 	for _, i := range events {
+
 		if attendingEvent(calid, *i) {
 			formatted_date := fmtOrgDate(i)
 			if _, ok := unique_dates[formatted_date]; !ok {
